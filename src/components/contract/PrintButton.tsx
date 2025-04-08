@@ -101,6 +101,9 @@ const PrintButton = ({
     }
 
     try {
+      // Force immediate visibility fixes before printing
+      printService.fixVisibility('.print-container');
+      
       // Always use direct print method for better compatibility
       directPrint('.print-container');
       
