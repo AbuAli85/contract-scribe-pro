@@ -5,7 +5,7 @@ interface UsePrintOptions {
   timeoutDuration?: number;
 }
 
-export const usePrint = ({ timeoutDuration = 5000 }: UsePrintOptions = {}) => {
+export const usePrint = ({ timeoutDuration = 10000 }: UsePrintOptions = {}) => {
   const [isPrinting, setIsPrinting] = useState(false);
   
   // Setup print listeners
@@ -22,7 +22,7 @@ export const usePrint = ({ timeoutDuration = 5000 }: UsePrintOptions = {}) => {
       setTimeout(() => {
         document.body.classList.remove('printing');
         setIsPrinting(false);
-      }, 500);
+      }, 1000);
     };
     
     window.addEventListener('beforeprint', beforePrintHandler);
@@ -41,6 +41,15 @@ export const usePrint = ({ timeoutDuration = 5000 }: UsePrintOptions = {}) => {
     try {
       console.log("Print preparation starting...");
       
+      // Make sure all contract elements are visible
+      document.querySelectorAll('.contract-preview *, .a4-page *, .contract-content *').forEach(el => {
+        if (el instanceof HTMLElement) {
+          el.style.display = el.tagName === 'DIV' ? 'block' : '';
+          el.style.visibility = 'visible';
+          el.style.opacity = '1';
+        }
+      });
+      
       // First, add printing class to body to activate CSS rules
       document.body.classList.add('printing');
       setIsPrinting(true);
@@ -53,7 +62,7 @@ export const usePrint = ({ timeoutDuration = 5000 }: UsePrintOptions = {}) => {
         // Double check document state before printing
         if (document.readyState !== 'complete') {
           console.log("Document not fully loaded, delaying print...");
-          setTimeout(() => window.print(), 1000);
+          setTimeout(() => window.print(), 1500);
         } else {
           console.log("Initiating print operation...");
           window.print();
@@ -67,7 +76,7 @@ export const usePrint = ({ timeoutDuration = 5000 }: UsePrintOptions = {}) => {
             setIsPrinting(false);
           }
         }, timeoutDuration);
-      }, 500);
+      }, 1000);
       
     } catch (error) {
       console.error("Print error:", error);

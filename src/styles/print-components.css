@@ -75,6 +75,20 @@
     opacity: 1 !important;
   }
 
+  /* Make sure text is displayed properly */
+  .contract-text,
+  .promoter-details p,
+  .responsibilities p,
+  .info-row,
+  .contract-title,
+  .best-regards,
+  .responsibilities-title {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: black !important;
+  }
+
   /* When printing class is active - component elements */  
   body.printing .reference-section,
   body.printing .contract-title-area,
@@ -100,6 +114,21 @@
     border-left: 2px solid #1a73e8 !important;
     print-color-adjust: exact !important;
     -webkit-print-color-adjust: exact !important;
+  }
+
+  /* Fix specific visibility issues */
+  body.printing .contract-text,
+  body.printing .promoter-details,
+  body.printing .responsibilities,
+  body.printing .info-row,
+  body.printing .best-regards,
+  body.printing .contract-title,
+  body.printing .contract-main-title,
+  body.printing .responsibilities-title {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: black !important;
   }
 }
 
@@ -131,8 +160,11 @@ body.printing .promoter-details,
 body.printing .contract-title,
 body.printing .contract-main-title,
 body.printing .responsibilities,
-body.printing .responsibilities-title {
+body.printing .responsibilities-title,
+body.printing .contract-text,
+body.printing .best-regards {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
+  color: black !important;
 }

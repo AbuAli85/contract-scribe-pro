@@ -8,7 +8,7 @@ interface PrintButtonProps {
 }
 
 const PrintButton = ({ language }: PrintButtonProps) => {
-  const { isPrinting, handlePrint } = usePrint();
+  const { isPrinting, handlePrint } = usePrint({ timeoutDuration: 10000 });
 
   return (
     <Button

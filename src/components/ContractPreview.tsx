@@ -14,7 +14,7 @@ interface ContractPreviewProps {
 
 const ContractPreview = ({ language, contractData }: ContractPreviewProps) => {
   return (
-    <div className="contract-preview">
+    <div className="contract-preview print-container">
       <PrintButton language={language} />
 
       <div className="a4-page">

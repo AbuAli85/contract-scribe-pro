@@ -21,7 +21,7 @@
   
   /* Hide UI elements */
   body > *:not(.printing-container):not(#root),
-  #root > *:not(.contract-preview) {
+  #root > *:not(.contract-preview):not(.a4-page):not(.contract-content) {
     display: none !important;
   }
   
@@ -134,6 +134,30 @@
   /* Force all elements to be visible when printing class is active */
   body.printing * {
     visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* Ensure all contract elements are visible */
+  .contract-preview *,
+  .a4-page *,
+  .contract-content *,
+  .two-column-layout *,
+  .contract-column *,
+  .reference-section *,
+  .contract-title-area *,
+  .signature-area *,
+  .id-photo-container *,
+  .id-photo-wrapper *,
+  .id-photo,
+  .letterhead-background,
+  .contract-text,
+  .promoter-details,
+  .responsibilities,
+  .info-row,
+  .best-regards {
+    display: inherit !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   /* Specific elements that need to be preserved in printing */
@@ -191,4 +215,20 @@ body.printing .two-column-layout,
 body.printing .signature-area,
 body.printing .id-photo-container {
   display: flex !important;
+}
+
+/* Force all text elements to be visible */
+body.printing .contract-text,
+body.printing .promoter-details,
+body.printing .promoter-info,
+body.printing .responsibilities,
+body.printing .info-row,
+body.printing .contract-main-title,
+body.printing .contract-title,
+body.printing .best-regards,
+body.printing .responsibilities-title {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: black !important;
 }
