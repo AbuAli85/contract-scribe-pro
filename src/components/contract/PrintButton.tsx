@@ -85,8 +85,8 @@ const PrintButton = ({
       // Short timeout to ensure styles are applied
       setTimeout(() => {
         try {
-          // Use direct window.print approach for all browsers
-          window.print()
+          // Use the direct printNow method to avoid cross-origin issues
+          printService.printNow()
           
           // Handle success
           setTimeout(() => {

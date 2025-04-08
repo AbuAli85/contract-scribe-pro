@@ -1,6 +1,6 @@
 
 import { contractService } from './contract.service'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/hooks/use-toast'
 import { navigationService } from './navigation.service'
 
 export type PrintElement = {
@@ -27,6 +27,7 @@ export const printService = {
     try {
       // Add printing class to body for CSS targeting
       document.body.classList.add('printing')
+      document.documentElement.classList.add('is-printing')
       
       // Force visibility of all critical elements
       contractService.fixPrintVisibility()
@@ -42,8 +43,9 @@ export const printService = {
    * Clean up after printing is complete
    */
   cleanupAfterPrinting: (): void => {
-    // Remove printing class from body
+    // Remove printing classes
     document.body.classList.remove('printing')
+    document.documentElement.classList.remove('is-printing')
     console.log('Print cleanup completed')
   },
   
@@ -78,6 +80,7 @@ export const printService = {
   
   /**
    * Print content using direct window.print approach for maximum compatibility
+   * This method avoids cross-origin issues by using the native window.print() directly
    */
   print: (options: PrintOptions = {}): Promise<void> => {
     const { 
@@ -88,51 +91,98 @@ export const printService = {
     } = options
     
     return new Promise((resolve, reject) => {
-      // Add printing class immediately
-      document.body.classList.add('printing')
-      
-      setTimeout(() => {
-        try {
-          // Validate print content
-          if (!printService.validatePrintContent(selector)) {
-            const error = new Error('Print content validation failed')
-            reject(error)
-            onError?.(error)
-            return
-          }
-          
-          // Apply visibility fixes
-          printService.fixVisibility(selector)
-          
-          // Short delay to ensure visibility changes take effect
-          setTimeout(() => {
-            console.log('Executing print command...')
-            
-            // DIRECT APPROACH: Use window.print() directly without any wrapping
-            // This avoids cross-origin issues completely
-            window.print()
-            
-            // Clean up after print dialog closes
-            setTimeout(() => {
-              printService.cleanupAfterPrinting()
-              console.log('Print operation completed')
-              onSuccess?.()
-              resolve()
-            }, 1000)
-          }, 100)
-        } catch (error) {
-          const printError = error instanceof Error ? error : new Error('Unknown printing error')
-          console.error('Print error:', printError)
-          
-          // Clean up after error
-          printService.cleanupAfterPrinting()
-          
-          // Handle error callback
-          onError?.(printError)
-          reject(printError)
+      try {
+        // Safety check - only proceed if we're in the same origin
+        if (window !== window.top) {
+          const error = new Error('Cannot print from inside an iframe - security restriction')
+          console.error(error)
+          onError?.(error)
+          reject(error)
+          return
         }
-      }, timeout)
+        
+        // Add printing classes immediately
+        document.body.classList.add('printing')
+        document.documentElement.classList.add('is-printing')
+        
+        // Apply visibility fixes first
+        printService.fixVisibility(selector)
+        
+        // Short delay to ensure styles are applied
+        setTimeout(() => {
+          try {
+            // Execute print using native window.print()
+            if (typeof window !== 'undefined' && typeof window.print === 'function') {
+              // Call the native print function directly
+              window.print()
+              
+              // Handle success after print dialog closes
+              setTimeout(() => {
+                printService.cleanupAfterPrinting()
+                console.log('Print operation completed')
+                onSuccess?.()
+                resolve()
+              }, 1000)
+            } else {
+              throw new Error('Print function not available in this environment')
+            }
+          } catch (error) {
+            // Handle any errors during the print call
+            const printError = error instanceof Error ? error : new Error('Unknown printing error')
+            console.error('Print execution error:', printError)
+            
+            // Clean up
+            printService.cleanupAfterPrinting()
+            
+            // Handle error
+            onError?.(printError)
+            reject(printError)
+          }
+        }, 100)
+      } catch (error) {
+        // Handle any setup errors
+        const printError = error instanceof Error ? error : new Error('Print setup error')
+        console.error('Print setup error:', printError)
+        
+        // Clean up
+        printService.cleanupAfterPrinting()
+        
+        // Handle error
+        onError?.(printError)
+        reject(printError)
+      }
     })
+  },
+  
+  /**
+   * Safe window.print wrapper - avoids cross-origin issues
+   * This is a synchronous function that can be called directly
+   */
+  printNow: (): void => {
+    try {
+      // Safety check
+      if (window !== window.top) {
+        console.error('Cannot print from inside an iframe - security restriction')
+        return
+      }
+      
+      // Add printing classes
+      document.body.classList.add('printing')
+      document.documentElement.classList.add('is-printing')
+      
+      // Call the native print function directly
+      window.print()
+      
+      // Clean up after a short delay
+      setTimeout(() => {
+        document.body.classList.remove('printing')
+        document.documentElement.classList.remove('is-printing')
+      }, 1000)
+    } catch (error) {
+      console.error('Direct print error:', error)
+      document.body.classList.remove('printing')
+      document.documentElement.classList.remove('is-printing')
+    }
   },
   
   /**
@@ -152,7 +202,9 @@ export const printService = {
     })
     
     // Navigate to error page for cross-origin errors
-    if (error.message.includes('cross-origin') || error.message.includes('Permission denied')) {
+    if (error.message.includes('cross-origin') || 
+        error.message.includes('Permission denied') ||
+        error.message.includes('security restriction')) {
       navigationService.navigateToPrintError(error.message)
     }
   }

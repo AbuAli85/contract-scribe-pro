@@ -6,16 +6,13 @@ import NotFound from "./pages/NotFound"
 import { Toaster } from "./components/ui/toaster"
 import { ThemeProvider } from "./components/ThemeProvider"
 import PrintErrorPage from "./components/contract/PrintErrorPage"
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 import { attachDebuggerToWindow } from "./utils/printDebugger"
 
 // Apply print styles globally
 import "./styles/contract-global.css"
 
 function App() {
-  // We won't store a reference to the original print function 
-  // to avoid cross-origin issues
-  
   // Add global print error handler and debugger
   useEffect(() => {
     const handlePrintError = (error: ErrorEvent) => {
@@ -28,7 +25,8 @@ function App() {
     // Additional global print preparation
     const prepareGlobalPrinting = () => {
       try {
-        // Only modify window.print if we're in the correct origin context
+        // Critical: Only modify if we're in the main window (not iframe)
+        // This prevents cross-origin issues
         if (typeof window !== 'undefined' && window === window.self) {
           // Add special class to html when window.print is called
           const originalPrint = window.print
@@ -68,8 +66,6 @@ function App() {
     
     return () => {
       window.removeEventListener('error', handlePrintError)
-      // We don't need to restore the original print function
-      // as we're only modifying it on the main window
     }
   }, [])
   

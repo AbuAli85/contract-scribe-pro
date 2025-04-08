@@ -21,26 +21,50 @@ export function usePrint(options: UsePrintOptions = {}) {
     setIsPrinting(true)
     
     try {
-      // Directly use window.print for maximum compatibility
-      // This is the most reliable way to print across all browsers
-      // and avoids cross-origin issues entirely
-      
       // Apply visibility fixes first
       printService.fixVisibility(selector)
       
       // Short timeout to ensure styles are applied
       setTimeout(() => {
-        // Call window.print directly
-        window.print()
-        
-        // Handle success
-        setTimeout(() => {
+        try {
+          // Use the safe printNow method from the service
+          printService.printNow()
+          
+          // Handle success
+          setTimeout(() => {
+            setIsPrinting(false)
+            options.onSuccess?.()
+            
+            // Show success toast
+            toast({
+              title: "Print Successful",
+              description: "Document has been sent to the printer",
+            })
+          }, 1000)
+        } catch (error) {
+          console.error('Print error:', error)
+          
+          // Show error toast
+          toast({
+            title: "Print Error",
+            description: error instanceof Error ? error.message : "An error occurred while printing",
+            variant: "destructive",
+          })
+          
+          // Navigate to the print error page for serious errors
+          if (error instanceof Error && (
+              error.message.includes('cross-origin') || 
+              error.message.includes('Permission denied'))) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown printing error occurred'
+            navigate('/print-error?error=' + encodeURIComponent(errorMessage))
+          }
+          
           setIsPrinting(false)
-          options.onSuccess?.()
-        }, 1000)
+          options.onError?.(error instanceof Error ? error : new Error(String(error)))
+        }
       }, 100)
     } catch (error) {
-      console.error('Print error:', error)
+      console.error('Print setup error:', error)
       
       // Show error toast
       toast({
@@ -48,14 +72,6 @@ export function usePrint(options: UsePrintOptions = {}) {
         description: error instanceof Error ? error.message : "An error occurred while printing",
         variant: "destructive",
       })
-      
-      // Navigate to the print error page for serious errors
-      if (error instanceof Error && (
-          error.message.includes('cross-origin') || 
-          error.message.includes('Permission denied'))) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown printing error occurred'
-        navigate('/print-error?error=' + encodeURIComponent(errorMessage))
-      }
       
       setIsPrinting(false)
       options.onError?.(error instanceof Error ? error : new Error(String(error)))
