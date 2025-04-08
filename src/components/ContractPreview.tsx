@@ -45,11 +45,6 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
             el.style.display = display;
             el.style.visibility = 'visible';
             el.style.opacity = '1';
-            
-            // Add border for debugging
-            if (process.env.NODE_ENV === 'development') {
-              el.style.border = '1px dashed rgba(0,0,255,0.2)';
-            }
           }
         });
         

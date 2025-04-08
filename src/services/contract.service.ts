@@ -1,6 +1,5 @@
 
 import { documentSystem, type AttachedDocument } from "@/lib/documents"
-import { toast } from "@/hooks/use-toast"
 
 export type PrintOptions = {
   contractId: string;
@@ -74,13 +73,6 @@ export const contractService = {
       return false
     }
     
-    // Check contract text elements exist
-    const contractText = document.querySelectorAll('.contract-text')
-    if (contractText.length === 0) {
-      console.error("Contract text elements not found")
-      return false
-    }
-    
     // Check two-column layout exists
     const twoColumnLayout = document.querySelector('.two-column-layout')
     if (!twoColumnLayout) {
@@ -88,19 +80,11 @@ export const contractService = {
       return false
     }
     
-    // Check letterhead background exists if that element is used
-    const letterhead = document.querySelector('.letterhead-background')
-    if (!letterhead) {
-      console.warn("Letterhead background not found (optional)")
-    }
-    
     // Log all checked elements for debugging
     console.log("Contract printability check passed with elements:", {
       contractPreview: !!contractPreview,
       contractContent: !!contractContent,
-      contractTextCount: contractText.length,
-      twoColumnLayout: !!twoColumnLayout,
-      letterhead: !!letterhead
+      twoColumnLayout: !!twoColumnLayout
     })
     
     return true

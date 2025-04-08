@@ -29,7 +29,34 @@ const PrintErrorPage: React.FC<PrintErrorPageProps> = ({
       errorMessage: finalErrorMessage,
       redirectUrl: finalRedirectUrl
     });
+    
+    // Print environment details to help diagnose issues
+    console.log("Browser information:", {
+      userAgent: navigator.userAgent,
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight
+    });
   }, [finalErrorMessage, finalRedirectUrl]);
+
+  // Function to try printing again with a more direct approach
+  const tryPrintAgain = () => {
+    try {
+      // Add necessary print classes
+      document.body.classList.add('printing');
+      
+      // Wait for classes to be applied before printing
+      setTimeout(() => {
+        window.print();
+        
+        // Clean up classes after printing
+        setTimeout(() => {
+          document.body.classList.remove('printing');
+        }, 1000);
+      }, 500);
+    } catch (error) {
+      console.error("Error in retry print:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -82,10 +109,15 @@ const PrintErrorPage: React.FC<PrintErrorPageProps> = ({
                 ? "حاول تحديث الصفحة قبل الطباعة"
                 : "Try refreshing the page before printing"}
             </li>
-            <li>
+            <li className="mb-1">
               {language === "ar"
                 ? "جرب استخدام متصفح آخر"
                 : "Try using a different browser"}
+            </li>
+            <li>
+              {language === "ar"
+                ? "تأكد من أن جافا سكريبت مُمكّن في المتصفح"
+                : "Make sure JavaScript is enabled in your browser"}
             </li>
           </ul>
         </div>
@@ -100,11 +132,11 @@ const PrintErrorPage: React.FC<PrintErrorPageProps> = ({
           
           <Button 
             variant="outline" 
-            onClick={() => window.history.back()}
+            onClick={tryPrintAgain}
             className="flex items-center gap-2"
           >
-            <RefreshCw className="h-4 w-4" />
-            {language === "ar" ? "المحاولة مرة أخرى" : "Try Again"}
+            <Printer className="h-4 w-4" />
+            {language === "ar" ? "محاولة الطباعة مباشرة" : "Try Direct Print"}
           </Button>
         </div>
       </div>
