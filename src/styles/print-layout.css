@@ -131,6 +131,13 @@
     overflow: hidden !important;
   }
 
+  .id-photo {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
   /* Force all elements to be visible when printing class is active */
   body.printing * {
     visibility: visible !important;
@@ -193,6 +200,33 @@
     display: none !important;
     visibility: hidden !important;
   }
+  
+  /* Document-specific styles */
+  .document-page-content {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: 20px !important;
+    flex: 1 !important;
+  }
+  
+  .document-display {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    margin-bottom: 30px !important;
+  }
+  
+  .document-image {
+    max-width: 80% !important;
+    max-height: 500px !important;
+    object-fit: contain !important;
+    border: 2px solid #ddd !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
 }
 
 /* Apply visibility immediately when class is added without waiting for print dialog */
@@ -235,4 +269,68 @@ body.printing .responsibilities-title {
   visibility: visible !important;
   opacity: 1 !important;
   color: black !important;
+}
+
+/* Document specific styles */
+body.printing .document-title,
+body.printing .document-name,
+body.printing .document-description,
+body.printing .document-display,
+body.printing .document-image,
+body.printing .document-details,
+body.printing .document-verification {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Signature styles */
+body.printing .signature-image-container,
+body.printing .signature-with-name,
+body.printing .signature-image,
+body.printing .stamp-image,
+body.printing .signature-name {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure signatures are properly displayed */
+.signature-image-container {
+  margin: 10px 0 !important;
+  min-height: 80px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.signature-with-name {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  margin-bottom: 10px !important;
+  position: relative !important;
+  width: 100% !important;
+}
+
+.signature-image {
+  max-width: 100% !important;
+  max-height: 60px !important;
+  object-fit: contain !important;
+}
+
+.stamp-image {
+  max-width: 80px !important;
+  max-height: 80px !important;
+  object-fit: contain !important;
+  position: absolute !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  opacity: 0.7 !important;
+  transform: rotate(-15deg) !important;
+}
+
+.signature-name {
+  font-size: 10px !important;
+  margin-top: 5px !important;
 }

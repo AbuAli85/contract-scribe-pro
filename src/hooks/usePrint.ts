@@ -42,7 +42,7 @@ export const usePrint = ({ timeoutDuration = 15000 }: UsePrintOptions = {}) => {
       console.log("Print preparation starting...");
       
       // Force all contract elements to be visible
-      document.querySelectorAll('.contract-preview *, .a4-page *, .contract-content *').forEach(el => {
+      document.querySelectorAll('.contract-preview *, .a4-page *, .contract-content *, .id-photo-container *, .id-photo-wrapper *, .signature-area *, .signature-block *, .reference-section *').forEach(el => {
         if (el instanceof HTMLElement) {
           // Set display property based on element type
           if (el.tagName === 'DIV' || el.tagName === 'SECTION') {
