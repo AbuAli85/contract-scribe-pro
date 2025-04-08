@@ -60,3 +60,34 @@ img {
   opacity: 0.8;
   object-fit: cover;
 }
+
+/* Form field styles */
+.form-field {
+  margin-bottom: 1rem;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+/* Contract form layout styling */
+.contract-form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.contract-form-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.contract-form-section {
+  margin-bottom: 2rem;
+}
+
+/* Improve dropdown appearance */
+.select-content {
+  background-color: white !important;
+}
