@@ -20,45 +20,46 @@ export function usePrint(options: UsePrintOptions = {}) {
     
     setIsPrinting(true)
     
-    printService.print({
-      selector,
-      onSuccess: () => {
-        setIsPrinting(false)
-        options.onSuccess?.()
-      },
-      onError: (error) => {
-        console.error('Print error:', error)
-        
-        // Show error toast
-        toast({
-          title: "Print Error",
-          description: error instanceof Error ? error.message : "An error occurred while printing",
-          variant: "destructive",
-        })
-        
-        // Navigate to the print error page for serious errors
-        if (error.message.includes('content validation failed') || 
-            error.message.includes('Print function not available') ||
-            error.message.includes('Permission denied') ||
-            error.message.includes('cross-origin')) {
-          const errorMessage = error instanceof Error ? error.message : 'Unknown printing error occurred'
-          navigate('/print-error?error=' + encodeURIComponent(errorMessage))
-        }
-        
-        setIsPrinting(false)
-        options.onError?.(error)
-      }
-    }).catch(error => {
-      // This catch is just a fallback; errors should be handled by onError
-      console.error('Unhandled print error:', error)
-      setIsPrinting(false)
+    try {
+      // Directly use window.print for maximum compatibility
+      // This is the most reliable way to print across all browsers
+      // and avoids cross-origin issues entirely
       
+      // Apply visibility fixes first
+      printService.fixVisibility(selector)
+      
+      // Short timeout to ensure styles are applied
+      setTimeout(() => {
+        // Call window.print directly
+        window.print()
+        
+        // Handle success
+        setTimeout(() => {
+          setIsPrinting(false)
+          options.onSuccess?.()
+        }, 1000)
+      }, 100)
+    } catch (error) {
+      console.error('Print error:', error)
+      
+      // Show error toast
       toast({
         title: "Print Error",
-        description: "An unexpected error occurred. Please try again.",
+        description: error instanceof Error ? error.message : "An error occurred while printing",
         variant: "destructive",
       })
-    })
+      
+      // Navigate to the print error page for serious errors
+      if (error instanceof Error && (
+          error.message.includes('cross-origin') || 
+          error.message.includes('Permission denied'))) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown printing error occurred'
+        navigate('/print-error?error=' + encodeURIComponent(errorMessage))
+      }
+      
+      setIsPrinting(false)
+      options.onError?.(error instanceof Error ? error : new Error(String(error)))
+    }
   }, [navigate, isPrinting, options, toast])
 
   return { isPrinting, handlePrint }

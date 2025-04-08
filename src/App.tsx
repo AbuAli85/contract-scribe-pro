@@ -13,8 +13,8 @@ import { attachDebuggerToWindow } from "./utils/printDebugger"
 import "./styles/contract-global.css"
 
 function App() {
-  // Store a reference to the original print function
-  const originalPrintRef = useRef<typeof window.print | null>(null);
+  // We won't store a reference to the original print function 
+  // to avoid cross-origin issues
   
   // Add global print error handler and debugger
   useEffect(() => {
@@ -28,11 +28,11 @@ function App() {
     // Additional global print preparation
     const prepareGlobalPrinting = () => {
       try {
-        // Store the original print function in the ref for access in cleanup
-        if (typeof window !== 'undefined' && typeof window.print === 'function') {
-          originalPrintRef.current = window.print.bind(window)
-          
+        // Only modify window.print if we're in the correct origin context
+        if (typeof window !== 'undefined' && window === window.self) {
           // Add special class to html when window.print is called
+          const originalPrint = window.print
+          
           window.print = function() {
             document.documentElement.classList.add('is-printing')
             document.body.classList.add('printing')
@@ -40,11 +40,8 @@ function App() {
             console.log("Print function called - adding printing classes")
             
             try {
-              // Call the original print function
-              // CRITICAL FIX: always use the original window context
-              if (originalPrintRef.current) {
-                originalPrintRef.current()
-              }
+              // Call the native window.print
+              originalPrint.call(window)
             } catch (error) {
               console.error("Error during print operation:", error)
             } finally {
@@ -71,11 +68,8 @@ function App() {
     
     return () => {
       window.removeEventListener('error', handlePrintError)
-      // Restore original print function if it was modified
-      if (originalPrintRef.current && window.print !== originalPrintRef.current) {
-        window.print = originalPrintRef.current
-        console.log("Original print function restored in cleanup")
-      }
+      // We don't need to restore the original print function
+      // as we're only modifying it on the main window
     }
   }, [])
   

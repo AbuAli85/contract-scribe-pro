@@ -1,8 +1,8 @@
+
 import { useEffect, useState } from "react"
 import { Printer, Loader2, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
-import { usePrint } from "@/hooks/usePrint"
 import { documentSystem, type AttachedDocument } from "@/lib/documents"
 import { useNavigate } from "react-router-dom"
 import { contractService } from "@/services/contract.service"
@@ -22,20 +22,9 @@ const PrintButton = ({
   contractId = "default"
 }: PrintButtonProps) => {
   const { toast } = useToast()
-  const { isPrinting, handlePrint } = usePrint({
-    onSuccess: () => {
-      console.log("Print completed successfully")
-    },
-    onError: (error) => {
-      toast({
-        title: language === "ar" ? "خطأ في الطباعة" : "Print Error",
-        description: error.message || (language === "ar" ? "حدث خطأ أثناء الطباعة" : "An error occurred while printing"),
-        variant: "destructive",
-      })
-    }
-  })
   const [documents, setDocuments] = useState<AttachedDocument[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isPrinting, setIsPrinting] = useState(false)
   const [contentReady, setContentReady] = useState(false)
   const navigate = useNavigate()
   
@@ -87,13 +76,54 @@ const PrintButton = ({
       return
     }
 
-    // Force visibility fixes before printing using our centralized service
-    printService.fixVisibility('.print-container')
+    setIsPrinting(true)
     
-    console.log("Starting print process with container:", document.querySelector('.print-container'))
-    
-    // Use the print hook with our centralized service
-    handlePrint()
+    try {
+      // Force visibility fixes before printing
+      printService.fixVisibility('.print-container')
+      
+      // Short timeout to ensure styles are applied
+      setTimeout(() => {
+        try {
+          // Use direct window.print approach for all browsers
+          window.print()
+          
+          // Handle success
+          setTimeout(() => {
+            setIsPrinting(false)
+            toast({
+              title: language === "ar" ? "تمت الطباعة بنجاح" : "Print Successful",
+              description: language === "ar" ? "تم إرسال المستند إلى الطابعة" : "Document has been sent to the printer"
+            })
+          }, 1000)
+        } catch (error) {
+          console.error("Print error:", error)
+          setIsPrinting(false)
+          
+          toast({
+            title: language === "ar" ? "خطأ في الطباعة" : "Print Error",
+            description: error instanceof Error ? error.message : "An error occurred while printing",
+            variant: "destructive",
+          })
+          
+          // Navigate to error page for cross-origin errors
+          if (error instanceof Error && 
+              (error.message.includes('cross-origin') || 
+               error.message.includes('Permission denied'))) {
+            navigate('/print-error?error=' + encodeURIComponent(error.message))
+          }
+        }
+      }, 100)
+    } catch (error) {
+      console.error("Print setup error:", error)
+      setIsPrinting(false)
+      
+      toast({
+        title: language === "ar" ? "خطأ في الطباعة" : "Print Error",
+        description: error instanceof Error ? error.message : "An error occurred while printing",
+        variant: "destructive",
+      })
+    }
   }
 
   return (

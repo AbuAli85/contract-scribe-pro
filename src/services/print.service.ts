@@ -77,7 +77,7 @@ export const printService = {
   },
   
   /**
-   * Print content using optimized approach for most browser support
+   * Print content using direct window.print approach for maximum compatibility
    */
   print: (options: PrintOptions = {}): Promise<void> => {
     const { 
@@ -108,16 +108,9 @@ export const printService = {
           setTimeout(() => {
             console.log('Executing print command...')
             
-            // CRUCIAL FIX: We must use the GLOBAL window.print function
-            // and not try to access any window objects that might be cross-origin
-            if (typeof window === 'undefined') {
-              throw new Error('Window object not available')
-            }
-            
-            // Use the browser's built-in print functionality
-            // This is the safest approach to avoid cross-origin issues
+            // DIRECT APPROACH: Use window.print() directly without any wrapping
+            // This avoids cross-origin issues completely
             window.print()
-            console.log('Print function called successfully')
             
             // Clean up after print dialog closes
             setTimeout(() => {
@@ -126,7 +119,7 @@ export const printService = {
               onSuccess?.()
               resolve()
             }, 1000)
-          }, 500)
+          }, 100)
         } catch (error) {
           const printError = error instanceof Error ? error : new Error('Unknown printing error')
           console.error('Print error:', printError)
@@ -158,7 +151,9 @@ export const printService = {
       variant: "destructive",
     })
     
-    // Navigate to error page
-    navigationService.navigateToPrintError(error.message)
+    // Navigate to error page for cross-origin errors
+    if (error.message.includes('cross-origin') || error.message.includes('Permission denied')) {
+      navigationService.navigateToPrintError(error.message)
+    }
   }
 }
