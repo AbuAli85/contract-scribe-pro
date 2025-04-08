@@ -108,16 +108,28 @@ export const printService = {
           setTimeout(() => {
             console.log('Executing print command...')
             
-            // Use the browser's native print function
-            window.print()
-            
-            // Clean up after print dialog closes
-            setTimeout(() => {
+            try {
+              // Use the browser's native print function - ensure it's called on the proper window object
+              if (typeof window !== 'undefined' && window.print) {
+                window.print()
+                console.log('Print function called - adding printing classes')
+              } else {
+                throw new Error('Print function not available in this environment')
+              }
+              
+              // Clean up after print dialog closes
+              setTimeout(() => {
+                printService.cleanupAfterPrinting()
+                console.log('Print operation completed')
+                onSuccess?.()
+                resolve()
+              }, 1000)
+            } catch (printError) {
+              console.error('Print system error:', printError)
+              reject(new Error('Print system error: ' + printError.message))
+              onError?.(new Error('Print system error: ' + printError.message))
               printService.cleanupAfterPrinting()
-              console.log('Print operation completed')
-              onSuccess?.()
-              resolve()
-            }, 1000)
+            }
           }, 500)
         } catch (error) {
           const printError = error instanceof Error ? error : new Error('Unknown printing error')
