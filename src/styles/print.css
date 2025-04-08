@@ -1,28 +1,31 @@
 
 /* Print styles */
-@media print {
-  @page {
-    size: A4;
-    margin: 0;
-  }
+@page {
+  size: A4;
+  margin: 0;
+}
 
+@media print {
+  /* Basic page setup */
   html, body {
-    background: white !important;
+    width: 100% !important;
     height: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
+    background-color: white !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
   }
-
-  /* Hide everything except contract */
-  body > *, #root > * {
+  
+  /* Hide UI elements */
+  body > *:not(.printing-container),
+  #root > *:not(.contract-preview) {
     display: none !important;
   }
-
-  /* Show only contract content */
+  
+  /* Contract container styles */
   .contract-preview {
     display: block !important;
     visibility: visible !important;
@@ -32,21 +35,26 @@
     margin: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
+    background-color: white !important;
     z-index: 9999 !important;
   }
   
+  /* A4 page container */
   .a4-page {
     display: block !important;
     visibility: visible !important;
     position: relative !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
     box-shadow: none !important;
     width: 210mm !important;
     min-height: 297mm !important;
     overflow: visible !important;
     page-break-after: always !important;
+    background-color: white !important;
   }
-
+  
+  /* Letterhead background image */
   .letterhead-background {
     display: block !important;
     visibility: visible !important;
@@ -58,105 +66,143 @@
     top: 0 !important;
     left: 0 !important;
     z-index: 1 !important;
+    print-color-adjust: exact !important;
   }
-
+  
+  /* Main contract content */
   .contract-content {
     display: block !important;
     visibility: visible !important;
     position: relative !important;
     z-index: 10 !important;
     padding: 20mm !important;
+    color: black !important;
+    opacity: 1 !important;
   }
   
-  /* Ensure two-column layout is visible */
+  /* Two-column layout styles */
   .two-column-layout {
     display: flex !important;
     visibility: visible !important;
     flex-direction: row !important;
     justify-content: space-between !important;
+    gap: 10mm !important;
     page-break-inside: avoid !important;
+    margin-bottom: 15mm !important;
   }
-
+  
+  /* Contract columns */
   .contract-column {
     display: block !important;
     visibility: visible !important;
     flex: 1 !important;
+    font-size: 11px !important;
+    line-height: 1.5 !important;
+    color: black !important;
   }
-
+  
+  /* Right-to-left text styles */
+  .rtl {
+    direction: rtl !important;
+    text-align: right !important;
+  }
+  
+  /* ID photo styles */
+  .id-photo-container {
+    display: flex !important;
+    visibility: visible !important;
+    justify-content: center !important;
+    margin: 15mm 0 !important;
+  }
+  
   .id-photo-wrapper {
     display: block !important;
     visibility: visible !important;
     width: 400px !important;
+    max-width: 100% !important;
     page-break-inside: avoid !important;
     margin: 15mm auto !important;
+    border: 1px solid #ddd !important;
+    overflow: hidden !important;
   }
-
+  
   .id-photo {
     display: block !important;
     visibility: visible !important;
     width: 100% !important;
     height: auto !important;
   }
-
+  
+  /* Reference section */
   .reference-section {
     display: block !important;
     visibility: visible !important;
+    text-align: left !important;
+    margin-top: 1cm !important;
+    margin-bottom: 15mm !important;
+    padding-left: 5mm !important;
   }
-
+  
+  .reference-number {
+    display: block !important;
+    visibility: visible !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: black !important;
+  }
+  
+  /* Contract title styles */
   .contract-title-area {
     display: block !important;
     visibility: visible !important;
+    text-align: center !important;
+    margin-bottom: 10mm !important;
   }
-
+  
+  .contract-main-title {
+    display: block !important;
+    visibility: visible !important;
+    font-size: 20px !important;
+    font-weight: bold !important;
+    color: #1a73e8 !important;
+  }
+  
+  /* Signature area */
   .signature-area {
     display: flex !important;
     visibility: visible !important;
     justify-content: space-between !important;
+    margin-top: 25mm !important;
     page-break-inside: avoid !important;
   }
-
-  .bottom-info {
+  
+  .signature-block {
     display: block !important;
     visibility: visible !important;
-    position: absolute !important;
-    bottom: 15mm !important;
-    left: 15mm !important;
-    right: 15mm !important;
+    width: 45% !important;
+    text-align: center !important;
   }
-
+  
+  .signature-line {
+    display: block !important;
+    visibility: visible !important;
+    border-bottom: 1px solid #000 !important;
+    margin-bottom: 5mm !important;
+    height: 15mm !important;
+  }
+  
   /* Hide UI controls */
-  .print\:hidden, 
-  button, 
-  .tabs-list, 
+  .print\:hidden,
+  button:not(.signature-block button),
+  .tabs-list,
   header,
-  nav,
-  .button {
+  nav {
     display: none !important;
     visibility: hidden !important;
   }
   
-  /* Explicitly make all content visible */
-  .contract-title,
-  .reference-number,
-  .contract-text,
-  .promoter-details,
-  .responsibilities,
-  .best-regards,
-  .signature-block,
-  .contract-main-title,
-  .promoter-info,
-  .signature-line,
-  .info-row {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    color: black !important;
-  }
-  
   /* Force immediate rendering */
   * {
-    opacity: 1 !important;
-    transform: none !important;
     transition: none !important;
     animation: none !important;
   }
@@ -164,24 +210,33 @@
   /* Force visible when printing class is active */
   body.printing .contract-preview,
   body.printing .a4-page,
-  body.printing .contract-content {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
+  body.printing .contract-content,
   body.printing .contract-content * {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
+    color: black !important;
   }
   
   /* Preserve flex layout for specific elements */
-  body.printing .two-column-layout {
+  body.printing .two-column-layout,
+  body.printing .signature-area {
     display: flex !important;
   }
   
-  body.printing .signature-area {
-    display: flex !important;
+  /* All other contract elements */
+  .contract-title,
+  .promoter-details,
+  .responsibilities,
+  .best-regards,
+  .contract-text,
+  .promoter-info,
+  .responsibilities-title,
+  .info-row,
+  .bottom-info {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: black !important;
   }
 }

@@ -1,35 +1,55 @@
 
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 
 interface PrintButtonProps {
   language: "ar" | "en";
 }
 
 const PrintButton = ({ language }: PrintButtonProps) => {
-  const handlePrint = () => {
-    // Force contract content to be visible
-    document.body.classList.add('printing');
+  // Setup print listener to ensure styles are reset after printing
+  useEffect(() => {
+    const afterPrintHandler = () => {
+      document.body.classList.remove('printing');
+    };
     
-    // Wait for content to be fully rendered with a longer timeout
-    setTimeout(() => {
-      // Set up content for printing
-      const contractElements = document.querySelectorAll('.contract-content, .a4-page, .letterhead-background');
+    window.addEventListener('afterprint', afterPrintHandler);
+    return () => window.removeEventListener('afterprint', afterPrintHandler);
+  }, []);
+  
+  const handlePrint = () => {
+    try {
+      // Add printing class to document body
+      document.body.classList.add('printing');
+      
+      // Force all contract elements to be visible
+      const contractElements = document.querySelectorAll('.contract-preview, .a4-page, .contract-content, .letterhead-background, .reference-section, .id-photo-container, .contract-title-area, .two-column-layout, .contract-column, .signature-area');
+      
       contractElements.forEach(element => {
         if (element instanceof HTMLElement) {
           element.style.display = 'block';
           element.style.visibility = 'visible';
+          element.style.opacity = '1';
         }
       });
       
-      // Trigger print dialog
-      window.print();
+      // Handle flex containers specifically
+      const flexElements = document.querySelectorAll('.two-column-layout, .signature-area');
+      flexElements.forEach(element => {
+        if (element instanceof HTMLElement) {
+          element.style.display = 'flex';
+        }
+      });
       
-      // Remove the printing class after print dialog closes
+      // Ensure content is fully rendered before printing
       setTimeout(() => {
-        document.body.classList.remove('printing');
-      }, 2000);
-    }, 2000); // Increased timeout for better rendering
+        window.print();
+      }, 500);
+      
+    } catch (error) {
+      console.error("Print error:", error);
+    }
   };
 
   return (
