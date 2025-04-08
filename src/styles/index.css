@@ -4,6 +4,7 @@
 @import 'tailwindcss/utilities';
 @import './base.css';
 @import './app.css';
+@import './critical-print.css';
 @import './contract-global.css';
 
 :root {

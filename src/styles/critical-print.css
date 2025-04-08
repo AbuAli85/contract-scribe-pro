@@ -1,0 +1,76 @@
+
+/* Critical Print Styles - with media query */
+@media print {
+  /* Core elements visibility */
+  .print-container,
+  .contract-preview,
+  .a4-page,
+  .contract-content,
+  .letterhead-background,
+  .two-column-layout,
+  .contract-column,
+  .contract-text,
+  .signature-area,
+  .signature-block,
+  .id-photo-container,
+  .reference-section,
+  .contract-title {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: black !important;
+    overflow: visible !important;
+  }
+  
+  /* Special layout handling */
+  .two-column-layout {
+    display: flex !important;
+  }
+  
+  /* Page settings */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  
+  /* Core body/html settings */
+  html, body, #root {
+    height: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background-color: white !important;
+  }
+  
+  /* Hide UI elements */
+  .print-hidden,
+  .print\:hidden,
+  button:not(.signature-block button),
+  .tabs-list,
+  header,
+  nav {
+    display: none !important;
+  }
+}
+
+/* Non-media query styles - applied immediately when printing classes are added */
+body.printing * {
+  visibility: visible !important;
+}
+
+body.printing .print-container,
+body.printing .contract-preview,
+body.printing .a4-page,
+body.printing .contract-content,
+body.printing .letterhead-background,
+body.printing .two-column-layout,
+body.printing .contract-column {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+body.printing .two-column-layout {
+  display: flex !important;
+}

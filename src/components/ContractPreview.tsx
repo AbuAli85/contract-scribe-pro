@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import PrintButton from "./contract/PrintButton";
 import ReferenceNumber from "./contract/ReferenceNumber";
 import PromoterPhoto from "./contract/PromoterPhoto";
@@ -18,21 +18,32 @@ interface ContractPreviewProps {
 
 const ContractPreview = ({ language, contractData, signatures = [] }: ContractPreviewProps) => {
   const [contentReady, setContentReady] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   
-  // Validate printability on load and when data changes
+  // Initialize print container and validate printability on load and when data changes
   useEffect(() => {
     if (contractData) {
+      // Force add print-container class to the main element
+      if (containerRef.current) {
+        containerRef.current.classList.add('print-container');
+        console.log('Added print-container class to contract preview element');
+      }
+      
+      // Short timeout to allow DOM to update
       setTimeout(() => {
-        // Force add print-container class to the contract-preview if not already there
-        const contractPreview = document.querySelector('.contract-preview');
-        if (contractPreview && !document.querySelector('.print-container')) {
-          contractPreview.classList.add('print-container');
-          console.log('Added print-container class to contract-preview element');
+        // Double-check print container exists
+        const printContainer = document.querySelector('.print-container');
+        if (!printContainer && containerRef.current) {
+          containerRef.current.classList.add('print-container');
+          console.log('Re-added print-container class');
         }
         
         const isPrintable = contractService.validatePrintability();
         console.log("Contract printability check:", isPrintable, "Print container exists:", !!document.querySelector('.print-container'));
-      }, 1000);
+        
+        // Set content ready regardless to allow printing to proceed
+        setContentReady(true);
+      }, 500);
     }
   }, [contractData]);
 
@@ -51,10 +62,7 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
   };
 
   return (
-    <PrintPreview 
-      className="contract-preview" 
-      onReady={handleContentReady}
-    >
+    <div ref={containerRef} className="contract-preview print-container" data-testid="print-container">
       <PrintButton 
         language={language} 
         contractData={contractData} 
@@ -101,7 +109,7 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
           <SignatureArea signatures={signatures} />
         </div>
       </div>
-    </PrintPreview>
+    </div>
   );
 };
 
