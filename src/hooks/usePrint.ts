@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
+import { useToast } from "./use-toast";
 
 interface UsePrintOptions {
   timeoutDuration?: number;
@@ -7,6 +8,7 @@ interface UsePrintOptions {
 
 export const usePrint = ({ timeoutDuration = 15000 }: UsePrintOptions = {}) => {
   const [isPrinting, setIsPrinting] = useState(false);
+  const { toast } = useToast();
   
   // Setup print listeners
   useEffect(() => {
@@ -34,15 +36,33 @@ export const usePrint = ({ timeoutDuration = 15000 }: UsePrintOptions = {}) => {
     };
   }, []);
   
-  const handlePrint = useCallback(() => {
+  const handlePrint = useCallback((containerSelector = '.print-container') => {
     // Don't attempt to print if already in printing state
     if (isPrinting) return;
     
     try {
       console.log("Print preparation starting...");
       
+      // Check if the container exists
+      const container = document.querySelector(containerSelector);
+      if (!container) {
+        console.error(`Print container not found: ${containerSelector}`);
+        toast({
+          title: "Print Error",
+          description: "Could not find the document to print. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       // Force all contract elements to be visible
-      document.querySelectorAll('.contract-preview *, .a4-page *, .contract-content *, .id-photo-container *, .id-photo-wrapper *, .signature-area *, .signature-block *, .reference-section *').forEach(el => {
+      const elementsToShow = document.querySelectorAll(
+        `${containerSelector} *, .contract-preview *, .a4-page *, .contract-content *, 
+        .id-photo-container *, .id-photo-wrapper *, .signature-area *, 
+        .signature-block *, .reference-section *`
+      );
+      
+      elementsToShow.forEach(el => {
         if (el instanceof HTMLElement) {
           // Set display property based on element type
           if (el.tagName === 'DIV' || el.tagName === 'SECTION') {
@@ -73,7 +93,7 @@ export const usePrint = ({ timeoutDuration = 15000 }: UsePrintOptions = {}) => {
         }
       });
       
-      // First, add printing class to body to activate CSS rules
+      // Add printing class to body to activate CSS rules
       document.body.classList.add('printing');
       setIsPrinting(true);
       
@@ -103,10 +123,15 @@ export const usePrint = ({ timeoutDuration = 15000 }: UsePrintOptions = {}) => {
       
     } catch (error) {
       console.error("Print error:", error);
+      toast({
+        title: "Print Error",
+        description: error instanceof Error ? error.message : "An error occurred while printing",
+        variant: "destructive",
+      });
       document.body.classList.remove('printing');
       setIsPrinting(false);
     }
-  }, [isPrinting, timeoutDuration]);
+  }, [isPrinting, timeoutDuration, toast]);
 
   return {
     isPrinting,

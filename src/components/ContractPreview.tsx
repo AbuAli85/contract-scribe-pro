@@ -10,12 +10,26 @@ import SignatureArea from "./contract/SignatureArea";
 interface ContractPreviewProps {
   language: "ar" | "en";
   contractData: any;
+  signatures?: any[];
 }
 
-const ContractPreview = ({ language, contractData }: ContractPreviewProps) => {
+const ContractPreview = ({ language, contractData, signatures = [] }: ContractPreviewProps) => {
+  if (!contractData) {
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded relative print:hidden">
+        <strong className="font-bold">No data: </strong>
+        <span className="block sm:inline">Contract data could not be loaded.</span>
+      </div>
+    );
+  }
+
   return (
     <div className="contract-preview print-container">
-      <PrintButton language={language} />
+      <PrintButton 
+        language={language} 
+        contractData={contractData} 
+        contractId={contractData.id || "default"}
+      />
 
       <div className="a4-page">
         {/* Letterhead background */}
@@ -47,7 +61,7 @@ const ContractPreview = ({ language, contractData }: ContractPreviewProps) => {
           </div>
 
           {/* Signature Area */}
-          <SignatureArea />
+          <SignatureArea signatures={signatures} />
         </div>
       </div>
     </div>

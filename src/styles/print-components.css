@@ -1,6 +1,16 @@
 
 /* Print Component Styles */
 @media print {
+  /* Hide UI controls */
+  .print\:hidden,
+  button:not(.signature-block button),
+  .tabs-list,
+  header,
+  nav {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
   /* Reference section */
   .reference-section {
     display: block !important;
@@ -73,16 +83,6 @@
     border-bottom: 1px solid #000 !important;
     margin-bottom: 5mm !important;
     height: 15mm !important;
-  }
-  
-  /* Hide UI controls */
-  .print\:hidden,
-  button:not(.signature-block button),
-  .tabs-list,
-  header,
-  nav {
-    display: none !important;
-    visibility: hidden !important;
   }
 
   /* Force visibility for all contract elements when printing */
@@ -217,6 +217,12 @@
     display: block !important;
     visibility: visible !important;
   }
+  
+  /* Error message */
+  .error-message {
+    display: none !important;
+    visibility: hidden !important;
+  }
 }
 
 /* Styles that apply both for print and when printing class is active */
@@ -270,4 +276,11 @@ body.printing .signature-name {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
+}
+
+/* Error element - Hide during printing */
+body.printing .error-message,
+.error-message.print\:hidden {
+  display: none !important;
+  visibility: hidden !important;
 }

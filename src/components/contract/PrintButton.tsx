@@ -1,8 +1,9 @@
 
-import { useState } from "react";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { usePrint } from "@/hooks/usePrint";
+import { useEffect } from "react";
 
 interface PrintButtonProps {
   language: "ar" | "en";
@@ -20,21 +21,25 @@ const PrintButton = ({
   contractId = "default"
 }: PrintButtonProps) => {
   const { toast } = useToast();
-  const [isPrinting, setIsPrinting] = useState(false);
+  const { isPrinting, handlePrint } = usePrint();
+  
+  // Log contract data on mount to help with debugging
+  useEffect(() => {
+    if (contractData) {
+      console.log("Contract data available for printing:", contractId);
+    }
+  }, [contractData, contractId]);
 
-  const handlePrint = async () => {
+  const handlePrintClick = async () => {
     try {
-      setIsPrinting(true);
-
       // Check if contractData is valid
       if (!contractData) {
         toast({
-          title: "Error preparing print",
+          title: language === "ar" ? "خطأ في تحضير الطباعة" : "Error preparing print",
           description: language === "ar" ? "بيانات العقد مفقودة. يرجى المحاولة مرة أخرى." : "Contract data is missing. Please try again.",
           variant: "destructive",
         });
         console.error("Contract data is missing");
-        setIsPrinting(false);
         return;
       }
 
@@ -46,83 +51,14 @@ const PrintButton = ({
           variant: "destructive",
         });
         console.warn("No documents selected for printing");
-        setIsPrinting(false);
         return;
-      }
-
-      // Load signatures from localStorage if contractId is provided
-      const signatures: any[] = [];
-      if (contractId !== "default") {
-        try {
-          // Try to get signatures from the new format first
-          const savedSignatures = localStorage.getItem(`contract-signatures-${contractId}`);
-          if (savedSignatures) {
-            const parsedSignatures = JSON.parse(savedSignatures);
-            // Filter only signatures with actual signature data
-            const validSignatures = parsedSignatures.filter((s: any) => s.signature);
-            signatures.push(...validSignatures);
-          }
-
-          // If no signatures found, try the old format
-          if (signatures.length === 0) {
-            const savedSignatories = localStorage.getItem(`contract-signatories-${contractId}`);
-            if (savedSignatories) {
-              const signatories = JSON.parse(savedSignatories);
-              // Filter only signed signatories with signature data
-              const signedSignatories = signatories.filter((s: any) => s.signed && s.signatureData);
-
-              // Convert to the expected format
-              const convertedSignatures = signedSignatories.map((s: any) => ({
-                partyId: s.id,
-                partyName: s.name,
-                partyRole: s.role,
-                signature: s.signatureData,
-                stamp: s.stampData,
-                timestamp: s.signedAt || new Date().toISOString(),
-              }));
-
-              signatures.push(...convertedSignatures);
-            }
-          }
-        } catch (error) {
-          console.error("Error loading signatures:", error);
-        }
       }
 
       console.log("Preparing document for print with data:", contractData);
       console.log("Selected documents:", selectedDocuments);
-
-      // Force document rendering before printing
-      document.body.classList.add('printing');
       
-      // Force a reflow to ensure CSS changes are applied
-      document.body.offsetHeight;
-      
-      // Delay to ensure styles are properly applied
-      setTimeout(() => {
-        // Double check document state before printing
-        if (document.readyState !== 'complete') {
-          console.log("Document not fully loaded, delaying print...");
-          setTimeout(() => window.print(), 2000);
-        } else {
-          console.log("Initiating print operation...");
-          window.print();
-        }
-        
-        // Set a fallback to clear printing state if print dialog is dismissed
-        setTimeout(() => {
-          if (document.body.classList.contains('printing')) {
-            console.log("Cleaning up print state via fallback...");
-            document.body.classList.remove('printing');
-            setIsPrinting(false);
-          }
-        }, 15000);
-      }, 1000);
-      
-      // Clear print state after a short delay to allow print dialog to show
-      setTimeout(() => {
-        setIsPrinting(false);
-      }, 3000);
+      // Call the handlePrint function from usePrint hook
+      handlePrint('.print-container');
 
     } catch (error) {
       console.error("Print error:", error);
@@ -132,15 +68,13 @@ const PrintButton = ({
           (language === "ar" ? "حدث خطأ أثناء الطباعة" : "An error occurred while printing"),
         variant: "destructive",
       });
-      document.body.classList.remove('printing');
-      setIsPrinting(false);
     }
   };
 
   return (
     <Button
       variant="outline"
-      onClick={handlePrint}
+      onClick={handlePrintClick}
       className="mb-6 print:hidden flex gap-2 items-center"
       disabled={isPrinting}
     >
