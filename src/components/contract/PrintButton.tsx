@@ -8,7 +8,10 @@ interface PrintButtonProps {
 
 const PrintButton = ({ language }: PrintButtonProps) => {
   const handlePrint = () => {
-    window.print();
+    // Force all CSS to be applied before printing
+    setTimeout(() => {
+      window.print();
+    }, 100);
   };
 
   return (

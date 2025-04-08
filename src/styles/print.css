@@ -115,7 +115,7 @@
   }
   
   /* Hide all UI elements when printing */
-  .print:hidden, 
+  .print\:hidden, 
   button, 
   .tabs-list, 
   header,
@@ -132,10 +132,18 @@
     display: none !important;
   }
   
-  /* Make sure each section is visible */
-  .a4-page,
-  .a4-page * {
+  /* Make sure all contract components are visible */
+  .a4-page *,
+  .contract-column *,
+  .contract-title *,
+  .contract-text,
+  .signature-block *,
+  .promoter-details *,
+  .id-photo-container *,
+  .reference-number {
     display: block !important;
     visibility: visible !important;
+    color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
   }
 }
