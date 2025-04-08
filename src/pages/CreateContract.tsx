@@ -1,5 +1,4 @@
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, FileText, Edit, Eye, Printer } from "lucide-react"
@@ -15,6 +14,8 @@ import { usePrint } from "@/hooks/usePrint"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import PrintDebugButton from "@/components/print/PrintDebugButton"
 import PrintPreview from "@/components/print/PrintPreview"
+import { printService } from "@/services/print.service"
+import { directPrint } from "@/utils/direct-print"
 
 export default function CreateContract() {
   // Generate a temporary contract ID for document attachments
@@ -25,7 +26,63 @@ export default function CreateContract() {
   const [language, setLanguage] = useState<"en" | "ar">("en")
   const [contractData, setContractData] = useState<any>(null)
   const { toast } = useToast()
-  const { handlePrint, isPrinting } = usePrint({ language })
+  const { handlePrint, isPrinting } = usePrint({ language, forceDirectPrint: true })
+  
+  // Ensure print container exists when component mounts and when tab changes
+  useEffect(() => {
+    if (activeTab === "preview" && contractData) {
+      // Short delay to ensure the DOM is ready
+      const timer = setTimeout(() => {
+        // Check if print container exists
+        const printContainer = document.querySelector('.print-container');
+        
+        if (!printContainer) {
+          console.log('Print container not found, creating one');
+          
+          // Try to find suitable container and add print-container class
+          const containers = [
+            '.contract-preview',
+            '.contract-container',
+            '.a4-page',
+            '[data-testid="print-container"]',
+            '.contract-content'
+          ];
+          
+          let containerFound = false;
+          for (const selector of containers) {
+            const element = document.querySelector(selector);
+            if (element) {
+              element.classList.add('print-container');
+              console.log(`Added print-container class to ${selector}`);
+              containerFound = true;
+              break;
+            }
+          }
+          
+          // If no suitable container found, wrap content in new container
+          if (!containerFound && document.querySelector('.contract-container')) {
+            const content = document.querySelector('.contract-container');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'print-container';
+            wrapper.setAttribute('data-testid', 'print-container');
+            
+            if (content && content.parentNode) {
+              content.parentNode.insertBefore(wrapper, content);
+              wrapper.appendChild(content);
+              console.log('Created new print container wrapper');
+            }
+          }
+        }
+        
+        // Apply print visibility fixes
+        printService.fixVisibility('.print-container');
+        
+        console.log('Print container check complete:', !!document.querySelector('.print-container'));
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, contractData]);
 
   const handleGenerateContract = (data: any) => {
     console.log("Contract generated with data:", data);
@@ -56,8 +113,28 @@ export default function CreateContract() {
       return
     }
     
-    // Use the print hook
-    handlePrint('.print-container')
+    // Ensure print container exists before printing
+    const printContainer = document.querySelector('.print-container');
+    if (!printContainer) {
+      console.log('Print container not found, adding to contract-preview');
+      
+      const contractPreview = document.querySelector('.contract-preview');
+      if (contractPreview) {
+        contractPreview.classList.add('print-container');
+      }
+    }
+    
+    // Apply visibility fixes and use direct print for maximum compatibility
+    printService.fixVisibility('.print-container');
+    directPrint('.print-container');
+    
+    // Show success toast
+    setTimeout(() => {
+      toast({
+        title: language === "ar" ? "تم إرسال الطباعة" : "Print Sent",
+        description: language === "ar" ? "تم إرسال المستند إلى الطابعة" : "Document was sent to printer",
+      });
+    }, 1000);
   }
 
   return (

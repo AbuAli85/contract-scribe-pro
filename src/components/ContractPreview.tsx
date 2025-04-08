@@ -8,7 +8,7 @@ import EnglishContractColumn from "./contract/EnglishContractColumn";
 import ArabicContractColumn from "./contract/ArabicContractColumn";
 import SignatureArea from "./contract/SignatureArea";
 import { contractService } from "@/services/contract.service";
-import PrintPreview from "./contract/PrintPreview";
+import PrintPreview from "./print/PrintPreview";
 
 interface ContractPreviewProps {
   language: "ar" | "en";
@@ -23,8 +23,15 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
   useEffect(() => {
     if (contractData) {
       setTimeout(() => {
+        // Force add print-container class to the contract-preview if not already there
+        const contractPreview = document.querySelector('.contract-preview');
+        if (contractPreview && !document.querySelector('.print-container')) {
+          contractPreview.classList.add('print-container');
+          console.log('Added print-container class to contract-preview element');
+        }
+        
         const isPrintable = contractService.validatePrintability();
-        console.log("Contract printability check:", isPrintable);
+        console.log("Contract printability check:", isPrintable, "Print container exists:", !!document.querySelector('.print-container'));
       }, 1000);
     }
   }, [contractData]);

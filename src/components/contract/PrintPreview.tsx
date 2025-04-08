@@ -29,6 +29,16 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
     // Short delay to allow content to render fully
     const timer = setTimeout(() => {
       try {
+        // Make sure the print-container class is applied
+        if (previewRef.current) {
+          previewRef.current.classList.add('print-container');
+        }
+        
+        // Add data-testid attribute for better targeting
+        if (previewRef.current && !previewRef.current.hasAttribute('data-testid')) {
+          previewRef.current.setAttribute('data-testid', 'print-container');
+        }
+        
         // Apply critical printing styles immediately
         document.documentElement.classList.add('is-printing');
         document.body.classList.add('printing');
@@ -46,7 +56,7 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
         // Notify parent component
         onReady?.(true); // Always report ready to allow printing attempt
         
-        console.log('PrintPreview content ready:', isReady);
+        console.log('PrintPreview content ready check:', isReady, 'Print container found:', !!document.querySelector('.print-container'));
       } catch (error) {
         console.error('PrintPreview error:', error);
         setHasWarnings(true);
