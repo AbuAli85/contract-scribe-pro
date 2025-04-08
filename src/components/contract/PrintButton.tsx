@@ -13,14 +13,23 @@ const PrintButton = ({ language }: PrintButtonProps) => {
     
     // Wait for content to be fully rendered with a longer timeout
     setTimeout(() => {
+      // Set up content for printing
+      const contractElements = document.querySelectorAll('.contract-content, .a4-page, .letterhead-background');
+      contractElements.forEach(element => {
+        if (element instanceof HTMLElement) {
+          element.style.display = 'block';
+          element.style.visibility = 'visible';
+        }
+      });
+      
       // Trigger print dialog
       window.print();
       
       // Remove the printing class after print dialog closes
       setTimeout(() => {
         document.body.classList.remove('printing');
-      }, 1000);
-    }, 1000); // Increased timeout for better rendering
+      }, 2000);
+    }, 2000); // Increased timeout for better rendering
   };
 
   return (
