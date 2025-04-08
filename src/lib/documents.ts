@@ -1,5 +1,6 @@
 
 import { generateUniqueId } from "./utils"
+import { getSupabaseClient } from "./supabase"
 
 export type DocumentType = "passport" | "id" | "visa" | "license" | "certificate" | "other"
 
@@ -14,33 +15,10 @@ export interface AttachedDocument {
   includeInPrint: boolean
 }
 
-// In-memory storage for documents (would be replaced with a real database)
-let documents: AttachedDocument[] = []
-
-// Load documents from localStorage if available (browser-only)
-const loadDocuments = () => {
-  if (typeof window !== "undefined") {
-    const savedDocuments = localStorage.getItem("attachedDocuments")
-    if (savedDocuments) {
-      documents = JSON.parse(savedDocuments)
-    }
-  }
-}
-
-// Save documents to localStorage (browser-only)
-const saveDocuments = () => {
-  if (typeof window !== "undefined") {
-    localStorage.setItem("attachedDocuments", JSON.stringify(documents))
-  }
-}
-
-// Initialize documents
-loadDocuments()
-
-// Document operations
+// Document operations using Supabase mock client
 export const documentSystem = {
   // Add a new document
-  addDocument: (
+  addDocument: async (
     contractId: string,
     type: DocumentType,
     name: string,
@@ -48,6 +26,8 @@ export const documentSystem = {
     description?: string,
     includeInPrint = true,
   ) => {
+    const supabase = getSupabaseClient()
+    
     const newDocument: AttachedDocument = {
       id: generateUniqueId(),
       contractId,
@@ -59,57 +39,147 @@ export const documentSystem = {
       includeInPrint,
     }
 
-    documents.push(newDocument)
-    saveDocuments()
+    const { data, error } = await supabase
+      .from('documents')
+      .insert(newDocument)
+      .select()
+      .single()
+      .execute()
 
-    return newDocument
+    if (error) {
+      console.error("Error adding document:", error)
+      return null
+    }
+
+    return data
   },
 
   // Get all documents for a contract
-  getDocuments: (contractId: string) => {
-    return documents.filter((doc) => doc.contractId === contractId)
+  getDocuments: async (contractId: string) => {
+    const supabase = getSupabaseClient()
+    
+    const { data, error } = await supabase
+      .from('documents')
+      .select()
+      .eq('contractId', contractId)
+      .execute()
+
+    if (error) {
+      console.error("Error getting documents:", error)
+      return []
+    }
+
+    return data || []
   },
 
   // Get a document by ID
   getDocument: (id: string) => {
-    return documents.find((doc) => doc.id === id)
+    const supabase = getSupabaseClient()
+    
+    // Using synchronous approach for compatibility with existing code
+    try {
+      const result = supabase
+        .from('documents')
+        .select()
+        .eq('id', id)
+        .single()
+        .execute()
+
+      return result.data
+    } catch (error) {
+      console.error("Error getting document:", error)
+      return null
+    }
   },
 
   // Update a document
-  updateDocument: (id: string, data: Partial<AttachedDocument>) => {
-    const index = documents.findIndex((doc) => doc.id === id)
-    if (index !== -1) {
-      documents[index] = { ...documents[index], ...data }
-      saveDocuments()
-      return documents[index]
+  updateDocument: async (id: string, data: Partial<AttachedDocument>) => {
+    const supabase = getSupabaseClient()
+    
+    const { data: updatedDoc, error } = await supabase
+      .from('documents')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single()
+      .execute()
+
+    if (error) {
+      console.error("Error updating document:", error)
+      return null
     }
-    return null
+
+    return updatedDoc
   },
 
   // Delete a document
-  deleteDocument: (id: string) => {
-    const index = documents.findIndex((doc) => doc.id === id)
-    if (index !== -1) {
-      documents.splice(index, 1)
-      saveDocuments()
-      return true
+  deleteDocument: async (id: string) => {
+    const supabase = getSupabaseClient()
+    
+    const { data, error } = await supabase
+      .from('documents')
+      .delete()
+      .eq('id', id)
+      .execute()
+
+    if (error) {
+      console.error("Error deleting document:", error)
+      return false
     }
-    return false
+
+    return data && data.count > 0
   },
 
   // Toggle document print inclusion
-  togglePrintInclusion: (id: string) => {
-    const index = documents.findIndex((doc) => doc.id === id)
-    if (index !== -1) {
-      documents[index].includeInPrint = !documents[index].includeInPrint
-      saveDocuments()
-      return documents[index]
+  togglePrintInclusion: async (id: string) => {
+    const supabase = getSupabaseClient()
+    
+    // First get the current document
+    const { data: document, error: getError } = await supabase
+      .from('documents')
+      .select()
+      .eq('id', id)
+      .single()
+      .execute()
+
+    if (getError || !document) {
+      console.error("Error getting document for toggle:", getError)
+      return null
     }
-    return null
+
+    // Update the includeInPrint field
+    const { data: updatedDoc, error: updateError } = await supabase
+      .from('documents')
+      .update({ includeInPrint: !document.includeInPrint })
+      .eq('id', id)
+      .select()
+      .single()
+      .execute()
+
+    if (updateError) {
+      console.error("Error toggling document print inclusion:", updateError)
+      return null
+    }
+
+    return updatedDoc
   },
 
   // Get documents to be included in printing
-  getDocumentsForPrinting: (contractId: string) => {
-    return documents.filter((doc) => doc.contractId === contractId && doc.includeInPrint)
+  getDocumentsForPrinting: async (contractId: string) => {
+    const supabase = getSupabaseClient()
+    
+    const { data, error } = await supabase
+      .from('documents')
+      .select()
+      .eq('contractId', contractId)
+      .eq('includeInPrint', true)
+      .execute()
+
+    if (error) {
+      console.error("Error getting documents for printing:", error)
+      return []
+    }
+
+    return data || []
   },
 }
