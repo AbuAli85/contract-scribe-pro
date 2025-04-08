@@ -1,0 +1,224 @@
+
+/* Contract Layout Styles */
+.a4-page {
+  position: relative;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 20px auto;
+  background-color: #fff;
+  box-sizing: border-box;
+  color: #000;
+  padding: 20mm;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.contract-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+}
+
+.letterhead-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+  z-index: 1;
+  pointer-events: none;
+  object-fit: cover;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Reference Section */
+.reference-section {
+  text-align: left;
+  margin-top: 1cm;
+  margin-bottom: 15mm;
+  padding-left: 5mm;
+  position: relative;
+  z-index: 10;
+}
+
+.reference-number {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ID Photo Styles */
+.id-photo-container {
+  display: flex;
+  justify-content: center;
+  margin: 15mm 0;
+  position: relative;
+  z-index: 10;
+}
+
+.id-photo-wrapper {
+  width: 400px;
+  max-width: 100%;
+  border: 1px solid #ddd;
+  overflow: hidden;
+}
+
+.id-photo {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Contract Title */
+.contract-title-area {
+  text-align: center;
+  margin-bottom: 10mm;
+  position: relative;
+  z-index: 10;
+}
+
+.contract-main-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1a73e8;
+}
+
+/* Two Column Layout for Contract Text */
+.two-column-layout {
+  display: flex;
+  justify-content: space-between;
+  gap: 10mm;
+  margin-bottom: 15mm;
+  position: relative;
+  z-index: 10;
+}
+
+.contract-column {
+  flex: 1;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.rtl {
+  direction: rtl;
+  text-align: right;
+  font-family: var(--font-cairo);
+}
+
+/* Signature Area */
+.signature-area {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 25mm;
+  page-break-inside: avoid;
+  position: relative;
+  z-index: 10;
+}
+
+.signature-block {
+  width: 45%;
+  text-align: center;
+}
+
+.signature-line {
+  border-bottom: 1px solid #000;
+  margin-bottom: 5mm;
+  height: 15mm;
+}
+
+/* Contract Content Styles */
+.contract-title {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 6mm;
+  color: #1a73e8;
+  text-align: center;
+  padding-bottom: 1mm;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.contract-text {
+  margin-bottom: 3mm;
+  line-height: 1.5;
+}
+
+.promoter-details {
+  margin: 5mm 0;
+  padding: 3mm;
+  background-color: rgba(249, 249, 249, 0.7);
+  border-radius: 3px;
+  border-left: 2px solid #1a73e8;
+}
+
+.promoter-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2mm;
+}
+
+.info-row {
+  display: flex;
+  gap: 5px;
+}
+
+.responsibilities {
+  margin: 5mm 0;
+}
+
+.responsibilities-title {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 2mm;
+  color: #333;
+  padding-bottom: 1mm;
+  border-bottom: 1px dashed #ddd;
+}
+
+.best-regards {
+  margin-top: 5mm;
+}
+
+/* Bottom Information */
+.bottom-info {
+  position: absolute;
+  bottom: 15mm;
+  left: 15mm;
+  right: 15mm;
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: #666;
+}
+
+.cr-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1mm;
+}
+
+.cr-number {
+  font-weight: 500;
+}
+
+.company-info {
+  margin-top: 1mm;
+}
+
+.contact-info {
+  display: flex;
+  gap: 10px;
+  margin-top: 1mm;
+}
+
+.address-info {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 1mm;
+}
+
+.address-info span {
+  margin-left: 10px;
+}
