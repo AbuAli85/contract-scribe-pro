@@ -66,6 +66,15 @@
     visibility: hidden !important;
   }
 
+  /* Force visibility for all contract elements when printing */
+  .contract-preview *,
+  .a4-page *,
+  .contract-content * {
+    visibility: visible !important;
+    display: inherit !important;
+    opacity: 1 !important;
+  }
+
   /* When printing class is active - component elements */  
   body.printing .reference-section,
   body.printing .contract-title-area,
@@ -90,5 +99,40 @@
     border-radius: 3px !important;
     border-left: 2px solid #1a73e8 !important;
     print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
   }
+}
+
+/* Styles that apply both for print and when printing class is active */
+.contract-preview,
+.a4-page,
+.contract-content,
+.reference-section,
+.id-photo-container,
+.id-photo-wrapper,
+.id-photo,
+.contract-title-area,
+.signature-area,
+.signature-block,
+.signature-line,
+.contract-column {
+  break-inside: avoid !important;
+}
+
+/* Non-media query styles for printing class to ensure they apply immediately */
+body.printing .reference-section,
+body.printing .contract-title-area,
+body.printing .signature-area,
+body.printing .signature-block,
+body.printing .signature-line,
+body.printing .promoter-info,
+body.printing .info-row,
+body.printing .promoter-details,
+body.printing .contract-title,
+body.printing .contract-main-title,
+body.printing .responsibilities,
+body.printing .responsibilities-title {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }

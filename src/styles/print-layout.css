@@ -131,7 +131,12 @@
     overflow: hidden !important;
   }
 
-  /* Use both body.printing class and print media query for better cross-browser support */
+  /* Force all elements to be visible when printing class is active */
+  body.printing * {
+    visibility: visible !important;
+  }
+
+  /* Specific elements that need to be preserved in printing */
   body.printing .contract-preview,
   body.printing .a4-page,
   body.printing .contract-content,
@@ -140,6 +145,9 @@
   body.printing .contract-column,
   body.printing .id-photo-container,
   body.printing .id-photo-wrapper,
+  body.printing .reference-section,
+  body.printing .contract-title-area,
+  body.printing .signature-area,
   body.printing .id-photo {
     display: block !important;
     visibility: visible !important;
@@ -158,4 +166,29 @@
     display: none !important;
     visibility: hidden !important;
   }
+}
+
+/* Apply visibility immediately when class is added without waiting for print dialog */
+body.printing .contract-preview,
+body.printing .a4-page,
+body.printing .letterhead-background,
+body.printing .contract-content,
+body.printing .two-column-layout,
+body.printing .contract-column,
+body.printing .reference-section,
+body.printing .id-photo-container,
+body.printing .id-photo-wrapper,
+body.printing .id-photo,
+body.printing .contract-title-area,
+body.printing .signature-area {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Preserve flex display for layout containers when printing class is active */
+body.printing .two-column-layout,
+body.printing .signature-area,
+body.printing .id-photo-container {
+  display: flex !important;
 }
