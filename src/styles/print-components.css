@@ -10,6 +10,7 @@
     margin-bottom: 15mm !important;
     padding-left: 5mm !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
   
   /* ID photo styles */
@@ -27,6 +28,7 @@
     text-align: center !important;
     margin-bottom: 10mm !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
   
   /* Signature area */
@@ -36,6 +38,7 @@
     justify-content: space-between !important;
     margin-top: 25mm !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
   
   .signature-block {
@@ -74,5 +77,18 @@
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
+  }
+  
+  /* Promoter details */
+  body.printing .promoter-details,
+  .promoter-details {
+    display: block !important;
+    visibility: visible !important;
+    margin: 5mm 0 !important;
+    padding: 3mm !important;
+    background-color: rgba(249, 249, 249, 0.7) !important;
+    border-radius: 3px !important;
+    border-left: 2px solid #1a73e8 !important;
+    print-color-adjust: exact !important;
   }
 }

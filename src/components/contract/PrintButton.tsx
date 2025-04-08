@@ -1,7 +1,7 @@
 
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface PrintButtonProps {
   language: "ar" | "en";
@@ -9,17 +9,28 @@ interface PrintButtonProps {
 
 const PrintButton = ({ language }: PrintButtonProps) => {
   const [isPrinting, setIsPrinting] = useState(false);
+  const printTimeoutRef = useRef<number | null>(null);
   const [stylesLoaded, setStylesLoaded] = useState(false);
 
   // Check if stylesheets are loaded
   useEffect(() => {
-    // Wait for stylesheets to load
+    // Check if document is already loaded
     if (document.readyState === 'complete') {
       setStylesLoaded(true);
     } else {
-      window.addEventListener('load', () => setStylesLoaded(true));
-      return () => window.removeEventListener('load', () => setStylesLoaded(true));
+      const handleLoad = () => setStylesLoaded(true);
+      window.addEventListener('load', handleLoad);
+      return () => window.removeEventListener('load', handleLoad);
     }
+  }, []);
+
+  // Clean up any pending timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (printTimeoutRef.current) {
+        window.clearTimeout(printTimeoutRef.current);
+      }
+    };
   }, []);
 
   // Setup print listener to ensure styles are reset after printing
@@ -30,12 +41,16 @@ const PrintButton = ({ language }: PrintButtonProps) => {
     };
     
     const afterPrintHandler = () => {
-      document.body.classList.remove('printing');
-      setIsPrinting(false);
+      // Delay removal to ensure proper cleanup
+      setTimeout(() => {
+        document.body.classList.remove('printing');
+        setIsPrinting(false);
+      }, 500);
     };
     
     window.addEventListener('beforeprint', beforePrintHandler);
     window.addEventListener('afterprint', afterPrintHandler);
+    
     return () => {
       window.removeEventListener('beforeprint', beforePrintHandler);
       window.removeEventListener('afterprint', afterPrintHandler);
@@ -45,8 +60,13 @@ const PrintButton = ({ language }: PrintButtonProps) => {
   const handlePrint = () => {
     if (!stylesLoaded) {
       console.log("Waiting for stylesheets to load completely...");
-      // Wait for stylesheets to fully load
-      window.addEventListener('load', handlePrintWhenReady, { once: true });
+      setTimeout(() => {
+        if (document.readyState === 'complete') {
+          handlePrintWhenReady();
+        } else {
+          window.addEventListener('load', handlePrintWhenReady, { once: true });
+        }
+      }, 300);
       return;
     }
     
@@ -55,9 +75,15 @@ const PrintButton = ({ language }: PrintButtonProps) => {
   
   const handlePrintWhenReady = () => {
     try {
+      console.log("Print preparation starting...");
+      
       // Add printing class to document body
       document.body.classList.add('printing');
       setIsPrinting(true);
+      
+      // Force all stylesheets to load by accessing them
+      const styleSheets = Array.from(document.styleSheets);
+      console.log(`Ensuring ${styleSheets.length} stylesheets are loaded`);
       
       // Target all elements that need to be visible when printing
       const selectors = [
@@ -85,9 +111,11 @@ const PrintButton = ({ language }: PrintButtonProps) => {
         '.signature-line'
       ];
       
-      // Apply print-specific styles directly to elements
+      // Apply print-specific styles
       selectors.forEach(selector => {
         const elements = document.querySelectorAll(selector);
+        console.log(`Found ${elements.length} elements for ${selector}`);
+        
         elements.forEach(element => {
           if (element instanceof HTMLElement) {
             // Store original styles
@@ -95,12 +123,15 @@ const PrintButton = ({ language }: PrintButtonProps) => {
             const originalVisibility = element.style.visibility;
             const originalOpacity = element.style.opacity;
             
-            // Force visibility
-            element.style.display = selector.includes('two-column-layout') || 
-                                   selector.includes('signature-area') ? 
-                                   'flex' : 'block';
-            element.style.visibility = 'visible';
-            element.style.opacity = '1';
+            // Force visibility with important flags
+            element.style.cssText += `
+              display: ${selector.includes('two-column-layout') || 
+                        selector.includes('signature-area') || 
+                        selector.includes('id-photo-container') ? 
+                        'flex' : 'block'} !important;
+              visibility: visible !important;
+              opacity: 1 !important;
+            `;
             
             // Add data attributes to restore later
             element.dataset.originalDisplay = originalDisplay;
@@ -110,37 +141,50 @@ const PrintButton = ({ language }: PrintButtonProps) => {
         });
       });
       
-      // Ensure content is fully rendered before printing
+      // Give browser time to apply style changes
+      console.log("Scheduling print operation...");
+      
+      // Use RAF to ensure all repaints are complete
       requestAnimationFrame(() => {
-        setTimeout(() => {
+        // Additional delay to ensure everything is ready
+        printTimeoutRef.current = window.setTimeout(() => {
+          console.log("Initiating print dialog...");
+          
+          // Initiate print dialog
           window.print();
           
-          // Reset printing state if the print dialog is closed without printing
-          setTimeout(() => {
+          // Set a fallback timeout to reset print state if print dialog is closed or canceled
+          printTimeoutRef.current = window.setTimeout(() => {
+            console.log("Cleanup after print...");
+            
             if (document.body.classList.contains('printing')) {
-              document.body.classList.remove('printing');
-              setIsPrinting(false);
+              console.log("Resetting print styles...");
               
               // Restore original styles
               selectors.forEach(selector => {
                 const elements = document.querySelectorAll(selector);
                 elements.forEach(element => {
                   if (element instanceof HTMLElement) {
-                    if (element.dataset.originalDisplay) {
-                      element.style.display = element.dataset.originalDisplay;
-                    }
-                    if (element.dataset.originalVisibility) {
-                      element.style.visibility = element.dataset.originalVisibility;
-                    }
-                    if (element.dataset.originalOpacity) {
-                      element.style.opacity = element.dataset.originalOpacity;
-                    }
+                    const originalStyle = element.dataset.originalDisplay || '';
+                    
+                    // Clear forced styles
+                    element.style.display = originalStyle;
+                    element.style.visibility = element.dataset.originalVisibility || '';
+                    element.style.opacity = element.dataset.originalOpacity || '';
+                    
+                    // Remove data attributes
+                    delete element.dataset.originalDisplay;
+                    delete element.dataset.originalVisibility;
+                    delete element.dataset.originalOpacity;
                   }
                 });
               });
+              
+              document.body.classList.remove('printing');
+              setIsPrinting(false);
             }
-          }, 2000); // Longer timeout to handle print dialog closing
-        }, 500);
+          }, 3000); // Longer timeout to handle print dialog closing
+        }, 800); // Delay before showing print dialog
       });
       
     } catch (error) {
@@ -155,7 +199,7 @@ const PrintButton = ({ language }: PrintButtonProps) => {
       variant="outline"
       onClick={handlePrint}
       className="mb-6 print:hidden flex gap-2 items-center"
-      disabled={isPrinting || !stylesLoaded}
+      disabled={isPrinting}
     >
       <Printer className="h-4 w-4" />
       <span>{language === "ar" ? "طباعة" : "Print"}</span>

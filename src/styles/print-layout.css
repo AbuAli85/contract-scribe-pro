@@ -38,6 +38,7 @@
     background-color: white !important;
     z-index: 9999 !important;
     page-break-after: avoid !important;
+    break-after: avoid !important;
   }
   
   /* A4 page container */
@@ -52,6 +53,7 @@
     min-height: 297mm !important;
     overflow: visible !important;
     page-break-after: always !important;
+    break-after: always !important;
     background-color: white !important;
   }
   
@@ -89,6 +91,7 @@
     justify-content: space-between !important;
     gap: 10mm !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
     margin-bottom: 15mm !important;
   }
   
@@ -115,6 +118,7 @@
     justify-content: center !important;
     margin: 15mm 0 !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
   
   .id-photo-wrapper {
@@ -127,14 +131,16 @@
     overflow: hidden !important;
   }
 
-  /* When printing class is active - layout elements */
+  /* Use both body.printing class and print media query for better cross-browser support */
   body.printing .contract-preview,
   body.printing .a4-page,
   body.printing .contract-content,
   body.printing .letterhead-background,
   body.printing .two-column-layout,
   body.printing .contract-column,
-  body.printing .id-photo-container {
+  body.printing .id-photo-container,
+  body.printing .id-photo-wrapper,
+  body.printing .id-photo {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
@@ -145,5 +151,11 @@
   body.printing .signature-area,
   body.printing .id-photo-container {
     display: flex !important;
+  }
+  
+  /* Hide print button during printing */
+  button.print\:hidden {
+    display: none !important;
+    visibility: hidden !important;
   }
 }
