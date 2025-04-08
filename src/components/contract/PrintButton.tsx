@@ -75,6 +75,18 @@ const PrintButton = ({
         return
       }
 
+      // Check if printing container exists and has content
+      const printContainer = document.querySelector('.print-container')
+      if (!printContainer || !printContainer.innerHTML || printContainer.innerHTML.trim() === '') {
+        toast({
+          title: language === "ar" ? "محتوى الطباعة فارغ" : "Print content is empty",
+          description: language === "ar" ? "لا يمكن طباعة محتوى فارغ. يرجى التأكد من إنشاء العقد أولاً." : "Cannot print empty content. Please ensure contract is generated first.",
+          variant: "destructive",
+        })
+        console.error("Print container is empty")
+        return
+      }
+
       // Log info about what will be printed
       console.log("Preparing document for print:", {
         contractData,

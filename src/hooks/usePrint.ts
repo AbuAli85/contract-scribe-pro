@@ -92,6 +92,83 @@ export function usePrint() {
           }
         `
         
+        // Check if we have content before proceeding
+        if (!content.innerHTML || content.innerHTML.trim() === '') {
+          // Show error page instead
+          printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="UTF-8">
+              <title>Contract Print Preview</title>
+              <style>
+                body {
+                  font-family: Arial, sans-serif;
+                  margin: 0;
+                  padding: 20px;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  min-height: 100vh;
+                  background-color: #f5f5f5;
+                }
+                
+                .container {
+                  max-width: 800px;
+                  background: white;
+                  padding: 40px;
+                  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                  border-radius: 8px;
+                }
+                
+                h1 {
+                  text-align: center;
+                  color: #333;
+                }
+                
+                p {
+                  line-height: 1.6;
+                  color: #555;
+                }
+                
+                .error {
+                  color: #e53e3e;
+                  font-weight: bold;
+                }
+                
+                .button {
+                  display: inline-block;
+                  background-color: #4299e1;
+                  color: white;
+                  padding: 10px 20px;
+                  border-radius: 4px;
+                  text-decoration: none;
+                  margin-top: 20px;
+                  cursor: pointer;
+                }
+                
+                .button:hover {
+                  background-color: #3182ce;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h1>Contract Print System</h1>
+                <p>This page has been replaced with a more reliable printing method.</p>
+                <p>Please use the Print button on the contract page to print your contract.</p>
+                <p>If you're seeing this page, it means you're using an outdated link or there was an error in the printing process.</p>
+                <button onclick="window.close();" class="button">Close Window</button>
+              </div>
+            </body>
+            </html>
+          `)
+          printWindow.document.close()
+          setIsPrinting(false)
+          document.body.classList.remove('printing')
+          return
+        }
+        
         // Write the HTML to the new window
         printWindow.document.write(`
           <!DOCTYPE html>
@@ -120,6 +197,80 @@ export function usePrint() {
         printWindow.document.close()
       } catch (error) {
         console.error('Print error:', error)
+        
+        // Open error page
+        const errorWindow = window.open('', '_blank')
+        if (errorWindow) {
+          errorWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="UTF-8">
+              <title>Contract Print Error</title>
+              <style>
+                body {
+                  font-family: Arial, sans-serif;
+                  margin: 0;
+                  padding: 20px;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  min-height: 100vh;
+                  background-color: #f5f5f5;
+                }
+                
+                .container {
+                  max-width: 800px;
+                  background: white;
+                  padding: 40px;
+                  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                  border-radius: 8px;
+                }
+                
+                h1 {
+                  text-align: center;
+                  color: #333;
+                }
+                
+                p {
+                  line-height: 1.6;
+                  color: #555;
+                }
+                
+                .error {
+                  color: #e53e3e;
+                  font-weight: bold;
+                }
+                
+                .button {
+                  display: inline-block;
+                  background-color: #4299e1;
+                  color: white;
+                  padding: 10px 20px;
+                  border-radius: 4px;
+                  text-decoration: none;
+                  margin-top: 20px;
+                  cursor: pointer;
+                }
+                
+                .button:hover {
+                  background-color: #3182ce;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h1>Contract Print Error</h1>
+                <p class="error">An error occurred during the print preparation:</p>
+                <p>${error instanceof Error ? error.message : 'Unknown error'}</p>
+                <p>Please try again or use a different browser.</p>
+                <button onclick="window.close();" class="button">Close Window</button>
+              </div>
+            </body>
+            </html>
+          `)
+          errorWindow.document.close()
+        }
       } finally {
         // Remove printing class after a delay
         setTimeout(() => {

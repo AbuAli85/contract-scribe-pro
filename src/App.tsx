@@ -5,6 +5,7 @@ import CreateContract from "./pages/CreateContract"
 import NotFound from "./pages/NotFound"
 import { Toaster } from "./components/ui/toaster"
 import { ThemeProvider } from "./components/ThemeProvider"
+import PrintErrorPage from "./components/contract/PrintErrorPage"
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/create-contract" element={<CreateContract />} />
+          <Route path="/print-error" element={<PrintErrorPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
