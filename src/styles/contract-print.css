@@ -1,11 +1,13 @@
 
 /* Print-specific styles */
 @media print {
+  /* Base container styles */
   .print-container {
     margin: 0;
     padding: 0;
     visibility: visible !important;
     display: block !important;
+    background-color: white !important;
   }
   
   .print-hidden,
@@ -13,14 +15,18 @@
     display: none !important;
   }
   
+  /* Basic page setup */
   body {
     margin: 0;
     padding: 0;
     background-color: white;
     width: 100%;
     height: 100%;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   
+  /* A4 page container */
   .a4-page {
     margin: 0 !important;
     padding: 10mm !important;
@@ -33,17 +39,27 @@
     position: relative;
   }
 
-  /* Make sure all content is visible when printing */
+  /* Critical: Force all content to be visible */
   .contract-preview *,
   .a4-page *,
   .contract-content *,
   .contract-column *,
   .signature-area *,
   .id-photo-container *,
-  .letterhead-background {
+  .letterhead-background,
+  .contract-title,
+  .promoter-details,
+  .responsibilities,
+  .info-row,
+  .contract-text,
+  .best-regards,
+  .contract-main-title,
+  .reference-number,
+  .responsibilities-title {
     visibility: visible !important;
     display: inherit !important;
     opacity: 1 !important;
+    color: black !important;
   }
   
   /* Hide UI elements */
@@ -61,7 +77,7 @@
     display: none !important;
   }
   
-  /* Show letterhead background */
+  /* Letterhead background */
   .letterhead-background {
     display: block !important;
     visibility: visible !important;
@@ -74,10 +90,38 @@
     z-index: 1 !important;
   }
   
-  /* Make sure contract content is on top of letterhead */
+  /* Contract content positioning */
   .contract-content {
     position: relative !important;
     z-index: 10 !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  /* Two column layout */
+  .two-column-layout {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    gap: 10mm !important;
+    visibility: visible !important;
+  }
+
+  /* Contract text elements */
+  .contract-title, 
+  .contract-text,
+  .promoter-details,
+  .promoter-info,
+  .responsibilities,
+  .responsibilities-title,
+  .best-regards,
+  .reference-number,
+  .contract-main-title,
+  .info-row {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: black !important;
   }
 }
 
@@ -114,7 +158,7 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-/* Fix for printing class */
+/* Printing class styles */
 body.printing {
   overflow: visible !important;
 }
@@ -127,8 +171,26 @@ body.printing .contract-column,
 body.printing .reference-section,
 body.printing .contract-title-area,
 body.printing .letterhead-background,
-body.printing .signature-area {
+body.printing .signature-area,
+body.printing .contract-title, 
+body.printing .contract-text,
+body.printing .promoter-details,
+body.printing .promoter-info,
+body.printing .responsibilities,
+body.printing .responsibilities-title,
+body.printing .best-regards,
+body.printing .reference-number,
+body.printing .contract-main-title,
+body.printing .info-row {
   display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: black !important;
+}
+
+/* Specific fixes for flex containers */
+body.printing .two-column-layout {
+  display: flex !important;
   visibility: visible !important;
   opacity: 1 !important;
 }

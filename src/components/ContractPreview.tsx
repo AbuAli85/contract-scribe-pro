@@ -1,4 +1,5 @@
 
+import { useEffect } from "react";
 import PrintButton from "./contract/PrintButton";
 import ReferenceNumber from "./contract/ReferenceNumber";
 import PromoterPhoto from "./contract/PromoterPhoto";
@@ -14,6 +15,30 @@ interface ContractPreviewProps {
 }
 
 const ContractPreview = ({ language, contractData, signatures = [] }: ContractPreviewProps) => {
+  // Debug useEffect to check visibility issues
+  useEffect(() => {
+    if (contractData) {
+      console.log("Contract preview rendering with data:", contractData);
+      
+      // Check visibility of key elements after render
+      setTimeout(() => {
+        const contractPreview = document.querySelector('.contract-preview');
+        const contractContent = document.querySelector('.contract-content');
+        const contractText = document.querySelectorAll('.contract-text');
+        
+        console.log("ContractPreview visibility:", contractPreview ? 
+          `display: ${window.getComputedStyle(contractPreview).display}, ` +
+          `visibility: ${window.getComputedStyle(contractPreview).visibility}` : 'Not found');
+        
+        console.log("ContractContent visibility:", contractContent ? 
+          `display: ${window.getComputedStyle(contractContent).display}, ` +
+          `visibility: ${window.getComputedStyle(contractContent).visibility}` : 'Not found');
+        
+        console.log(`Found ${contractText.length} contract-text elements`);
+      }, 500);
+    }
+  }, [contractData]);
+
   if (!contractData) {
     return (
       <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded relative print:hidden">
@@ -22,8 +47,6 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
       </div>
     );
   }
-
-  console.log("Rendering ContractPreview with data:", contractData);
 
   return (
     <div className="contract-preview print-container">

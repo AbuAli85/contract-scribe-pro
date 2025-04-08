@@ -14,7 +14,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/create-contract" element={<CreateContract />} />
-          <Route path="/print-error" element={<PrintErrorPage />} />
+          <Route path="/print-error" element={<PrintErrorPage redirectUrl="/create-contract" />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

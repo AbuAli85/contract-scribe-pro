@@ -6,9 +6,13 @@ import { Home } from "lucide-react"
 
 interface PrintErrorPageProps {
   language?: "en" | "ar";
+  redirectUrl?: string;
 }
 
-const PrintErrorPage: React.FC<PrintErrorPageProps> = ({ language = "en" }) => {
+const PrintErrorPage: React.FC<PrintErrorPageProps> = ({ 
+  language = "en",
+  redirectUrl = "/" 
+}) => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
@@ -35,7 +39,7 @@ const PrintErrorPage: React.FC<PrintErrorPageProps> = ({ language = "en" }) => {
         </p>
         
         <div className="flex justify-center">
-          <Link to="/">
+          <Link to={redirectUrl}>
             <Button className="flex items-center gap-2">
               <Home className="h-4 w-4" />
               {language === "ar" ? "العودة إلى لوحة التحكم" : "Return to Dashboard"}

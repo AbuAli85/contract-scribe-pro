@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { usePrint } from "@/hooks/usePrint"
 import { documentSystem, type AttachedDocument } from "@/lib/documents"
+import { useNavigate } from "react-router-dom"
 
 interface PrintButtonProps {
   language: "ar" | "en"
@@ -23,6 +24,7 @@ const PrintButton = ({
   const { isPrinting, handlePrint } = usePrint()
   const [documents, setDocuments] = useState<AttachedDocument[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate()
 
   // Load documents that should be included in printing
   useEffect(() => {
@@ -51,39 +53,62 @@ const PrintButton = ({
     }
   }, [contractData, contractId])
 
+  const validatePrintContent = () => {
+    // Check if contractData is valid
+    if (!contractData) {
+      toast({
+        title: language === "ar" ? "خطأ في تحضير الطباعة" : "Error preparing print",
+        description: language === "ar" ? "بيانات العقد مفقودة. يرجى المحاولة مرة أخرى." : "Contract data is missing. Please try again.",
+        variant: "destructive",
+      })
+      console.error("Contract data is missing")
+      return false
+    }
+
+    // Check if any documents are selected
+    if (selectedDocuments.length === 0) {
+      toast({
+        title: language === "ar" ? "لم يتم تحديد أي مستندات" : "No documents selected",
+        description: language === "ar" ? "يرجى تحديد مستند واحد على الأقل للطباعة" : "Please select at least one document to print",
+        variant: "destructive",
+      })
+      console.warn("No documents selected for printing")
+      return false
+    }
+
+    // Check if printing container exists and has content
+    const printContainer = document.querySelector('.print-container')
+    if (!printContainer) {
+      toast({
+        title: language === "ar" ? "محتوى الطباعة غير موجود" : "Print content not found",
+        description: language === "ar" ? "لا يمكن العثور على محتوى الطباعة" : "Cannot find print content",
+        variant: "destructive",
+      })
+      console.error("Print container not found")
+      return false
+    }
+
+    return true
+  }
+
   const handlePrintClick = async () => {
     try {
-      // Check if contractData is valid
-      if (!contractData) {
-        toast({
-          title: language === "ar" ? "خطأ في تحضير الطباعة" : "Error preparing print",
-          description: language === "ar" ? "بيانات العقد مفقودة. يرجى المحاولة مرة أخرى." : "Contract data is missing. Please try again.",
-          variant: "destructive",
-        })
-        console.error("Contract data is missing")
+      if (!validatePrintContent()) {
         return
       }
 
-      // Check if any documents are selected
-      if (selectedDocuments.length === 0) {
+      // Check contract preview content visibility
+      const contractPreview = document.querySelector('.contract-preview')
+      const isVisible = contractPreview && 
+                       window.getComputedStyle(contractPreview).display !== 'none' &&
+                       window.getComputedStyle(contractPreview).visibility !== 'hidden'
+      
+      if (!isVisible) {
         toast({
-          title: language === "ar" ? "لم يتم تحديد أي مستندات" : "No documents selected",
-          description: language === "ar" ? "يرجى تحديد مستند واحد على الأقل للطباعة" : "Please select at least one document to print",
+          title: language === "ar" ? "معاينة العقد غير مرئية" : "Contract preview not visible",
+          description: language === "ar" ? "يرجى التأكد من أن معاينة العقد مرئية قبل الطباعة" : "Please ensure contract preview is visible before printing",
           variant: "destructive",
         })
-        console.warn("No documents selected for printing")
-        return
-      }
-
-      // Check if printing container exists and has content
-      const printContainer = document.querySelector('.print-container')
-      if (!printContainer || !printContainer.innerHTML || printContainer.innerHTML.trim() === '') {
-        toast({
-          title: language === "ar" ? "محتوى الطباعة فارغ" : "Print content is empty",
-          description: language === "ar" ? "لا يمكن طباعة محتوى فارغ. يرجى التأكد من إنشاء العقد أولاً." : "Cannot print empty content. Please ensure contract is generated first.",
-          variant: "destructive",
-        })
-        console.error("Print container is empty")
         return
       }
 
@@ -105,6 +130,9 @@ const PrintButton = ({
           (language === "ar" ? "حدث خطأ أثناء الطباعة" : "An error occurred while printing"),
         variant: "destructive",
       })
+      
+      // Navigate to error page on error
+      navigate('/print-error')
     }
   }
 
