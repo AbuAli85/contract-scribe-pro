@@ -8,10 +8,17 @@ interface PrintButtonProps {
 
 const PrintButton = ({ language }: PrintButtonProps) => {
   const handlePrint = () => {
-    // Force all CSS to be applied before printing
+    // Force styles to be fully applied and ensure content is visible
+    document.body.classList.add('printing');
+    
+    // Use a longer timeout to ensure complete rendering
     setTimeout(() => {
       window.print();
-    }, 100);
+      // Remove the printing class after print dialog closes
+      setTimeout(() => {
+        document.body.classList.remove('printing');
+      }, 500);
+    }, 500);
   };
 
   return (

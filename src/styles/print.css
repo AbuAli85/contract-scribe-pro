@@ -145,5 +145,14 @@
     visibility: visible !important;
     color-adjust: exact !important;
     -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Force immediate rendering */
+  * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
   }
 }
