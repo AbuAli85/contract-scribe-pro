@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import PrintButton from "./contract/PrintButton";
 import ReferenceNumber from "./contract/ReferenceNumber";
 import PromoterPhoto from "./contract/PromoterPhoto";
@@ -7,6 +7,7 @@ import ContractTitle from "./contract/ContractTitle";
 import EnglishContractColumn from "./contract/EnglishContractColumn";
 import ArabicContractColumn from "./contract/ArabicContractColumn";
 import SignatureArea from "./contract/SignatureArea";
+import { contractService } from "@/services/contract.service";
 
 interface ContractPreviewProps {
   language: "ar" | "en";
@@ -15,27 +16,62 @@ interface ContractPreviewProps {
 }
 
 const ContractPreview = ({ language, contractData, signatures = [] }: ContractPreviewProps) => {
-  // Debug useEffect to check visibility issues
+  const previewRef = useRef<HTMLDivElement>(null);
+  
+  // Effect to ensure visibility and fix common rendering issues
+  useEffect(() => {
+    if (!contractData) return;
+    
+    // Debug and fix visibility issues
+    setTimeout(() => {
+      if (!previewRef.current) return;
+      
+      const contractPreview = previewRef.current;
+      const contractContent = contractPreview.querySelector('.contract-content');
+      const contractText = contractPreview.querySelectorAll('.contract-text');
+      const twoColumnLayout = contractPreview.querySelector('.two-column-layout');
+      
+      console.log("ContractPreview visibility check:", {
+        previewDisplay: contractPreview ? window.getComputedStyle(contractPreview).display : 'element not found',
+        previewVisibility: contractPreview ? window.getComputedStyle(contractPreview).visibility : 'element not found',
+        contentDisplay: contractContent ? window.getComputedStyle(contractContent).display : 'element not found',
+        textElementsCount: contractText.length,
+        twoColumnDisplay: twoColumnLayout ? window.getComputedStyle(twoColumnLayout).display : 'element not found'
+      });
+      
+      // Fix visibility issues proactively
+      if (contractPreview) {
+        contractPreview.style.display = 'block';
+        contractPreview.style.visibility = 'visible';
+      }
+      
+      if (contractContent instanceof HTMLElement) {
+        contractContent.style.display = 'block';
+        contractContent.style.visibility = 'visible';
+      }
+      
+      if (twoColumnLayout instanceof HTMLElement) {
+        twoColumnLayout.style.display = 'flex';
+        twoColumnLayout.style.visibility = 'visible';
+      }
+      
+      // Make sure text elements are visible
+      contractText.forEach(el => {
+        if (el instanceof HTMLElement) {
+          el.style.display = 'block';
+          el.style.visibility = 'visible';
+        }
+      });
+    }, 500);
+  }, [contractData]);
+
+  // Additional effect to validate printability
   useEffect(() => {
     if (contractData) {
-      console.log("Contract preview rendering with data:", contractData);
-      
-      // Check visibility of key elements after render
       setTimeout(() => {
-        const contractPreview = document.querySelector('.contract-preview');
-        const contractContent = document.querySelector('.contract-content');
-        const contractText = document.querySelectorAll('.contract-text');
-        
-        console.log("ContractPreview visibility:", contractPreview ? 
-          `display: ${window.getComputedStyle(contractPreview).display}, ` +
-          `visibility: ${window.getComputedStyle(contractPreview).visibility}` : 'Not found');
-        
-        console.log("ContractContent visibility:", contractContent ? 
-          `display: ${window.getComputedStyle(contractContent).display}, ` +
-          `visibility: ${window.getComputedStyle(contractContent).visibility}` : 'Not found');
-        
-        console.log(`Found ${contractText.length} contract-text elements`);
-      }, 500);
+        const isPrintable = contractService.validatePrintability();
+        console.log("Contract printability check:", isPrintable);
+      }, 1000);
     }
   }, [contractData]);
 
@@ -49,7 +85,7 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
   }
 
   return (
-    <div className="contract-preview print-container">
+    <div ref={previewRef} className="contract-preview print-container">
       <PrintButton 
         language={language} 
         contractData={contractData} 
