@@ -101,8 +101,35 @@ const PrintButton = ({
     }
 
     try {
+      // Check if print container exists before attempting to print
+      const printContainer = document.querySelector('.print-container');
+      if (!printContainer) {
+        console.error("Print container not found, searching for alternative elements");
+        // Try to find any printable content
+        const contractPreview = document.querySelector('.contract-preview');
+        if (!contractPreview) {
+          throw new Error(language === "ar" 
+            ? "لم يتم العثور على محتوى قابل للطباعة" 
+            : "No printable content found");
+        }
+        
+        // Add print-container class to the contract preview
+        contractPreview.classList.add('print-container');
+        console.log("Added print-container class to contract-preview element");
+      }
+      
       // Force immediate visibility fixes before printing
       printService.fixVisibility('.print-container');
+      
+      // Ensure proper CSS classes are added to critical elements
+      document.querySelectorAll('.contract-preview, .a4-page, .contract-content, .two-column-layout')
+        .forEach(el => {
+          if (el instanceof HTMLElement) {
+            el.style.visibility = 'visible';
+            el.style.display = el.className.includes('two-column-layout') ? 'flex' : 'block';
+            el.style.opacity = '1';
+          }
+        });
       
       // Always use direct print method for better compatibility
       directPrint('.print-container');

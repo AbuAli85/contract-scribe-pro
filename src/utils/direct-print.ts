@@ -7,6 +7,39 @@
  * Performs direct printing with style injection for maximum compatibility
  */
 export const directPrint = (selector = '.print-container') => {
+  // First ensure the print container exists
+  let printContainer = document.querySelector(selector);
+  
+  // If not found, try to find any printable content and make it the container
+  if (!printContainer) {
+    console.warn(`Print container "${selector}" not found, looking for alternatives`);
+    const alternatives = [
+      '.contract-preview',
+      '.a4-page',
+      '.contract-content',
+      '.contract-container',
+      '#print-content',
+      '[data-testid="print-container"]'
+    ];
+    
+    for (const alt of alternatives) {
+      printContainer = document.querySelector(alt);
+      if (printContainer) {
+        console.log(`Found alternative print container: ${alt}`);
+        printContainer.classList.add('print-container');
+        selector = alt;
+        break;
+      }
+    }
+    
+    // Last resort - use the entire body
+    if (!printContainer) {
+      console.warn('No print container found, using document.body');
+      printContainer = document.body;
+      selector = 'body';
+    }
+  }
+
   // Create a temporary style element for critical print styles
   const style = document.createElement('style');
   style.innerHTML = `
@@ -91,18 +124,30 @@ export const directPrint = (selector = '.print-container') => {
     document.documentElement.classList.add('is-printing');
     document.body.classList.add('printing');
     
-    // Apply last-minute visibility fixes
-    const container = document.querySelector(selector);
-    if (container) {
-      const allElements = container.querySelectorAll('*');
-      allElements.forEach(el => {
-        if (el instanceof HTMLElement) {
-          el.style.visibility = 'visible';
-          el.style.display = el.tagName === 'DIV' ? 'block' : 'initial';
-          el.style.opacity = '1';
+    // Apply last-minute visibility fixes - more aggressive approach
+    const elements = document.querySelectorAll('.contract-preview, .a4-page, .contract-content, .two-column-layout, .contract-column, .signature-area, .letterhead-background, .promoter-details, .responsibilities, .contract-title, .id-photo-container');
+    
+    elements.forEach(el => {
+      if (el instanceof HTMLElement) {
+        el.style.visibility = 'visible';
+        
+        // Set appropriate display based on element type
+        if (el.classList.contains('two-column-layout')) {
+          el.style.display = 'flex';
+        } else {
+          el.style.display = 'block';
         }
-      });
-    }
+        
+        el.style.opacity = '1';
+        
+        // Force color for text elements
+        if (!el.classList.contains('letterhead-background') &&
+            !el.classList.contains('contract-preview') &&
+            !el.classList.contains('a4-page')) {
+          el.style.color = 'black';
+        }
+      }
+    });
     
     // Short delay to ensure styles are applied
     setTimeout(() => {
