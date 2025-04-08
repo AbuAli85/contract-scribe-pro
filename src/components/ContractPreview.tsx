@@ -59,7 +59,7 @@ const ContractPreview = ({ language, contractData }: ContractPreviewProps) => {
         )}
         
         <div className="contract-content">
-          {/* Only reference number, removing company name */}
+          {/* Reference number with adjusted position */}
           <div className="reference-section">
             <div className="reference-number">
               Reference Number: {formattedRefNumber()}

@@ -147,7 +147,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.25;
+  opacity: 0.15;
   z-index: 1;
   pointer-events: none;
   object-fit: cover;
@@ -178,6 +178,7 @@
 .reference-section {
   text-align: left;
   margin-bottom: 15mm;
+  margin-top: 2.5mm;
 }
 
 .reference-number {
@@ -270,7 +271,7 @@
 
   .letterhead-background {
     display: block !important;
-    opacity: 0.25 !important;
+    opacity: 0.15 !important;
   }
 
   .id-photo-wrapper {
