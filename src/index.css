@@ -147,7 +147,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.1;
+  opacity: 0.25;
   z-index: 1;
   pointer-events: none;
   object-fit: cover;
@@ -174,47 +174,15 @@
   object-fit: contain;
 }
 
-/* Simplified header with reference number on left */
-.simplified-header {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 10mm;
-}
-
+/* Reference Section */
 .reference-section {
   text-align: left;
-  margin-bottom: 5mm;
+  margin-bottom: 15mm;
 }
 
 .reference-number {
   font-size: 12px;
   font-weight: 500;
-}
-
-.company-logo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.company-name {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
-
-.falcon-text {
-  color: #00854a;
-  font-weight: bold;
-  font-size: 24px;
-}
-
-.eye-text {
-  color: #1a73e8;
-  font-weight: bold;
-  font-size: 24px;
 }
 
 /* Contract Title */
@@ -302,7 +270,7 @@
 
   .letterhead-background {
     display: block !important;
-    opacity: 0.1 !important;
+    opacity: 0.25 !important;
   }
 
   .id-photo-wrapper {
