@@ -88,7 +88,7 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
       <style>{inlineStyles}</style>
       
       {hasWarnings && (
-        <Alert variant="warning" className="mb-4 print:hidden">
+        <Alert variant="destructive" className="mb-4 print:hidden">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             Some print elements may not be visible. The system will attempt to fix this automatically.
