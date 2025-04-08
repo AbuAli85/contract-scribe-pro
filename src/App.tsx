@@ -1,34 +1,24 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import CreateContract from "./pages/CreateContract";
-import NotFound from "./pages/NotFound";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import Dashboard from "./pages/Dashboard"
+import CreateContract from "./pages/CreateContract"
+import NotFound from "./pages/NotFound"
+import { Toaster } from "./components/ui/toaster"
+import { ThemeProvider } from "./components/ThemeProvider"
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="light">
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/create-contract" element={<CreateContract />} />
-            {/* Additional routes can be added here */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+function App() {
+  return (
+    <ThemeProvider defaultTheme="light" storageKey="ui-theme">
+      <Router>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/create-contract" element={<CreateContract />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+      <Toaster />
     </ThemeProvider>
-  </QueryClientProvider>
-);
+  )
+}
 
-export default App;
+export default App

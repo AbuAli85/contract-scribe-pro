@@ -1,9 +1,21 @@
 
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 @import './base.css';
 @import './app.css';
-@import './contract-layout.css';
-@import './contract-typography.css';
-@import './contract-components.css';
-@import './print-layout.css';
-@import './print-typography.css';
-@import './print-components.css';
+@import './contract-global.css';
+
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --font-cairo: 'Cairo', sans-serif;
+}
+
+body {
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  font-family: var(--font-sans);
+}
+
+.rtl {
+  font-family: var(--font-cairo);
+}

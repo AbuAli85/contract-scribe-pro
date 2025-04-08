@@ -1,0 +1,26 @@
+
+/* Import all contract-related styles */
+@import './contract-layout.css';
+@import './contract-typography.css';
+@import './contract-components.css';
+@import './contract-print.css';
+
+/* Global contract styles */
+.contract-preview {
+  font-family: 'Arial', sans-serif;
+  color: #333;
+  line-height: 1.5;
+  font-size: 11px;
+}
+
+/* RTL support for Arabic */
+.rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Make sure images don't overflow */
+img {
+  max-width: 100%;
+  height: auto;
+}
