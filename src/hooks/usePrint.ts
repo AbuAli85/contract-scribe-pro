@@ -8,6 +8,7 @@ export type UsePrintOptions = {
   onSuccess?: () => void
   onError?: (error: Error) => void
   selector?: string
+  language?: 'en' | 'ar'
 }
 
 export function usePrint(options: UsePrintOptions = {}) {
@@ -24,29 +25,41 @@ export function usePrint(options: UsePrintOptions = {}) {
       // Apply visibility fixes first
       printService.fixVisibility(selector)
       
+      // Add critical printing class to html/body
+      document.documentElement.classList.add('is-printing')
+      document.body.classList.add('printing')
+      
       // Short timeout to ensure styles are applied
       setTimeout(() => {
         try {
-          // Use the safe printNow method from the service
-          printService.printNow()
+          // Call window.print directly for maximum compatibility
+          window.print()
           
           // Handle success
           setTimeout(() => {
+            // Remove printing classes
+            document.documentElement.classList.remove('is-printing')
+            document.body.classList.remove('printing')
+            
             setIsPrinting(false)
             options.onSuccess?.()
             
             // Show success toast
             toast({
-              title: "Print Successful",
-              description: "Document has been sent to the printer",
+              title: options.language === "ar" ? "تمت الطباعة بنجاح" : "Print Successful",
+              description: options.language === "ar" ? "تم إرسال المستند إلى الطابعة" : "Document has been sent to the printer",
             })
           }, 1000)
         } catch (error) {
           console.error('Print error:', error)
           
+          // Clean up printing classes
+          document.documentElement.classList.remove('is-printing')
+          document.body.classList.remove('printing')
+          
           // Show error toast
           toast({
-            title: "Print Error",
+            title: options.language === "ar" ? "خطأ في الطباعة" : "Print Error",
             description: error instanceof Error ? error.message : "An error occurred while printing",
             variant: "destructive",
           })
@@ -66,9 +79,13 @@ export function usePrint(options: UsePrintOptions = {}) {
     } catch (error) {
       console.error('Print setup error:', error)
       
+      // Clean up printing classes
+      document.documentElement.classList.remove('is-printing')
+      document.body.classList.remove('printing')
+      
       // Show error toast
       toast({
-        title: "Print Error",
+        title: options.language === "ar" ? "خطأ في الطباعة" : "Print Error",
         description: error instanceof Error ? error.message : "An error occurred while printing",
         variant: "destructive",
       })
