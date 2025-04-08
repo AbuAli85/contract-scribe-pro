@@ -1,11 +1,10 @@
-
 import React, { useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Link, useSearchParams } from "react-router-dom"
 import { Home, Printer, AlertCircle, RefreshCw, Bug } from "lucide-react"
 import { printService } from '@/services/print.service'
 import PrintDebugButton from '../print/PrintDebugButton'
-import { logPrintDebugInfo } from '@/utils/printDebugger'
+import { logPrintDebugInfo } from '@/utils/print-debug'
 
 interface PrintErrorPageProps {
   language?: "en" | "ar";
@@ -148,7 +147,7 @@ const PrintErrorPage: React.FC<PrintErrorPageProps> = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PrintErrorPage
+export default PrintErrorPage;

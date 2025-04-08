@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, Bug, Info, AlertTriangle, CheckCircle, Copy, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import {
   generatePrintDebugInfo, 
   logPrintDebugInfo,
   PrintDebugPanelProps 
-} from '@/utils/printDebugger';
+} from '@/utils/print-debug';
 import { useToast } from '@/hooks/use-toast';
 
 const PrintDebugPanel: React.FC<PrintDebugPanelProps> = ({ 

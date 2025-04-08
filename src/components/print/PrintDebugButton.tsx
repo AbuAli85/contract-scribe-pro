@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PrintDebugPanel from './PrintDebugPanel';
-import { attachDebuggerToWindow } from '@/utils/printDebugger';
+import { attachDebuggerToWindow } from '@/utils/print-debug';
 
 interface PrintDebugButtonProps {
   className?: string;
