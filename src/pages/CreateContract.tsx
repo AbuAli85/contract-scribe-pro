@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ContractForm from "@/components/ContractForm"
 import { usePrint } from "@/hooks/usePrint"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import PrintDebugButton from "@/components/print/PrintDebugButton"
 
 export default function CreateContract() {
   // Generate a temporary contract ID for document attachments
@@ -74,15 +75,18 @@ export default function CreateContract() {
           {language === "ar" ? "إنشاء عقد جديد" : "Create New Contract"}
         </h1>
         <div className="flex gap-2">
-          {/* Only show document panel toggle in development mode */}
+          {/* Only show development tools in development mode */}
           {process.env.NODE_ENV === "development" && (
-            <Button 
-              variant="outline" 
-              onClick={() => setUseNewDocumentsPanel(!useNewDocumentsPanel)}
-              className="mr-2"
-            >
-              {language === "ar" ? "تبديل لوحة المستندات" : "Toggle Documents Panel"}
-            </Button>
+            <>
+              <Button 
+                variant="outline" 
+                onClick={() => setUseNewDocumentsPanel(!useNewDocumentsPanel)}
+                className="mr-2"
+              >
+                {language === "ar" ? "تبديل لوحة المستندات" : "Toggle Documents Panel"}
+              </Button>
+              <PrintDebugButton iconOnly className="mr-2" />
+            </>
           )}
           <Select 
             value={language} 
@@ -146,12 +150,19 @@ export default function CreateContract() {
         <TabsContent value="preview" className="min-h-[600px]">
           <Card className="overflow-hidden">
             <CardHeader>
-              <CardTitle>
-                {language === "ar" ? "معاينة العقد" : "Contract Preview"}
-              </CardTitle>
-              <CardDescription>
-                {language === "ar" ? "معاينة كيف سيبدو عقدك" : "Preview how your contract will look"}
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>
+                    {language === "ar" ? "معاينة العقد" : "Contract Preview"}
+                  </CardTitle>
+                  <CardDescription>
+                    {language === "ar" ? "معاينة كيف سيبدو عقدك" : "Preview how your contract will look"}
+                  </CardDescription>
+                </div>
+                {process.env.NODE_ENV === 'development' && (
+                  <PrintDebugButton />
+                )}
+              </div>
             </CardHeader>
             <CardContent className="p-0 overflow-auto print-container">
               <div className="contract-container">

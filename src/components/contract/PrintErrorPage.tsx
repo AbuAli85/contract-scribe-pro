@@ -1,8 +1,11 @@
+
 import React, { useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Link, useSearchParams } from "react-router-dom"
-import { Home, Printer, AlertCircle, RefreshCw } from "lucide-react"
+import { Home, Printer, AlertCircle, RefreshCw, Bug } from "lucide-react"
 import { printService } from '@/services/print.service'
+import PrintDebugButton from '../print/PrintDebugButton'
+import { logPrintDebugInfo } from '@/utils/printDebugger'
 
 interface PrintErrorPageProps {
   language?: "en" | "ar";
@@ -30,12 +33,8 @@ const PrintErrorPage: React.FC<PrintErrorPageProps> = ({
       redirectUrl: finalRedirectUrl
     });
     
-    // Print environment details to help diagnose issues
-    console.log("Browser information:", {
-      userAgent: navigator.userAgent,
-      windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight
-    });
+    // Log comprehensive debug information
+    logPrintDebugInfo();
   }, [finalErrorMessage, finalRedirectUrl]);
 
   // Function to try printing again with a more direct approach
@@ -116,7 +115,7 @@ const PrintErrorPage: React.FC<PrintErrorPageProps> = ({
           </ul>
         </div>
         
-        <div className="flex justify-between">
+        <div className="flex flex-wrap gap-2 justify-between mb-4">
           <Link to={finalRedirectUrl}>
             <Button className="flex items-center gap-2">
               <Home className="h-4 w-4" />
@@ -133,6 +132,20 @@ const PrintErrorPage: React.FC<PrintErrorPageProps> = ({
             {language === "ar" ? "محاولة الطباعة مباشرة" : "Try Direct Print"}
           </Button>
         </div>
+        
+        {/* Only show debug button in development environment */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-4 border-t pt-4">
+            <div className="flex justify-center">
+              <PrintDebugButton buttonVariant="secondary" />
+            </div>
+            <p className="text-xs text-center mt-2 text-gray-500">
+              {language === "ar" 
+                ? "أدوات التشخيص متاحة في بيئة التطوير فقط"
+                : "Debug tools available in development environment only"}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

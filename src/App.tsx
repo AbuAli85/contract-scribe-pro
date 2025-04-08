@@ -7,6 +7,7 @@ import { Toaster } from "./components/ui/toaster"
 import { ThemeProvider } from "./components/ThemeProvider"
 import PrintErrorPage from "./components/contract/PrintErrorPage"
 import { useEffect, useRef } from "react"
+import { attachDebuggerToWindow } from "./utils/printDebugger"
 
 // Apply print styles globally
 import "./styles/contract-global.css"
@@ -15,7 +16,7 @@ function App() {
   // Store a reference to the original print function
   const originalPrintRef = useRef<typeof window.print | null>(null);
   
-  // Add global print error handler
+  // Add global print error handler and debugger
   useEffect(() => {
     const handlePrintError = (error: ErrorEvent) => {
       console.error("Print system error:", error)
@@ -50,6 +51,11 @@ function App() {
     }
     
     prepareGlobalPrinting()
+    
+    // Attach print debugger to window in development mode
+    if (process.env.NODE_ENV === 'development') {
+      attachDebuggerToWindow();
+    }
     
     return () => {
       window.removeEventListener('error', handlePrintError)
