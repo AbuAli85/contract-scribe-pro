@@ -139,7 +139,6 @@ const checkPrintElementsVisibility = (): boolean => {
   const criticalElements = [
     '.contract-preview', 
     '.contract-content', 
-    '.two-column-layout',
     '.contract-column',
     '.signature-area'
   ];
@@ -294,7 +293,7 @@ export const generatePrintDebugInfo = (): PrintDebugInfo => {
 /**
  * Formats debug information for console output
  */
-export const logPrintDebugInfo = (): void => {
+export const logPrintDebugInfo = (): PrintDebugInfo => {
   const debugInfo = generatePrintDebugInfo();
   
   console.group('🖨️ Print Debug Information');
