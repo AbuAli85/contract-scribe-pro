@@ -109,12 +109,45 @@ export const printService = {
             console.log('Executing print command...')
             
             try {
-              // Use the browser's native print function - ensure it's called on the proper window object
-              if (typeof window !== 'undefined' && window.print) {
-                window.print()
-                console.log('Print function called - adding printing classes')
+              // FIXED: Use a safer approach to access window.print
+              // We need to check if we're in the main window context
+              // and not in an iframe or other restricted environment
+              if (typeof window !== 'undefined') {
+                // Get the top-level window object when possible
+                const windowToPrint = window.self === window.top ? window : window.parent;
+                
+                // Only if print is available as a function
+                if (typeof windowToPrint.print === 'function') {
+                  // Call the print method on the proper window object
+                  windowToPrint.print();
+                  console.log('Print function called successfully');
+                } else {
+                  // Fallback for environments where print isn't available directly
+                  const printFrame = document.createElement('iframe');
+                  printFrame.style.display = 'none';
+                  document.body.appendChild(printFrame);
+                  
+                  // Copy content to the frame
+                  const printContent = document.querySelector(selector);
+                  if (printFrame.contentDocument && printContent) {
+                    printFrame.contentDocument.write('<html><head><title>Print</title></head><body>');
+                    printFrame.contentDocument.write(printContent.innerHTML);
+                    printFrame.contentDocument.write('</body></html>');
+                    printFrame.contentDocument.close();
+                    
+                    // Try to print the frame
+                    try {
+                      printFrame.contentWindow?.print();
+                      console.log('Print function called via frame');
+                    } catch (frameError) {
+                      throw new Error('Print function not available: ' + frameError.message);
+                    }
+                  } else {
+                    throw new Error('Print function not available in this environment');
+                  }
+                }
               } else {
-                throw new Error('Print function not available in this environment')
+                throw new Error('Window object not available');
               }
               
               // Clean up after print dialog closes
@@ -126,8 +159,8 @@ export const printService = {
               }, 1000)
             } catch (printError) {
               console.error('Print system error:', printError)
-              reject(new Error('Print system error: ' + printError.message))
-              onError?.(new Error('Print system error: ' + printError.message))
+              reject(new Error('Print system error: ' + (printError instanceof Error ? printError.message : String(printError))))
+              onError?.(new Error('Print system error: ' + (printError instanceof Error ? printError.message : String(printError))))
               printService.cleanupAfterPrinting()
             }
           }, 500)

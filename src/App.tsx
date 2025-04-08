@@ -27,26 +27,35 @@ function App() {
     
     // Additional global print preparation
     const prepareGlobalPrinting = () => {
-      // Store the original print function in the ref for access in cleanup
-      originalPrintRef.current = window.print
-      
-      // Add special class to html when window.print is called
-      window.print = function() {
-        document.documentElement.classList.add('is-printing')
-        document.body.classList.add('printing')
-        
-        console.log("Print function called - adding printing classes")
-        
-        try {
-          originalPrintRef.current?.()
-        } finally {
-          // Remove class after printing
-          setTimeout(() => {
-            document.documentElement.classList.remove('is-printing')
-            document.body.classList.remove('printing')
-            console.log("Print finished - removing printing classes")
-          }, 1000)
+      try {
+        // Store the original print function in the ref for access in cleanup
+        if (typeof window !== 'undefined' && typeof window.print === 'function') {
+          originalPrintRef.current = window.print.bind(window)
+          
+          // Add special class to html when window.print is called
+          window.print = function() {
+            document.documentElement.classList.add('is-printing')
+            document.body.classList.add('printing')
+            
+            console.log("Print function called - adding printing classes")
+            
+            try {
+              // Call the original print function directly on window
+              if (originalPrintRef.current) {
+                originalPrintRef.current()
+              }
+            } finally {
+              // Remove class after printing
+              setTimeout(() => {
+                document.documentElement.classList.remove('is-printing')
+                document.body.classList.remove('printing')
+                console.log("Print finished - removing printing classes")
+              }, 1000)
+            }
+          }
         }
+      } catch (error) {
+        console.error("Failed to set up global print handler:", error)
       }
     }
     
