@@ -40,7 +40,8 @@ function App() {
             console.log("Print function called - adding printing classes")
             
             try {
-              // Call the original print function directly on window (avoiding cross-origin issues)
+              // Call the original print function
+              // CRITICAL FIX: always use the original window context
               if (originalPrintRef.current) {
                 originalPrintRef.current()
               }

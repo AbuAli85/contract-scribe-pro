@@ -108,30 +108,24 @@ export const printService = {
           setTimeout(() => {
             console.log('Executing print command...')
             
-            try {
-              // SAFER APPROACH: Use direct window.print method only
-              // Avoid cross-origin issues by not trying to access window.parent or other contexts
-              if (typeof window !== 'undefined' && window.self) {
-                // Direct approach - no framebusting or cross-origin attempts
-                window.print();
-                console.log('Print function called successfully directly on window');
-              } else {
-                throw new Error('Window object not available');
-              }
-              
-              // Clean up after print dialog closes
-              setTimeout(() => {
-                printService.cleanupAfterPrinting()
-                console.log('Print operation completed')
-                onSuccess?.()
-                resolve()
-              }, 1000)
-            } catch (printError) {
-              console.error('Print system error:', printError)
-              reject(new Error('Print system error: ' + (printError instanceof Error ? printError.message : String(printError))))
-              onError?.(new Error('Print system error: ' + (printError instanceof Error ? printError.message : String(printError))))
-              printService.cleanupAfterPrinting()
+            // CRUCIAL FIX: We must use the GLOBAL window.print function
+            // and not try to access any window objects that might be cross-origin
+            if (typeof window === 'undefined') {
+              throw new Error('Window object not available')
             }
+            
+            // Use the browser's built-in print functionality
+            // This is the safest approach to avoid cross-origin issues
+            window.print()
+            console.log('Print function called successfully')
+            
+            // Clean up after print dialog closes
+            setTimeout(() => {
+              printService.cleanupAfterPrinting()
+              console.log('Print operation completed')
+              onSuccess?.()
+              resolve()
+            }, 1000)
           }, 500)
         } catch (error) {
           const printError = error instanceof Error ? error : new Error('Unknown printing error')

@@ -76,7 +76,16 @@ const Print: React.FC<PrintProps> = ({
         console.log('Starting print process with visibility fixes applied');
       }
       
-      handlePrint(selector);
+      // Use window.print directly for critical cases
+      if (navigator.userAgent.includes('Firefox') || navigator.userAgent.includes('Safari')) {
+        // For browsers with known cross-origin issues, try direct printing
+        console.log('Using direct window.print for compatibility with', navigator.userAgent);
+        window.print();
+        onAfterPrint?.();
+      } else {
+        // For other browsers, use our enhanced print service
+        handlePrint(selector);
+      }
     } catch (error) {
       console.error('Print error:', error);
       
