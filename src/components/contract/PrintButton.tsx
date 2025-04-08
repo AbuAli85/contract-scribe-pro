@@ -14,6 +14,7 @@ const PrintButton = ({ language }: PrintButtonProps) => {
   useEffect(() => {
     const beforePrintHandler = () => {
       setIsPrinting(true);
+      document.body.classList.add('printing');
     };
     
     const afterPrintHandler = () => {
@@ -33,6 +34,7 @@ const PrintButton = ({ language }: PrintButtonProps) => {
     try {
       // Add printing class to document body
       document.body.classList.add('printing');
+      setIsPrinting(true);
       
       // Target all elements that need to be visible when printing
       const selectors = [
@@ -85,41 +87,41 @@ const PrintButton = ({ language }: PrintButtonProps) => {
         });
       });
       
-      // Create a print-specific container if needed
-      const printContainer = document.querySelector('.printing-container') || 
-                            document.createElement('div');
-      if (!document.querySelector('.printing-container')) {
-        printContainer.classList.add('printing-container');
-        document.body.appendChild(printContainer);
-      }
-      
       // Ensure content is fully rendered before printing
       setTimeout(() => {
         window.print();
         
-        // Restore original styles after a delay
+        // Reset printing state if the print dialog is closed without printing
         setTimeout(() => {
-          selectors.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(element => {
-              if (element instanceof HTMLElement) {
-                if (element.dataset.originalDisplay) {
-                  element.style.display = element.dataset.originalDisplay;
+          if (document.body.classList.contains('printing')) {
+            document.body.classList.remove('printing');
+            setIsPrinting(false);
+            
+            // Restore original styles
+            selectors.forEach(selector => {
+              const elements = document.querySelectorAll(selector);
+              elements.forEach(element => {
+                if (element instanceof HTMLElement) {
+                  if (element.dataset.originalDisplay) {
+                    element.style.display = element.dataset.originalDisplay;
+                  }
+                  if (element.dataset.originalVisibility) {
+                    element.style.visibility = element.dataset.originalVisibility;
+                  }
+                  if (element.dataset.originalOpacity) {
+                    element.style.opacity = element.dataset.originalOpacity;
+                  }
                 }
-                if (element.dataset.originalVisibility) {
-                  element.style.visibility = element.dataset.originalVisibility;
-                }
-                if (element.dataset.originalOpacity) {
-                  element.style.opacity = element.dataset.originalOpacity;
-                }
-              }
+              });
             });
-          });
-        }, 1000);
-      }, 1000);
+          }
+        }, 2000); // Longer timeout to handle print dialog closing
+      }, 500);
       
     } catch (error) {
       console.error("Print error:", error);
+      document.body.classList.remove('printing');
+      setIsPrinting(false);
     }
   };
 
