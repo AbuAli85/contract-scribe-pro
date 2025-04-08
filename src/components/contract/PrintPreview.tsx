@@ -1,6 +1,8 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { printService } from '@/services/print.service';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
 interface PrintPreviewProps {
   children: React.ReactNode;
@@ -18,6 +20,7 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
   className = ""
 }) => {
   const previewRef = useRef<HTMLDivElement>(null);
+  const [hasWarnings, setHasWarnings] = useState(false);
   
   // Ensure visibility for printing when component mounts
   useEffect(() => {
@@ -26,47 +29,82 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
     // Short delay to allow content to render fully
     const timer = setTimeout(() => {
       try {
+        // Apply critical printing styles immediately
+        document.documentElement.classList.add('is-printing');
+        document.body.classList.add('printing');
+        
         // Check if content is ready for printing
         const isReady = printService.validatePrintContent('.print-container');
         
-        // Apply visibility fixes if ready
-        if (isReady) {
-          // Add critical printing class to html/body
-          document.documentElement.classList.add('is-printing');
-          document.body.classList.add('printing');
-          
-          // Apply additional visibility fixes
-          printService.fixVisibility('.print-container');
-        }
+        // Apply visibility fixes regardless of ready status
+        // This ensures content is visible even if validation fails
+        printService.fixVisibility('.print-container');
+        
+        // Display warnings if validation failed
+        setHasWarnings(!isReady);
         
         // Notify parent component
-        onReady?.(isReady);
+        onReady?.(true); // Always report ready to allow printing attempt
         
         console.log('PrintPreview content ready:', isReady);
       } catch (error) {
         console.error('PrintPreview error:', error);
-        // Still notify parent, but with failure status
-        onReady?.(false);
+        setHasWarnings(true);
+        // Still notify parent to allow printing attempt
+        onReady?.(true);
       } finally {
         // Always clean up the printing classes after initialization
         setTimeout(() => {
           document.documentElement.classList.remove('is-printing');
           document.body.classList.remove('printing');
-        }, 200);
+        }, 500);
       }
     }, 500);
     
     return () => clearTimeout(timer);
   }, [onReady]);
 
+  // Apply print-specific styles to ensure content is visible
+  const inlineStyles = `
+    @media print {
+      .print-container * {
+        visibility: visible !important;
+        display: initial !important;
+        opacity: 1 !important;
+        overflow: visible !important;
+      }
+      
+      .a4-page {
+        padding: 0 !important;
+        margin: 0 !important;
+        page-break-after: always !important;
+      }
+    }
+  `;
+
   return (
-    <div 
-      ref={previewRef} 
-      className={`print-container ${className}`}
-      data-testid="print-container"
-    >
-      {children}
-    </div>
+    <>
+      {/* Inline critical print styles */}
+      <style>{inlineStyles}</style>
+      
+      {hasWarnings && (
+        <Alert variant="warning" className="mb-4 print:hidden">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Some print elements may not be visible. The system will attempt to fix this automatically.
+          </AlertDescription>
+        </Alert>
+      )}
+    
+      <div 
+        ref={previewRef} 
+        className={`print-container ${className}`}
+        data-testid="print-container"
+        style={{ position: 'relative', width: '100%' }}
+      >
+        {children}
+      </div>
+    </>
   );
 };
 

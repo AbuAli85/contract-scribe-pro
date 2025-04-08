@@ -1,7 +1,8 @@
 
 import { contractService } from './contract.service'
-import { useToast, toast } from '@/hooks/use-toast'
+import { toast } from '@/hooks/use-toast'
 import { navigationService } from './navigation.service'
+import { directPrint, needsDirectPrintFallback } from '@/utils/direct-print'
 
 export type PrintElement = {
   selector: string
@@ -14,6 +15,7 @@ export type PrintOptions = {
   elements?: PrintElement[]
   onSuccess?: () => void
   onError?: (error: Error) => void
+  forceDirectPrint?: boolean
 }
 
 /**
@@ -32,8 +34,47 @@ export const printService = {
       // Force visibility of all critical elements
       contractService.fixPrintVisibility()
       
+      // Add critical inline styles directly to ensure visibility
+      const style = document.createElement('style')
+      style.innerHTML = `
+        @media print {
+          body.printing * {
+            visibility: visible !important;
+          }
+          
+          body.printing .print-container,
+          body.printing .contract-preview,
+          body.printing .a4-page,
+          body.printing .contract-content,
+          body.printing .letterhead-background,
+          body.printing .two-column-layout,
+          body.printing .contract-column,
+          body.printing .contract-text,
+          body.printing .signature-area,
+          body.printing .signature-block {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+          }
+          
+          body.printing .two-column-layout {
+            display: flex !important;
+          }
+        }
+      `
+      document.head.appendChild(style)
+      
       // Log visibility state for debugging
       console.log(`Print visibility fixes applied to ${selector}`)
+      
+      // Remove the style after a short delay (it's only needed for the initial fix)
+      setTimeout(() => {
+        try {
+          document.head.removeChild(style)
+        } catch (e) {
+          // Ignore errors if the element was already removed
+        }
+      }, 5000)
     } catch (error) {
       console.error('Error fixing print visibility:', error)
     }
@@ -87,20 +128,12 @@ export const printService = {
       selector = '.print-container', 
       timeout = 300,
       onSuccess,
-      onError
+      onError,
+      forceDirectPrint = false
     } = options
     
     return new Promise((resolve, reject) => {
       try {
-        // Safety check - only proceed if we're in the same origin
-        if (window !== window.top) {
-          const error = new Error('Cannot print from inside an iframe - security restriction')
-          console.error(error)
-          onError?.(error)
-          reject(error)
-          return
-        }
-        
         // Add printing classes immediately
         document.body.classList.add('printing')
         document.documentElement.classList.add('is-printing')
@@ -108,11 +141,38 @@ export const printService = {
         // Apply visibility fixes first
         printService.fixVisibility(selector)
         
-        // Short delay to ensure styles are applied
+        // Use direct print method for browsers with known printing issues
+        if (forceDirectPrint || needsDirectPrintFallback()) {
+          console.log('Using direct print method for better compatibility')
+          
+          try {
+            // Use direct print utility
+            directPrint(selector)
+            
+            // Handle success after print dialog closes
+            setTimeout(() => {
+              printService.cleanupAfterPrinting()
+              console.log('Print operation completed')
+              onSuccess?.()
+              resolve()
+            }, 1000)
+          } catch (error) {
+            const printError = error instanceof Error 
+              ? error 
+              : new Error('Direct print failed')
+            console.error('Direct print error:', printError)
+            onError?.(printError)
+            reject(printError)
+          }
+          
+          return
+        }
+        
+        // Standard print method for other browsers
         setTimeout(() => {
           try {
             // Skip stylesheet validation to avoid cross-origin errors
-            console.log('Executing print command (safe mode)...')
+            console.log('Executing print command...')
             
             // Execute print using native window.print()
             if (typeof window !== 'undefined' && typeof window.print === 'function') {
@@ -161,17 +221,20 @@ export const printService = {
    * Safe window.print wrapper - avoids cross-origin issues
    * This is a synchronous function that can be called directly
    */
-  printNow: (): void => {
+  printNow: (selector = '.print-container'): void => {
     try {
-      // Safety check
-      if (window !== window.top) {
-        console.error('Cannot print from inside an iframe - security restriction')
-        return
-      }
-      
       // Add printing classes
       document.body.classList.add('printing')
       document.documentElement.classList.add('is-printing')
+      
+      // Apply visibility fixes
+      printService.fixVisibility(selector)
+      
+      // Use direct print for maximum compatibility
+      if (needsDirectPrintFallback()) {
+        directPrint(selector)
+        return
+      }
       
       // Call the native print function directly
       window.print()

@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { printService } from '@/services/print.service'
 import { useToast } from '@/hooks/use-toast'
@@ -9,6 +9,7 @@ export type UsePrintOptions = {
   onError?: (error: Error) => void
   selector?: string
   language?: 'en' | 'ar'
+  forceDirectPrint?: boolean
 }
 
 export function usePrint(options: UsePrintOptions = {}) {
@@ -16,18 +17,52 @@ export function usePrint(options: UsePrintOptions = {}) {
   const navigate = useNavigate()
   const { toast } = useToast()
   
+  // Clean up printing classes when component unmounts
+  useEffect(() => {
+    return () => {
+      document.documentElement.classList.remove('is-printing')
+      document.body.classList.remove('printing')
+    }
+  }, [])
+  
   const handlePrint = useCallback((selector = '.print-container') => {
     if (isPrinting) return
     
     setIsPrinting(true)
+    console.log('Print function called - adding printing classes')
     
     try {
       // Add critical printing class to html/body
       document.documentElement.classList.add('is-printing')
       document.body.classList.add('printing')
       
-      // Apply visibility fixes first
+      // Force apply visibility fixes
       printService.fixVisibility(selector)
+      
+      // Use direct printing method for maximum compatibility
+      if (options.forceDirectPrint) {
+        // Directly call window.print() for maximum browser compatibility
+        window.print()
+        
+        // Clean up after printing
+        setTimeout(() => {
+          document.documentElement.classList.remove('is-printing')
+          document.body.classList.remove('printing')
+          setIsPrinting(false)
+          console.log('Print finished - removing printing classes')
+          
+          // Show success toast
+          toast({
+            title: options.language === "ar" ? "تمت الطباعة" : "Print Sent",
+            description: options.language === "ar" 
+              ? "تم إرسال المستند إلى الطابعة" 
+              : "Document was sent to printer",
+          })
+          
+          options.onSuccess?.()
+        }, 1000)
+        return
+      }
       
       // Short timeout to ensure styles are applied
       setTimeout(() => {
@@ -41,6 +76,7 @@ export function usePrint(options: UsePrintOptions = {}) {
             document.documentElement.classList.remove('is-printing')
             document.body.classList.remove('printing')
             
+            console.log('Print finished - removing printing classes')
             setIsPrinting(false)
             options.onSuccess?.()
             
@@ -88,14 +124,6 @@ export function usePrint(options: UsePrintOptions = {}) {
             description: error instanceof Error ? error.message : "An error occurred while printing",
             variant: "destructive",
           })
-          
-          // Navigate to the print error page for serious errors
-          if (error instanceof Error && (
-              error.message.includes('cross-origin') || 
-              error.message.includes('Permission denied'))) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown printing error occurred'
-            navigate('/print-error?error=' + encodeURIComponent(errorMessage))
-          }
           
           setIsPrinting(false)
           options.onError?.(error instanceof Error ? error : new Error(String(error)))

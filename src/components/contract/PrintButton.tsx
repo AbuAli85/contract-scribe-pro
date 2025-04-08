@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react"
-import { Printer, Loader2, AlertTriangle } from "lucide-react"
+import { Printer, Loader2, AlertTriangle, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { documentSystem, type AttachedDocument } from "@/lib/documents"
@@ -14,13 +14,15 @@ interface PrintButtonProps {
   contractData?: any
   selectedDocuments?: string[]
   contractId?: string
+  forceDirectPrint?: boolean
 }
 
 const PrintButton = ({ 
   language, 
   contractData,
   selectedDocuments = ["contract"],
-  contractId = "default"
+  contractId = "default",
+  forceDirectPrint = true // Force direct print for better compatibility
 }: PrintButtonProps) => {
   const { toast } = useToast()
   const [documents, setDocuments] = useState<AttachedDocument[]>([])
@@ -28,9 +30,10 @@ const PrintButton = ({
   const [contentReady, setContentReady] = useState(false)
   const navigate = useNavigate()
   
-  // Use the centralized print hook
+  // Use the centralized print hook with direct print option
   const { isPrinting, handlePrint } = usePrint({
     language,
+    forceDirectPrint,
     onError: (error) => {
       console.error("Print error in PrintButton:", error);
       
@@ -73,10 +76,8 @@ const PrintButton = ({
         const isReady = printService.validatePrintContent('.print-container')
         setContentReady(isReady)
         
-        if (isReady) {
-          // Pre-fix any visibility issues that might exist
-          printService.fixVisibility('.print-container')
-        }
+        // Always pre-fix visibility issues that might exist
+        printService.fixVisibility('.print-container')
       } catch (error) {
         console.error("Error checking print content visibility:", error)
         // Set to true to allow printing even if validation errors occur
@@ -103,8 +104,40 @@ const PrintButton = ({
       document.documentElement.classList.add('is-printing')
       document.body.classList.add('printing')
       
-      // Use the hook's print function which handles all the complexity
-      handlePrint('.print-container')
+      // Add a critical inline style to ensure content visibility in print
+      const style = document.createElement('style')
+      style.innerHTML = `
+        @media print {
+          .print-container, .contract-preview, .a4-page, .contract-content, .letterhead-background,
+          .two-column-layout, .contract-column, .contract-text, .signature-area,
+          .reference-section, .id-photo-container, .contract-title {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            overflow: visible !important;
+          }
+          
+          .two-column-layout {
+            display: flex !important;
+          }
+          
+          .print-hidden, button, .tabs-list, header, nav {
+            display: none !important;
+          }
+        }
+      `
+      document.head.appendChild(style)
+      
+      // Call print and remove the style afterward
+      setTimeout(() => {
+        // Use the hook's print function which handles all the complexity
+        handlePrint('.print-container')
+        
+        // Clean up the temporary style after a delay
+        setTimeout(() => {
+          document.head.removeChild(style)
+        }, 2000)
+      }, 100)
     } catch (error) {
       console.error("Error in print button handler:", error)
       document.documentElement.classList.remove('is-printing')
@@ -132,6 +165,8 @@ const PrintButton = ({
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : !contentReady ? (
         <AlertTriangle className="h-4 w-4 text-yellow-500" />
+      ) : documents.length > 0 ? (
+        <FileText className="h-4 w-4" />
       ) : (
         <Printer className="h-4 w-4" />
       )}
