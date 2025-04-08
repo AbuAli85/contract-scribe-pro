@@ -48,191 +48,161 @@ const ContractPreview = ({ language, contractData }: ContractPreviewProps) => {
         <span>{language === "ar" ? "طباعة" : "Print"}</span>
       </Button>
 
-      <div className="contract-document bg-white border p-8 rounded-lg shadow-sm">
-        <div className="relative">
-          {contractData.letterhead && (
-            <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
-              <img
-                src={contractData.letterhead}
-                alt="Letterhead"
-                className="w-full h-full object-cover"
-              />
+      <div className="a4-page">
+        {/* Letterhead background */}
+        {contractData.letterhead && (
+          <img
+            src={contractData.letterhead}
+            alt="Letterhead"
+            className="letterhead-background"
+          />
+        )}
+        
+        <div className="contract-content">
+          {/* Company Logo and Header */}
+          <div className="contract-header">
+            <div className="company-logo">
+              <div className="company-name">
+                <span className="falcon-text">Falcon</span>
+                <span className="eye-text">EYE</span>
+                <span className="ml-2 text-base">Management and Business SPC</span>
+              </div>
+              <div className="text-base mt-1">عين الصقر للإدارة و الأعمال ش.م.و</div>
+            </div>
+            <div className="reference-number">
+              Reference Number: {formattedRefNumber()}
+            </div>
+          </div>
+
+          {/* ID Photo - with fixed width of 400px */}
+          {contractData.promoterPhoto && (
+            <div className="id-photo-container">
+              <div className="id-photo-wrapper">
+                <img
+                  src={contractData.promoterPhoto}
+                  alt="Promoter ID"
+                  className="id-photo"
+                />
+              </div>
             </div>
           )}
-          
-          <div className="relative z-10">
-            {/* Company Logo and Letterhead */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-              <div className="flex flex-col">
-                <div className="text-xl font-bold">
-                  <span className="font-bold">Falcon</span>
-                  <span className="font-extrabold text-primary">EYE</span>
-                  <span className="text-sm font-normal ml-1">Management and Business SPC</span>
+
+          {/* Contract Title */}
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold">
+              {language === "ar" ? "عقد تعيين المروج" : "Promoter Assignment Contract"}
+            </h1>
+          </div>
+
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            {/* Left Column - English */}
+            <div className="space-y-4">
+              <h2 className="text-lg font-bold">Contract Details</h2>
+
+              <p className="text-sm">
+                This contract is between{" "}
+                <strong>
+                  {contractData.firstParty?.name?.en || "Falcon Eye Management and Business SPC"} (First Party)
+                </strong>{" "}
+                having the C.R. No.: <strong>{contractData.firstParty?.crn?.en || "1410869"}</strong>
+              </p>
+
+              <p className="text-sm">
+                <strong>{contractData.secondParty?.name?.en || "Al Madar Trading LLC"} (Second Party)</strong> having
+                the C.R. No.: <strong>{contractData.secondParty?.crn?.en || "1234567"}</strong>
+              </p>
+
+              <p className="text-sm">
+                The Second Party agrees to provide The First Party with a qualified promoter to sell ("
+                <strong>{contractData.product?.en || "Electronics"}</strong>") products at{" "}
+                <strong>{contractData.location?.en || "Muscat Grand Mall"}</strong>.
+              </p>
+
+              <div className="bg-muted/20 p-3 rounded-md">
+                <div className="space-y-1">
+                  <div className="text-sm">
+                    <strong>Name:</strong> {contractData.promoter?.name?.en || "Farzan Riyaz Munde"}
+                  </div>
+                  <div className="text-sm">
+                    <strong>ID NO:</strong> {contractData.promoter?.id?.en || "126208869"}
+                  </div>
+                  <div className="text-sm">
+                    <strong>From:</strong> {contractData.startDate?.en || "06/04/2025"} <strong>to:</strong>{" "}
+                    {contractData.endDate?.en || "06/07/2025"}
+                  </div>
                 </div>
-                <div className="text-base">عين الصقر للإدارة و الأعمال ش.م.و</div>
               </div>
-              <div className="text-sm mt-2 md:mt-0">
-                Reference Number: {formattedRefNumber()}
+
+              <div>
+                <h3 className="text-md font-semibold">Financial and Administrative Responsibilities</h3>
+                <p className="text-sm">
+                  The Second Party will bear the entire financial and administrative responsibilities towards this
+                  promoter.
+                </p>
               </div>
+
+              <p className="text-sm pt-4">Best Regards,</p>
             </div>
 
-            {/* ID Photo */}
-            {contractData.promoterPhoto && (
-              <div className="flex justify-center mb-6">
-                <div className="w-24 h-24 border">
-                  <img
-                    src={contractData.promoterPhoto}
-                    alt="Promoter ID"
-                    className="w-full h-full object-cover"
-                  />
+            {/* Right Column - Arabic */}
+            <div className="space-y-4 text-right rtl">
+              <h2 className="text-lg font-bold">تفاصيل العقد</h2>
+
+              <p className="text-sm">
+                هذا العقد بين{" "}
+                <strong>
+                  {contractData.firstParty?.name?.ar || "عين الصقر للإدارة و الأعمال ش.م.و"} (الطرف الأول)
+                </strong>{" "}
+                التي لديها السجل التجاري: <strong>{contractData.firstParty?.crn?.ar || "1410869"}</strong>
+              </p>
+
+              <p className="text-sm">
+                <strong>{contractData.secondParty?.name?.ar || "المدار للتجارة ش.م.م"} (الطرف الثاني)</strong> التي
+                لديها السجل التجاري: <strong>{contractData.secondParty?.crn?.ar || "1234567"}</strong>
+              </p>
+
+              <p className="text-sm">
+                الطرف الثاني يوافق على تزويد الطرف الأول بمروج مؤهل لبيع منتجات "
+                <strong>{contractData.product?.ar || "الإلكترونيات"}</strong>" في{" "}
+                <strong>{contractData.location?.ar || "مسقط جراند مول"}</strong>.
+              </p>
+
+              <div className="bg-muted/20 p-3 rounded-md">
+                <div className="space-y-1">
+                  <div className="text-sm">
+                    <strong>الاسم:</strong> {contractData.promoter?.name?.ar || "فرزان رياض موندي"}
+                  </div>
+                  <div className="text-sm">
+                    <strong>رقم الهوية:</strong> {contractData.promoter?.id?.ar || "126208869"}
+                  </div>
+                  <div className="text-sm">
+                    <strong>من:</strong> {contractData.startDate?.ar || "06/04/2025"} <strong>إلى:</strong>{" "}
+                    {contractData.endDate?.ar || "06/06/2025"}
+                  </div>
                 </div>
               </div>
-            )}
 
-            {/* Contract Title */}
-            <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold">
-                {language === "ar" ? "عقد تعيين المروج" : "Promoter Assignment Contract"}
-              </h1>
+              <div>
+                <h3 className="text-md font-semibold">المسؤوليات والالتزامات المالية</h3>
+                <p className="text-sm">
+                  الطرف الثاني سيتحمل كامل المسؤوليات المالية والإدارية تجاه هذا المروج.
+                </p>
+              </div>
+
+              <p className="text-sm pt-4">و تفضلوا بقبول وافر الشكر و التقدير،</p>
             </div>
+          </div>
 
-            {/* Two Column Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              {/* Left Column - English */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-bold">Contract Details</h2>
-
-                <p className="text-sm">
-                  This contract is between{" "}
-                  <strong>
-                    {contractData.firstParty?.name?.en || "Falcon Eye Management and Business SPC"} (First Party)
-                  </strong>{" "}
-                  having the C.R. No.: <strong>{contractData.firstParty?.crn?.en || "1410869"}</strong>
-                </p>
-
-                <p className="text-sm">
-                  <strong>{contractData.secondParty?.name?.en || "Al Madar Trading LLC"} (Second Party)</strong> having
-                  the C.R. No.: <strong>{contractData.secondParty?.crn?.en || "1234567"}</strong>
-                </p>
-
-                <p className="text-sm">
-                  The Second Party agrees to provide The First Party with a qualified promoter to sell ("
-                  <strong>{contractData.product?.en || "Electronics"}</strong>") products at{" "}
-                  <strong>{contractData.location?.en || "Muscat Grand Mall"}</strong>.
-                </p>
-
-                <div className="bg-muted/20 p-3 rounded-md">
-                  <div className="space-y-1">
-                    <div className="text-sm">
-                      <strong>Name:</strong> {contractData.promoter?.name?.en || "Farzan Riyaz Munde"}
-                    </div>
-                    <div className="text-sm">
-                      <strong>ID NO:</strong> {contractData.promoter?.id?.en || "126208869"}
-                    </div>
-                    <div className="text-sm">
-                      <strong>From:</strong> {contractData.startDate?.en || "06/04/2025"} <strong>to:</strong>{" "}
-                      {contractData.endDate?.en || "06/07/2025"}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-md font-semibold">Financial and Administrative Responsibilities</h3>
-                  <p className="text-sm">
-                    The Second Party will bear the entire financial and administrative responsibilities towards this
-                    promoter.
-                  </p>
-                </div>
-
-                <p className="text-sm pt-4">Best Regards,</p>
-              </div>
-
-              {/* Right Column - Arabic */}
-              <div className="space-y-4 text-right rtl">
-                <h2 className="text-lg font-bold">تفاصيل العقد</h2>
-
-                <p className="text-sm">
-                  هذا العقد بين{" "}
-                  <strong>
-                    {contractData.firstParty?.name?.ar || "عين الصقر للإدارة و الأعمال ش.م.و"} (الطرف الأول)
-                  </strong>{" "}
-                  التي لديها السجل التجاري: <strong>{contractData.firstParty?.crn?.ar || "1410869"}</strong>
-                </p>
-
-                <p className="text-sm">
-                  <strong>{contractData.secondParty?.name?.ar || "المدار للتجارة ش.م.م"} (الطرف الثاني)</strong> التي
-                  لديها السجل التجاري: <strong>{contractData.secondParty?.crn?.ar || "1234567"}</strong>
-                </p>
-
-                <p className="text-sm">
-                  الطرف الثاني يوافق على تزويد الطرف الأول بمروج مؤهل لبيع منتجات "
-                  <strong>{contractData.product?.ar || "الإلكترونيات"}</strong>" في{" "}
-                  <strong>{contractData.location?.ar || "مسقط جراند مول"}</strong>.
-                </p>
-
-                <div className="bg-muted/20 p-3 rounded-md">
-                  <div className="space-y-1">
-                    <div className="text-sm">
-                      <strong>الاسم:</strong> {contractData.promoter?.name?.ar || "فرزان رياض موندي"}
-                    </div>
-                    <div className="text-sm">
-                      <strong>رقم الهوية:</strong> {contractData.promoter?.id?.ar || "126208869"}
-                    </div>
-                    <div className="text-sm">
-                      <strong>من:</strong> {contractData.startDate?.ar || "06/04/2025"} <strong>إلى:</strong>{" "}
-                      {contractData.endDate?.ar || "06/06/2025"}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-md font-semibold">المسؤوليات والالتزامات المالية</h3>
-                  <p className="text-sm">
-                    الطرف الثاني سيتحمل كامل المسؤوليات المالية والإدارية تجاه هذا المروج.
-                  </p>
-                </div>
-
-                <p className="text-sm pt-4">و تفضلوا بقبول وافر الشكر و التقدير،</p>
-              </div>
+          {/* Signature Area */}
+          <div className="signature-area">
+            <div className="signature-block">
+              <div className="signature-line"></div>
+              <div className="text-center text-sm">Client (عميل) الطرف الأول</div>
             </div>
-
-            {/* Signature Area */}
-            <div className="grid grid-cols-2 gap-8 mb-8">
-              <div className="flex flex-col items-center">
-                <div className="border-t border-black w-2/3 mb-2"></div>
-                <div className="text-center text-sm">Client (عميل) الطرف الأول</div>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="border-t border-black w-2/3 mb-2"></div>
-                <div className="text-center text-sm">Employer (مشغل) الطرف الثاني</div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="border-t pt-4 mt-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-muted-foreground">
-                <div>
-                  <div>CR Number: 1410869</div>
-                  <div>Falcon Eye Management and Business SPC | عين الصقر للإدارة و الأعمال ش.م.و</div>
-                  <div className="flex flex-col md:flex-row md:gap-2">
-                    <span>+968 2412 3456</span>
-                    <span>info@falconeye.om</span>
-                    <span>www.falconeye.com</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div>PO Box 762, PC-122 Al Khuwair,</div>
-                  <div>Bousher, Sultanate of Oman</div>
-                  <div className="flex flex-col md:flex-row justify-end md:gap-2">
-                    <span>+968 9194 3449</span>
-                    <span>+968 9933 6958</span>
-                  </div>
-                  <div className="flex flex-col md:flex-row justify-end md:gap-2">
-                    <span>hr@falconeyegroup.net</span>
-                    <span>www.falconeyegroup.net</span>
-                  </div>
-                </div>
-              </div>
+            <div className="signature-block">
+              <div className="signature-line"></div>
+              <div className="text-center text-sm">Employer (مشغل) الطرف الثاني</div>
             </div>
           </div>
         </div>
