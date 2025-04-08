@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -5,6 +7,9 @@
 
 @layer base {
   :root {
+    --font-inter: 'Inter', sans-serif;
+    --font-cairo: 'Cairo', sans-serif;
+    
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -97,11 +102,18 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+  }
+
+  html[lang="ar"] body {
+    font-family: var(--font-cairo);
+  }
+
+  html[lang="en"] body {
+    font-family: var(--font-inter);
   }
 }
 
-/* Custom print styles */
 @media print {
   @page {
     size: A4;
