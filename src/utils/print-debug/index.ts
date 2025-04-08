@@ -17,8 +17,12 @@ export * from './debug-logger';
 export * from './window-debugger';
 
 // Default export for convenience
+import { generatePrintDebugInfo } from './debug-generator';
+import { logPrintDebugInfo } from './debug-logger';
+import { attachDebuggerToWindow } from './window-debugger';
+
 export default {
-  generatePrintDebugInfo: require('./debug-generator').generatePrintDebugInfo,
-  logPrintDebugInfo: require('./debug-logger').logPrintDebugInfo,
-  attachDebuggerToWindow: require('./window-debugger').attachDebuggerToWindow
+  generatePrintDebugInfo,
+  logPrintDebugInfo,
+  attachDebuggerToWindow
 };
