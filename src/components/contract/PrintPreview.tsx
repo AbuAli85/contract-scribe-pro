@@ -79,6 +79,38 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
         margin: 0 !important;
         page-break-after: always !important;
       }
+
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
+      body, html {
+        width: 100% !important;
+        height: 100% !important; 
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+      }
+      
+      .contract-content, 
+      .letterhead-background,
+      .two-column-layout,
+      .contract-column,
+      .signature-area,
+      .contract-title,
+      .reference-section,
+      .id-photo-container {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 100 !important;
+      }
+      
+      .two-column-layout {
+        display: flex !important;
+      }
     }
   `;
 

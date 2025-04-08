@@ -60,9 +60,66 @@ export const printService = {
           body.printing .two-column-layout {
             display: flex !important;
           }
+          
+          @page {
+            size: A4 portrait;
+            margin: 0;
+          }
+          
+          html, body, #root {
+            height: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+          }
         }
       `
       document.head.appendChild(style)
+      
+      // Apply direct style changes to contract elements
+      const container = document.querySelector(selector);
+      if (container) {
+        // Critical elements that must be visible
+        const criticalSelectors = [
+          '.contract-preview',
+          '.a4-page',
+          '.contract-content',
+          '.letterhead-background',
+          '.two-column-layout',
+          '.contract-column',
+          '.signature-area',
+          '.reference-section',
+          '.contract-title',
+          '.id-photo-container'
+        ];
+        
+        criticalSelectors.forEach(criticalSelector => {
+          const elements = document.querySelectorAll(criticalSelector);
+          elements.forEach(el => {
+            if (el instanceof HTMLElement) {
+              el.style.visibility = 'visible';
+              el.style.opacity = '1';
+              
+              // Determine display based on selector
+              if (criticalSelector === '.two-column-layout') {
+                el.style.display = 'flex';
+              } else {
+                el.style.display = 'block';
+              }
+              
+              // Ensure proper z-index for layering
+              if (criticalSelector === '.contract-content') {
+                el.style.position = 'relative';
+                el.style.zIndex = '10';
+              } else if (criticalSelector === '.letterhead-background') {
+                el.style.position = 'absolute';
+                el.style.zIndex = '1';
+              }
+            }
+          });
+        });
+      }
       
       // Log visibility state for debugging
       console.log(`Print visibility fixes applied to ${selector}`)
@@ -129,7 +186,7 @@ export const printService = {
       timeout = 300,
       onSuccess,
       onError,
-      forceDirectPrint = false
+      forceDirectPrint = true // Default to direct print for maximum compatibility
     } = options
     
     return new Promise((resolve, reject) => {
@@ -141,67 +198,28 @@ export const printService = {
         // Apply visibility fixes first
         printService.fixVisibility(selector)
         
-        // Use direct print method for browsers with known printing issues
-        if (forceDirectPrint || needsDirectPrintFallback()) {
-          console.log('Using direct print method for better compatibility')
-          
-          try {
-            // Use direct print utility
-            directPrint(selector)
-            
-            // Handle success after print dialog closes
-            setTimeout(() => {
-              printService.cleanupAfterPrinting()
-              console.log('Print operation completed')
-              onSuccess?.()
-              resolve()
-            }, 1000)
-          } catch (error) {
-            const printError = error instanceof Error 
-              ? error 
-              : new Error('Direct print failed')
-            console.error('Direct print error:', printError)
-            onError?.(printError)
-            reject(printError)
-          }
-          
-          return
-        }
+        // Always use direct print method for better browser compatibility
+        console.log('Using direct print method for better compatibility')
         
-        // Standard print method for other browsers
-        setTimeout(() => {
-          try {
-            // Skip stylesheet validation to avoid cross-origin errors
-            console.log('Executing print command...')
-            
-            // Execute print using native window.print()
-            if (typeof window !== 'undefined' && typeof window.print === 'function') {
-              // Call the native print function directly
-              window.print()
-              
-              // Handle success after print dialog closes
-              setTimeout(() => {
-                printService.cleanupAfterPrinting()
-                console.log('Print operation completed')
-                onSuccess?.()
-                resolve()
-              }, 1000)
-            } else {
-              throw new Error('Print function not available in this environment')
-            }
-          } catch (error) {
-            // Handle any errors during the print call
-            const printError = error instanceof Error ? error : new Error('Unknown printing error')
-            console.error('Print execution error:', printError)
-            
-            // Clean up
+        try {
+          // Use direct print utility
+          directPrint(selector)
+          
+          // Handle success after print dialog closes
+          setTimeout(() => {
             printService.cleanupAfterPrinting()
-            
-            // Handle error
-            onError?.(printError)
-            reject(printError)
-          }
-        }, 100)
+            console.log('Print operation completed')
+            onSuccess?.()
+            resolve()
+          }, 1000)
+        } catch (error) {
+          const printError = error instanceof Error 
+            ? error 
+            : new Error('Direct print failed')
+          console.error('Direct print error:', printError)
+          onError?.(printError)
+          reject(printError)
+        }
       } catch (error) {
         // Handle any setup errors
         const printError = error instanceof Error ? error : new Error('Print setup error')
@@ -223,27 +241,8 @@ export const printService = {
    */
   printNow: (selector = '.print-container'): void => {
     try {
-      // Add printing classes
-      document.body.classList.add('printing')
-      document.documentElement.classList.add('is-printing')
-      
-      // Apply visibility fixes
-      printService.fixVisibility(selector)
-      
-      // Use direct print for maximum compatibility
-      if (needsDirectPrintFallback()) {
-        directPrint(selector)
-        return
-      }
-      
-      // Call the native print function directly
-      window.print()
-      
-      // Clean up after a short delay
-      setTimeout(() => {
-        document.body.classList.remove('printing')
-        document.documentElement.classList.remove('is-printing')
-      }, 1000)
+      // Direct print is the most reliable method
+      directPrint(selector);
     } catch (error) {
       console.error('Direct print error:', error)
       document.body.classList.remove('printing')

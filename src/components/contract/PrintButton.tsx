@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom"
 import { contractService } from "@/services/contract.service"
 import { printService } from "@/services/print.service"
 import { usePrint } from "@/hooks/usePrint"
+import { directPrint } from "@/utils/direct-print"
 
 interface PrintButtonProps {
   language: "ar" | "en"
@@ -100,44 +101,16 @@ const PrintButton = ({
     }
 
     try {
-      // Add printing classes before calling print
-      document.documentElement.classList.add('is-printing')
-      document.body.classList.add('printing')
+      // Always use direct print method for better compatibility
+      directPrint('.print-container');
       
-      // Add a critical inline style to ensure content visibility in print
-      const style = document.createElement('style')
-      style.innerHTML = `
-        @media print {
-          .print-container, .contract-preview, .a4-page, .contract-content, .letterhead-background,
-          .two-column-layout, .contract-column, .contract-text, .signature-area,
-          .reference-section, .id-photo-container, .contract-title {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            overflow: visible !important;
-          }
-          
-          .two-column-layout {
-            display: flex !important;
-          }
-          
-          .print-hidden, button, .tabs-list, header, nav {
-            display: none !important;
-          }
-        }
-      `
-      document.head.appendChild(style)
-      
-      // Call print and remove the style afterward
+      // Show success toast
       setTimeout(() => {
-        // Use the hook's print function which handles all the complexity
-        handlePrint('.print-container')
-        
-        // Clean up the temporary style after a delay
-        setTimeout(() => {
-          document.head.removeChild(style)
-        }, 2000)
-      }, 100)
+        toast({
+          title: language === "ar" ? "تم إرسال الطباعة" : "Print Sent",
+          description: language === "ar" ? "تم إرسال المستند إلى الطابعة" : "Document was sent to printer",
+        });
+      }, 1000);
     } catch (error) {
       console.error("Error in print button handler:", error)
       document.documentElement.classList.remove('is-printing')
