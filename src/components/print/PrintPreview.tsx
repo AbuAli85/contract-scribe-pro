@@ -78,7 +78,7 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
   return (
     <div ref={previewRef} className={`print-container ${className}`}>
       {showWarnings && warnings.length > 0 && (
-        <Alert variant="warning" className="mb-4 print:hidden">
+        <Alert variant="destructive" className="mb-4 print:hidden">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Print Preview Warnings</AlertTitle>
           <AlertDescription>

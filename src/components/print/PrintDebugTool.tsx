@@ -155,7 +155,7 @@ const PrintDebugTool: React.FC = () => {
                     <div>{debugInfo.document.cssStylesheetsCount}</div>
                   </div>
                   {debugInfo.document.printMediaStylesheetsCount === 0 && (
-                    <Alert variant="warning" className="mt-2">
+                    <Alert variant="destructive" className="mt-2">
                       <AlertTriangle className="h-4 w-4" />
                       <AlertTitle>No Print Stylesheets</AlertTitle>
                       <AlertDescription>

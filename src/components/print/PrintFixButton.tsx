@@ -39,11 +39,8 @@ const PrintFixButton: React.FC<PrintFixButtonProps> = ({
           description: autoFix 
             ? 'Automatic fixes have been applied' 
             : 'Click to apply automatic fixes',
-          action: autoFix ? undefined : {
-            label: 'Fix Issues',
-            onClick: handleTroubleshoot,
-          },
-          variant: 'warning',
+          action: autoFix ? undefined : <Button onClick={handleTroubleshoot}>Fix Issues</Button>,
+          variant: "destructive",
         });
       } else {
         toast({
