@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { format } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
-import { Card, CardContent } from "@/components/ui/card";
 
 interface ContractPreviewProps {
   language: "ar" | "en";
@@ -23,173 +22,221 @@ const ContractPreview = ({ language, contractData }: ContractPreviewProps) => {
     });
   };
 
-  const translations = {
-    ar: {
-      title: "عقد توظيف مروج",
-      refNumber: "رقم المرجع",
-      date: "التاريخ",
-      parties: "أطراف العقد",
-      firstParty: "الطرف الأول",
-      secondParty: "الطرف الثاني",
-      promoter: "المروج",
-      crn: "رقم السجل التجاري",
-      id: "رقم الهوية",
-      subject: "موضوع العقد",
-      subjectText: "يتفق الطرفان على توظيف المروج لتسويق وترويج المنتجات المذكورة أدناه وفقًا للشروط المذكورة في هذا العقد.",
-      product: "المنتج",
-      location: "الموقع",
-      duration: "مدة العقد",
-      durationText: (start: string, end: string) => `تبدأ مدة هذا العقد من ${start} وتنتهي في ${end}.`,
-      signatures: "التوقيعات",
-      firstPartySignature: "توقيع الطرف الأول",
-      secondPartySignature: "توقيع الطرف الثاني",
-      promoterSignature: "توقيع المروج",
-      print: "طباعة العقد",
-      today: "تم إصدار هذا العقد في",
-    },
-    en: {
-      title: "Promoter Assignment Contract",
-      refNumber: "Reference Number",
-      date: "Date",
-      parties: "Contract Parties",
-      firstParty: "First Party",
-      secondParty: "Second Party",
-      promoter: "Promoter",
-      crn: "Commercial Registration Number",
-      id: "ID Number",
-      subject: "Contract Subject",
-      subjectText: "The parties agree to employ the promoter to market and promote the products mentioned below according to the terms mentioned in this contract.",
-      product: "Product",
-      location: "Location",
-      duration: "Contract Duration",
-      durationText: (start: string, end: string) => `This contract starts on ${start} and ends on ${end}.`,
-      signatures: "Signatures",
-      firstPartySignature: "First Party Signature",
-      secondPartySignature: "Second Party Signature",
-      promoterSignature: "Promoter Signature",
-      print: "Print Contract",
-      today: "This contract was issued on",
-    },
+  // Format reference number to match PAC-YYYYMMDD-XXXX format
+  const formattedRefNumber = () => {
+    if (!contractData.refNumber) return "PAC-20250406-9940";
+
+    // Extract date parts from the existing reference number
+    const parts = contractData.refNumber.split("-");
+    if (parts.length >= 2) {
+      const datePart = parts[1];
+      const randomPart = parts[2] ? parts[2].padStart(4, "0") : "9940";
+      return `PAC-${datePart}-${randomPart}`;
+    }
+
+    return `PAC-${contractData.refNumber}`;
   };
 
-  const t = translations[language];
-  const dir = language === "ar" ? "rtl" : "ltr";
-
   return (
-    <div className={`contract-preview ${dir === "rtl" ? "text-right" : "text-left"}`}>
+    <div className="contract-preview">
       <Button
         variant="outline"
         onClick={handlePrint}
         className="mb-6 print:hidden flex gap-2 items-center"
       >
         <Printer className="h-4 w-4" />
-        <span>{t.print}</span>
+        <span>{language === "ar" ? "طباعة" : "Print"}</span>
       </Button>
 
-      <Card className="contract-document bg-white border p-8 rounded-lg shadow-sm">
-        {contractData.letterhead && (
-          <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
-            <img
-              src={contractData.letterhead}
-              alt="Letterhead"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-
-        <div className="relative z-10">
-          <h1 className="text-2xl font-bold text-center mb-8">{t.title}</h1>
+      <div className="contract-document bg-white border p-8 rounded-lg shadow-sm">
+        <div className="relative">
+          {contractData.letterhead && (
+            <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+              <img
+                src={contractData.letterhead}
+                alt="Letterhead"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
           
-          <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h2 className="text-lg font-bold">{t.refNumber}</h2>
-              <p>{contractData.refNumber}</p>
+          <div className="relative z-10">
+            {/* Company Logo and Letterhead */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+              <div className="flex flex-col">
+                <div className="text-xl font-bold">
+                  <span className="font-bold">Falcon</span>
+                  <span className="font-extrabold text-primary">EYE</span>
+                  <span className="text-sm font-normal ml-1">Management and Business SPC</span>
+                </div>
+                <div className="text-base">عين الصقر للإدارة و الأعمال ش.م.و</div>
+              </div>
+              <div className="text-sm mt-2 md:mt-0">
+                Reference Number: {formattedRefNumber()}
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-bold">{t.date}</h2>
-              <p>{format(new Date(), "PPP", { locale: language === "ar" ? ar : enUS })}</p>
-            </div>
-          </div>
 
-          <div className="mb-8">
-            <h2 className="text-lg font-bold mb-4">{t.parties}</h2>
-            <div className="space-y-4">
-              <div className="p-4 bg-muted/20 rounded-md">
-                <h3 className="font-semibold">{t.firstParty}: {contractData.firstParty.name[language]}</h3>
-                <p>{t.crn}: {contractData.firstParty.crn[language]}</p>
+            {/* ID Photo */}
+            {contractData.promoterPhoto && (
+              <div className="flex justify-center mb-6">
+                <div className="w-24 h-24 border">
+                  <img
+                    src={contractData.promoterPhoto}
+                    alt="Promoter ID"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
-              <div className="p-4 bg-muted/20 rounded-md">
-                <h3 className="font-semibold">{t.secondParty}: {contractData.secondParty.name[language]}</h3>
-                <p>{t.crn}: {contractData.secondParty.crn[language]}</p>
-              </div>
-              <div className="p-4 bg-muted/20 rounded-md">
-                <h3 className="font-semibold">{t.promoter}: {contractData.promoter.name[language]}</h3>
-                <p>{t.id}: {contractData.promoter.id[language]}</p>
-                {contractData.promoterPhoto && (
-                  <div className="mt-2 w-24 h-24 border">
-                    <img
-                      src={contractData.promoterPhoto}
-                      alt="Promoter ID"
-                      className="w-full h-full object-cover"
-                    />
+            )}
+
+            {/* Contract Title */}
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold">
+                {language === "ar" ? "عقد تعيين المروج" : "Promoter Assignment Contract"}
+              </h1>
+            </div>
+
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              {/* Left Column - English */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-bold">Contract Details</h2>
+
+                <p className="text-sm">
+                  This contract is between{" "}
+                  <strong>
+                    {contractData.firstParty?.name?.en || "Falcon Eye Management and Business SPC"} (First Party)
+                  </strong>{" "}
+                  having the C.R. No.: <strong>{contractData.firstParty?.crn?.en || "1410869"}</strong>
+                </p>
+
+                <p className="text-sm">
+                  <strong>{contractData.secondParty?.name?.en || "Al Madar Trading LLC"} (Second Party)</strong> having
+                  the C.R. No.: <strong>{contractData.secondParty?.crn?.en || "1234567"}</strong>
+                </p>
+
+                <p className="text-sm">
+                  The Second Party agrees to provide The First Party with a qualified promoter to sell ("
+                  <strong>{contractData.product?.en || "Electronics"}</strong>") products at{" "}
+                  <strong>{contractData.location?.en || "Muscat Grand Mall"}</strong>.
+                </p>
+
+                <div className="bg-muted/20 p-3 rounded-md">
+                  <div className="space-y-1">
+                    <div className="text-sm">
+                      <strong>Name:</strong> {contractData.promoter?.name?.en || "Farzan Riyaz Munde"}
+                    </div>
+                    <div className="text-sm">
+                      <strong>ID NO:</strong> {contractData.promoter?.id?.en || "126208869"}
+                    </div>
+                    <div className="text-sm">
+                      <strong>From:</strong> {contractData.startDate?.en || "06/04/2025"} <strong>to:</strong>{" "}
+                      {contractData.endDate?.en || "06/07/2025"}
+                    </div>
                   </div>
-                )}
+                </div>
+
+                <div>
+                  <h3 className="text-md font-semibold">Financial and Administrative Responsibilities</h3>
+                  <p className="text-sm">
+                    The Second Party will bear the entire financial and administrative responsibilities towards this
+                    promoter.
+                  </p>
+                </div>
+
+                <p className="text-sm pt-4">Best Regards,</p>
+              </div>
+
+              {/* Right Column - Arabic */}
+              <div className="space-y-4 text-right rtl">
+                <h2 className="text-lg font-bold">تفاصيل العقد</h2>
+
+                <p className="text-sm">
+                  هذا العقد بين{" "}
+                  <strong>
+                    {contractData.firstParty?.name?.ar || "عين الصقر للإدارة و الأعمال ش.م.و"} (الطرف الأول)
+                  </strong>{" "}
+                  التي لديها السجل التجاري: <strong>{contractData.firstParty?.crn?.ar || "1410869"}</strong>
+                </p>
+
+                <p className="text-sm">
+                  <strong>{contractData.secondParty?.name?.ar || "المدار للتجارة ش.م.م"} (الطرف الثاني)</strong> التي
+                  لديها السجل التجاري: <strong>{contractData.secondParty?.crn?.ar || "1234567"}</strong>
+                </p>
+
+                <p className="text-sm">
+                  الطرف الثاني يوافق على تزويد الطرف الأول بمروج مؤهل لبيع منتجات "
+                  <strong>{contractData.product?.ar || "الإلكترونيات"}</strong>" في{" "}
+                  <strong>{contractData.location?.ar || "مسقط جراند مول"}</strong>.
+                </p>
+
+                <div className="bg-muted/20 p-3 rounded-md">
+                  <div className="space-y-1">
+                    <div className="text-sm">
+                      <strong>الاسم:</strong> {contractData.promoter?.name?.ar || "فرزان رياض موندي"}
+                    </div>
+                    <div className="text-sm">
+                      <strong>رقم الهوية:</strong> {contractData.promoter?.id?.ar || "126208869"}
+                    </div>
+                    <div className="text-sm">
+                      <strong>من:</strong> {contractData.startDate?.ar || "06/04/2025"} <strong>إلى:</strong>{" "}
+                      {contractData.endDate?.ar || "06/06/2025"}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-md font-semibold">المسؤوليات والالتزامات المالية</h3>
+                  <p className="text-sm">
+                    الطرف الثاني سيتحمل كامل المسؤوليات المالية والإدارية تجاه هذا المروج.
+                  </p>
+                </div>
+
+                <p className="text-sm pt-4">و تفضلوا بقبول وافر الشكر و التقدير،</p>
               </div>
             </div>
-          </div>
 
-          <div className="mb-8">
-            <h2 className="text-lg font-bold mb-2">{t.subject}</h2>
-            <p>{t.subjectText}</p>
-          </div>
-
-          <div className="mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-muted/20 rounded-md">
-                <h3 className="font-semibold">{t.product}</h3>
-                <p>{contractData.product[language]}</p>
+            {/* Signature Area */}
+            <div className="grid grid-cols-2 gap-8 mb-8">
+              <div className="flex flex-col items-center">
+                <div className="border-t border-black w-2/3 mb-2"></div>
+                <div className="text-center text-sm">Client (عميل) الطرف الأول</div>
               </div>
-              <div className="p-4 bg-muted/20 rounded-md">
-                <h3 className="font-semibold">{t.location}</h3>
-                <p>{contractData.location[language]}</p>
+              <div className="flex flex-col items-center">
+                <div className="border-t border-black w-2/3 mb-2"></div>
+                <div className="text-center text-sm">Employer (مشغل) الطرف الثاني</div>
               </div>
             </div>
-          </div>
 
-          <div className="mb-8">
-            <h2 className="text-lg font-bold mb-2">{t.duration}</h2>
-            <p>{t.durationText(formatDate(contractData.startDate[language]), formatDate(contractData.endDate[language]))}</p>
-          </div>
-
-          <div className="mb-4 text-sm text-muted-foreground">
-            <p>{t.today} {format(new Date(), "PPP", { locale: language === "ar" ? ar : enUS })}</p>
-          </div>
-
-          <div className="mt-12">
-            <h2 className="text-lg font-bold mb-4">{t.signatures}</h2>
-            <div className="grid grid-cols-3 gap-8">
-              <div>
-                <p className="mb-8">{t.firstPartySignature}</p>
-                <div className="border-t border-black pt-2">
-                  {contractData.firstParty.name[language]}
+            {/* Footer */}
+            <div className="border-t pt-4 mt-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-muted-foreground">
+                <div>
+                  <div>CR Number: 1410869</div>
+                  <div>Falcon Eye Management and Business SPC | عين الصقر للإدارة و الأعمال ش.م.و</div>
+                  <div className="flex flex-col md:flex-row md:gap-2">
+                    <span>+968 2412 3456</span>
+                    <span>info@falconeye.om</span>
+                    <span>www.falconeye.com</span>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <p className="mb-8">{t.secondPartySignature}</p>
-                <div className="border-t border-black pt-2">
-                  {contractData.secondParty.name[language]}
-                </div>
-              </div>
-              <div>
-                <p className="mb-8">{t.promoterSignature}</p>
-                <div className="border-t border-black pt-2">
-                  {contractData.promoter.name[language]}
+                <div className="text-right">
+                  <div>PO Box 762, PC-122 Al Khuwair,</div>
+                  <div>Bousher, Sultanate of Oman</div>
+                  <div className="flex flex-col md:flex-row justify-end md:gap-2">
+                    <span>+968 9194 3449</span>
+                    <span>+968 9933 6958</span>
+                  </div>
+                  <div className="flex flex-col md:flex-row justify-end md:gap-2">
+                    <span>hr@falconeyegroup.net</span>
+                    <span>www.falconeyegroup.net</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };
