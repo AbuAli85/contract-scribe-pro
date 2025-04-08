@@ -1,5 +1,9 @@
 
-const SignatureArea = () => {
+interface SignatureAreaProps {
+  signatures?: any[];
+}
+
+const SignatureArea = ({ signatures = [] }: SignatureAreaProps) => {
   return (
     <div className="signature-area">
       <div className="signature-block">
