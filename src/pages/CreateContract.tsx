@@ -12,6 +12,7 @@ import ContractPreview from "@/components/ContractPreview"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ContractForm from "@/components/ContractForm"
 import { usePrint } from "@/hooks/usePrint"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function CreateContract() {
   // Generate a temporary contract ID for document attachments
