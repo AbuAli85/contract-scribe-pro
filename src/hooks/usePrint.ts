@@ -5,7 +5,7 @@ interface UsePrintOptions {
   timeoutDuration?: number;
 }
 
-export const usePrint = ({ timeoutDuration = 10000 }: UsePrintOptions = {}) => {
+export const usePrint = ({ timeoutDuration = 15000 }: UsePrintOptions = {}) => {
   const [isPrinting, setIsPrinting] = useState(false);
   
   // Setup print listeners
@@ -41,12 +41,35 @@ export const usePrint = ({ timeoutDuration = 10000 }: UsePrintOptions = {}) => {
     try {
       console.log("Print preparation starting...");
       
-      // Make sure all contract elements are visible
+      // Force all contract elements to be visible
       document.querySelectorAll('.contract-preview *, .a4-page *, .contract-content *').forEach(el => {
         if (el instanceof HTMLElement) {
-          el.style.display = el.tagName === 'DIV' ? 'block' : '';
+          // Set display property based on element type
+          if (el.tagName === 'DIV' || el.tagName === 'SECTION') {
+            el.style.display = 'block';
+          } else if (el.tagName === 'SPAN' || el.tagName === 'P' || el.tagName === 'H1' || 
+                    el.tagName === 'H2' || el.tagName === 'H3') {
+            el.style.display = 'block';
+          } else if (el.tagName === 'IMG') {
+            el.style.display = 'inline-block';
+          } else if (el.classList.contains('two-column-layout')) {
+            el.style.display = 'flex';
+          } else if (el.classList.contains('signature-area')) {
+            el.style.display = 'flex';
+          } else if (el.classList.contains('id-photo-container')) {
+            el.style.display = 'flex';
+          } else {
+            el.style.display = '';
+          }
+          
           el.style.visibility = 'visible';
           el.style.opacity = '1';
+          
+          // Ensure text elements have proper color
+          if (el.tagName === 'P' || el.tagName === 'H1' || el.tagName === 'H2' || 
+              el.tagName === 'H3' || el.tagName === 'SPAN' || el.tagName === 'DIV') {
+            el.style.color = 'black';
+          }
         }
       });
       
@@ -57,12 +80,12 @@ export const usePrint = ({ timeoutDuration = 10000 }: UsePrintOptions = {}) => {
       // Force a reflow to ensure CSS changes are applied
       document.body.offsetHeight;
       
-      // Queue the actual print operation to give browser time to apply styles
+      // Longer delay to ensure styles are properly applied
       setTimeout(() => {
         // Double check document state before printing
         if (document.readyState !== 'complete') {
           console.log("Document not fully loaded, delaying print...");
-          setTimeout(() => window.print(), 1500);
+          setTimeout(() => window.print(), 2000);
         } else {
           console.log("Initiating print operation...");
           window.print();
@@ -76,7 +99,7 @@ export const usePrint = ({ timeoutDuration = 10000 }: UsePrintOptions = {}) => {
             setIsPrinting(false);
           }
         }, timeoutDuration);
-      }, 1000);
+      }, 2000); // Increased from 1000ms to 2000ms
       
     } catch (error) {
       console.error("Print error:", error);

@@ -67,12 +67,14 @@
   }
 
   /* Force visibility for all contract elements when printing */
+  .print-container *,
   .contract-preview *,
   .a4-page *,
   .contract-content * {
     visibility: visible !important;
     display: inherit !important;
     opacity: 1 !important;
+    color: black !important;
   }
 
   /* Make sure text is displayed properly */
@@ -130,6 +132,19 @@
     opacity: 1 !important;
     color: black !important;
   }
+  
+  /* Container class to ensure print visibility */
+  .print-container {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: white !important;
+    min-height: 297mm !important;
+    width: 210mm !important;
+    margin: 0 auto !important;
+    position: relative !important;
+    z-index: 9999 !important;
+  }
 }
 
 /* Styles that apply both for print and when printing class is active */
@@ -144,11 +159,13 @@
 .signature-area,
 .signature-block,
 .signature-line,
-.contract-column {
+.contract-column,
+.print-container {
   break-inside: avoid !important;
 }
 
 /* Non-media query styles for printing class to ensure they apply immediately */
+body.printing .print-container,
 body.printing .reference-section,
 body.printing .contract-title-area,
 body.printing .signature-area,

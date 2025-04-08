@@ -20,13 +20,13 @@
   }
   
   /* Hide UI elements */
-  body > *:not(.printing-container):not(#root),
-  #root > *:not(.contract-preview):not(.a4-page):not(.contract-content) {
+  body > *:not(.printing-container):not(#root):not(.print-container),
+  #root > *:not(.contract-preview):not(.a4-page):not(.contract-content):not(.print-container) {
     display: none !important;
   }
   
   /* Contract container styles */
-  .contract-preview {
+  .contract-preview, .print-container {
     display: block !important;
     visibility: visible !important;
     position: relative !important;
@@ -138,6 +138,7 @@
   }
 
   /* Ensure all contract elements are visible */
+  .print-container *,
   .contract-preview *,
   .a4-page *,
   .contract-content *,
@@ -158,9 +159,11 @@
     display: inherit !important;
     visibility: visible !important;
     opacity: 1 !important;
+    color: black !important;
   }
 
   /* Specific elements that need to be preserved in printing */
+  body.printing .print-container,
   body.printing .contract-preview,
   body.printing .a4-page,
   body.printing .contract-content,
@@ -193,6 +196,7 @@
 }
 
 /* Apply visibility immediately when class is added without waiting for print dialog */
+body.printing .print-container,
 body.printing .contract-preview,
 body.printing .a4-page,
 body.printing .letterhead-background,
