@@ -1,5 +1,7 @@
 
 @import './base.css';
 @import './app.css';
-@import './contract.css';
+@import './contract-layout.css';
+@import './contract-typography.css';
+@import './contract-components.css';
 @import './print.css';

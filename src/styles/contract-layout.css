@@ -1,0 +1,95 @@
+
+/* Contract Layout Styles */
+.a4-page {
+  position: relative;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 20px auto;
+  background-color: #fff;
+  box-sizing: border-box;
+  color: #000;
+  padding: 20mm;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.contract-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+}
+
+.letterhead-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+  z-index: 1;
+  pointer-events: none;
+  object-fit: cover;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Two Column Layout for Contract Text */
+.two-column-layout {
+  display: flex;
+  justify-content: space-between;
+  gap: 10mm;
+  margin-bottom: 15mm;
+  position: relative;
+  z-index: 10;
+}
+
+.contract-column {
+  flex: 1;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.rtl {
+  direction: rtl;
+  text-align: right;
+  font-family: var(--font-cairo);
+}
+
+/* Bottom Information */
+.bottom-info {
+  position: absolute;
+  bottom: 15mm;
+  left: 15mm;
+  right: 15mm;
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: #666;
+}
+
+/* Reference Section */
+.reference-section {
+  text-align: left;
+  margin-top: 1cm;
+  margin-bottom: 15mm;
+  padding-left: 5mm;
+  position: relative;
+  z-index: 10;
+}
+
+/* ID Photo Styles */
+.id-photo-container {
+  display: flex;
+  justify-content: center;
+  margin: 15mm 0;
+  position: relative;
+  z-index: 10;
+}
+
+.id-photo-wrapper {
+  width: 400px;
+  max-width: 100%;
+  border: 1px solid #ddd;
+  overflow: hidden;
+}

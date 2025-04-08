@@ -1,0 +1,81 @@
+
+/* Component-specific Styles */
+
+/* Contract Title */
+.contract-title-area {
+  text-align: center;
+  margin-bottom: 10mm;
+  position: relative;
+  z-index: 10;
+}
+
+/* Signature Area */
+.signature-area {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 25mm;
+  page-break-inside: avoid;
+  position: relative;
+  z-index: 10;
+}
+
+.signature-block {
+  width: 45%;
+  text-align: center;
+}
+
+.signature-line {
+  border-bottom: 1px solid #000;
+  margin-bottom: 5mm;
+  height: 15mm;
+}
+
+/* Promoter Details */
+.promoter-details {
+  margin: 5mm 0;
+  padding: 3mm;
+  background-color: rgba(249, 249, 249, 0.7);
+  border-radius: 3px;
+  border-left: 2px solid #1a73e8;
+}
+
+.promoter-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2mm;
+}
+
+.info-row {
+  display: flex;
+  gap: 5px;
+}
+
+/* Responsibilities Section */
+.responsibilities {
+  margin: 5mm 0;
+}
+
+/* Photo Styles */
+.id-photo {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Contact Info */
+.contact-info {
+  display: flex;
+  gap: 10px;
+  margin-top: 1mm;
+}
+
+.address-info {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 1mm;
+}
+
+.address-info span {
+  margin-left: 10px;
+}
