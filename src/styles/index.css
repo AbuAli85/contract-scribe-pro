@@ -4,4 +4,6 @@
 @import './contract-layout.css';
 @import './contract-typography.css';
 @import './contract-components.css';
-@import './print.css';
+@import './print-layout.css';
+@import './print-typography.css';
+@import './print-components.css';

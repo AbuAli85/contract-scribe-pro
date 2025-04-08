@@ -1,5 +1,5 @@
 
-/* Print styles */
+/* Print Layout Styles */
 @page {
   size: A4 portrait;
   margin: 0;
@@ -81,68 +81,6 @@
     opacity: 1 !important;
   }
   
-  /* Reference section */
-  .reference-section {
-    display: block !important;
-    visibility: visible !important;
-    text-align: left !important;
-    margin-top: 1cm !important;
-    margin-bottom: 15mm !important;
-    padding-left: 5mm !important;
-    page-break-inside: avoid !important;
-  }
-  
-  .reference-number {
-    display: block !important;
-    visibility: visible !important;
-    font-size: 12px !important;
-    font-weight: 500 !important;
-    color: black !important;
-  }
-  
-  /* ID photo styles */
-  .id-photo-container {
-    display: flex !important;
-    visibility: visible !important;
-    justify-content: center !important;
-    margin: 15mm 0 !important;
-    page-break-inside: avoid !important;
-  }
-  
-  .id-photo-wrapper {
-    display: block !important;
-    visibility: visible !important;
-    width: 400px !important;
-    max-width: 100% !important;
-    margin: 0 auto !important;
-    border: 1px solid #ddd !important;
-    overflow: hidden !important;
-  }
-  
-  .id-photo {
-    display: block !important;
-    visibility: visible !important;
-    width: 100% !important;
-    height: auto !important;
-  }
-  
-  /* Contract title styles */
-  .contract-title-area {
-    display: block !important;
-    visibility: visible !important;
-    text-align: center !important;
-    margin-bottom: 10mm !important;
-    page-break-inside: avoid !important;
-  }
-  
-  .contract-main-title {
-    display: block !important;
-    visibility: visible !important;
-    font-size: 20px !important;
-    font-weight: bold !important;
-    color: #1a73e8 !important;
-  }
-  
   /* Two-column layout styles */
   .two-column-layout {
     display: flex !important;
@@ -170,72 +108,33 @@
     text-align: right !important;
   }
   
-  /* Signature area */
-  .signature-area {
+  /* ID photo container layout */
+  .id-photo-container {
     display: flex !important;
     visibility: visible !important;
-    justify-content: space-between !important;
-    margin-top: 25mm !important;
+    justify-content: center !important;
+    margin: 15mm 0 !important;
     page-break-inside: avoid !important;
   }
   
-  .signature-block {
+  .id-photo-wrapper {
     display: block !important;
     visibility: visible !important;
-    width: 45% !important;
-    text-align: center !important;
+    width: 400px !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    border: 1px solid #ddd !important;
+    overflow: hidden !important;
   }
-  
-  .signature-line {
-    display: block !important;
-    visibility: visible !important;
-    border-bottom: 1px solid #000 !important;
-    margin-bottom: 5mm !important;
-    height: 15mm !important;
-  }
-  
-  /* All other contract elements */
-  .contract-title,
-  .promoter-details,
-  .responsibilities,
-  .best-regards,
-  .contract-text,
-  .promoter-info,
-  .responsibilities-title,
-  .info-row,
-  .bottom-info {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    color: black !important;
-    page-break-inside: avoid !important;
-  }
-  
-  /* Hide UI controls */
-  .print\:hidden,
-  button:not(.signature-block button),
-  .tabs-list,
-  header,
-  nav {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  
-  /* When printing class is active */
+
+  /* When printing class is active - layout elements */
   body.printing .contract-preview,
   body.printing .a4-page,
   body.printing .contract-content,
   body.printing .letterhead-background,
   body.printing .two-column-layout,
   body.printing .contract-column,
-  body.printing .reference-section,
-  body.printing .id-photo-container,
-  body.printing .contract-title-area,
-  body.printing .signature-area,
-  body.printing .contract-title,
-  body.printing .promoter-details,
-  body.printing .responsibilities,
-  body.printing .best-regards {
+  body.printing .id-photo-container {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;

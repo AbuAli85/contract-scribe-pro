@@ -1,0 +1,78 @@
+
+/* Print Component Styles */
+@media print {
+  /* Reference section */
+  .reference-section {
+    display: block !important;
+    visibility: visible !important;
+    text-align: left !important;
+    margin-top: 1cm !important;
+    margin-bottom: 15mm !important;
+    padding-left: 5mm !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* ID photo styles */
+  .id-photo {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+  
+  /* Contract title area */
+  .contract-title-area {
+    display: block !important;
+    visibility: visible !important;
+    text-align: center !important;
+    margin-bottom: 10mm !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Signature area */
+  .signature-area {
+    display: flex !important;
+    visibility: visible !important;
+    justify-content: space-between !important;
+    margin-top: 25mm !important;
+    page-break-inside: avoid !important;
+  }
+  
+  .signature-block {
+    display: block !important;
+    visibility: visible !important;
+    width: 45% !important;
+    text-align: center !important;
+  }
+  
+  .signature-line {
+    display: block !important;
+    visibility: visible !important;
+    border-bottom: 1px solid #000 !important;
+    margin-bottom: 5mm !important;
+    height: 15mm !important;
+  }
+  
+  /* Hide UI controls */
+  .print\:hidden,
+  button:not(.signature-block button),
+  .tabs-list,
+  header,
+  nav {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* When printing class is active - component elements */  
+  body.printing .reference-section,
+  body.printing .contract-title-area,
+  body.printing .signature-area,
+  body.printing .signature-block,
+  body.printing .signature-line,
+  body.printing .promoter-info,
+  body.printing .info-row {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}

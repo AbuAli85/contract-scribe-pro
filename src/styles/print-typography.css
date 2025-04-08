@@ -1,0 +1,50 @@
+
+/* Print Typography Styles */
+@media print {
+  /* Reference number */
+  .reference-number {
+    display: block !important;
+    visibility: visible !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: black !important;
+  }
+  
+  /* Contract title styles */
+  .contract-main-title {
+    display: block !important;
+    visibility: visible !important;
+    font-size: 20px !important;
+    font-weight: bold !important;
+    color: #1a73e8 !important;
+  }
+  
+  /* All text elements */
+  .contract-title,
+  .promoter-details,
+  .responsibilities,
+  .best-regards,
+  .contract-text,
+  .promoter-info,
+  .responsibilities-title,
+  .info-row,
+  .bottom-info {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: black !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* When printing class is active - typography elements */
+  body.printing .contract-title,
+  body.printing .promoter-details,
+  body.printing .responsibilities,
+  body.printing .best-regards,
+  body.printing .responsibilities-title,
+  body.printing .contract-text {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
