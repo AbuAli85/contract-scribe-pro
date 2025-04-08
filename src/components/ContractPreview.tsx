@@ -37,8 +37,8 @@ const ContractPreview = ({ language, contractData }: ContractPreviewProps) => {
           {/* Contract Title */}
           <ContractTitle language={language} />
 
-          {/* Two Column Layout - Ensuring they display side by side even in print */}
-          <div className="two-column-layout print:!flex">
+          {/* Two Column Layout - English and Arabic sides */}
+          <div className="two-column-layout">
             {/* Left Column - English */}
             <EnglishContractColumn contractData={contractData} />
 

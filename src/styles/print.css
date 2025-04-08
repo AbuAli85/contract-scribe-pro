@@ -10,82 +10,13 @@
     background: white !important;
     margin: 0 !important;
     padding: 0 !important;
-  }
-
-  .print-hidden {
-    display: none !important;
-  }
-
-  .a4-page {
-    margin: 0 !important;
-    box-shadow: none !important;
-    width: 210mm !important;
-    height: 297mm !important;
-    overflow: hidden !important;
-    page-break-after: always !important;
-  }
-
-  * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
   }
 
-  .letterhead-background {
-    display: block !important;
-    opacity: 0.8 !important;
-    object-fit: cover !important;
-    width: 100% !important;
-    height: 100% !important;
-  }
-
-  .id-photo-wrapper {
-    width: 400px !important;
-    page-break-inside: avoid !important;
-  }
-  
-  .contract-content {
-    position: relative !important;
-    z-index: 10 !important;
-  }
-  
-  .grid-cols-1 {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-
-  .two-column-layout {
-    display: flex !important;
-    page-break-inside: avoid !important;
-  }
-
-  .contract-column {
-    display: block !important;
-  }
-
-  .id-photo-centered {
-    display: block !important;
-    page-break-inside: avoid !important;
-  }
-
-  .signature-area {
-    display: flex !important;
-    justify-content: space-between !important;
-    page-break-inside: avoid !important;
-  }
-
-  .bottom-info {
-    position: absolute !important;
-    bottom: 15mm !important;
-    left: 15mm !important;
-    right: 15mm !important;
-  }
-
-  .contract-document {
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    box-shadow: none !important;
-    max-width: 100% !important;
+  .print-hidden {
+    display: none !important;
   }
 
   #root {
@@ -95,11 +26,116 @@
   
   .contract-preview {
     max-width: none !important;
+    display: block !important;
+    visibility: visible !important;
   }
   
-  /* Hide all other elements when printing */
+  .a4-page {
+    margin: 0 !important;
+    box-shadow: none !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    overflow: hidden !important;
+    page-break-after: always !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  .letterhead-background {
+    display: block !important;
+    opacity: 0.8 !important;
+    object-fit: cover !important;
+    width: 100% !important;
+    height: 100% !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 1 !important;
+  }
+
+  .contract-content {
+    position: relative !important;
+    z-index: 10 !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+  
+  .two-column-layout {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    page-break-inside: avoid !important;
+  }
+
+  .contract-column {
+    flex: 1 !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  .id-photo-wrapper {
+    width: 400px !important;
+    page-break-inside: avoid !important;
+    display: block !important;
+    margin: 15mm auto !important;
+  }
+
+  .reference-section {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  .contract-title-area {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  .signature-area {
+    display: flex !important;
+    justify-content: space-between !important;
+    page-break-inside: avoid !important;
+    visibility: visible !important;
+  }
+
+  .bottom-info {
+    position: absolute !important;
+    bottom: 15mm !important;
+    left: 15mm !important;
+    right: 15mm !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  .contract-document {
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+  }
+  
+  /* Hide all UI elements when printing */
+  .print:hidden, 
+  button, 
+  .tabs-list, 
+  header,
+  nav,
+  .button,
+  .print-hidden {
+    display: none !important;
+  }
+  
+  /* Show only the contract content when printing */
   body > *:not(.contract-preview),
+  #root > *:not(.contract-preview),
   .contract-preview > *:not(.a4-page) {
     display: none !important;
+  }
+  
+  /* Make sure each section is visible */
+  .a4-page,
+  .a4-page * {
+    display: block !important;
+    visibility: visible !important;
   }
 }
