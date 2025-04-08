@@ -23,6 +23,8 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
     );
   }
 
+  console.log("Rendering ContractPreview with data:", contractData);
+
   return (
     <div className="contract-preview print-container">
       <PrintButton 

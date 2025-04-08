@@ -2,46 +2,30 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, FileText, Edit, Eye } from "lucide-react"
+import { ArrowLeft, FileText, Edit, Eye, Printer } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { DocumentUploader } from "@/components/DocumentUploader"
 import { DocumentsPanel } from "@/components/DocumentsPanel"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { generateUniqueId } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import ContractPreview from "@/components/ContractPreview"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ContractForm from "@/components/ContractForm"
+import { usePrint } from "@/hooks/usePrint"
 
 export default function CreateContract() {
   // Generate a temporary contract ID for document attachments
   const [contractId] = useState(() => `temp-${generateUniqueId()}`)
   const [documents, setDocuments] = useState<any[]>([])
-  const [formData, setFormData] = useState({
-    title: "Promoter Assignment Contract",
-    type: "employment",
-    description: "Electronics promotion at Muscat Grand Mall",
-    startDate: "",
-    endDate: "",
-    value: "",
-    currency: "usd",
-    status: "draft",
-    firstName: "Farzan",
-    lastName: "Riyaz Munde",
-    idNumber: "126208869",
-    location: "Muscat Grand Mall",
-    product: "Electronics"
-  })
   const [useNewDocumentsPanel, setUseNewDocumentsPanel] = useState(false)
   const [activeTab, setActiveTab] = useState("edit")
   const [language, setLanguage] = useState<"en" | "ar">("en")
   const [contractData, setContractData] = useState<any>(null)
   const { toast } = useToast()
+  const { handlePrint, isPrinting } = usePrint()
 
   const handleGenerateContract = (data: any) => {
+    console.log("Contract generated with data:", data);
     setContractData(data)
     setActiveTab("preview")
     
@@ -57,6 +41,20 @@ export default function CreateContract() {
       title: language === "ar" ? "تم حفظ العقد" : "Contract saved",
       description: language === "ar" ? "تم حفظ العقد بنجاح" : "Your contract has been saved successfully",
     })
+  }
+
+  const handlePrintContract = () => {
+    if (!contractData) {
+      toast({
+        title: language === "ar" ? "لا يمكن طباعة العقد" : "Unable to print contract",
+        description: language === "ar" ? "يرجى إنشاء العقد أولاً" : "Please generate the contract first",
+        variant: "destructive",
+      })
+      return
+    }
+    
+    // Use the print hook
+    handlePrint()
   }
 
   return (
@@ -154,7 +152,7 @@ export default function CreateContract() {
                 {language === "ar" ? "معاينة كيف سيبدو عقدك" : "Preview how your contract will look"}
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-0 overflow-auto">
+            <CardContent className="p-0 overflow-auto print-container">
               <div className="contract-container">
                 {contractData ? (
                   <ContractPreview 
@@ -171,12 +169,23 @@ export default function CreateContract() {
                 )}
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between">
+            <CardFooter className="flex justify-between print:hidden">
               <Button variant="outline" onClick={() => setActiveTab("edit")}>
                 {language === "ar" ? "تحرير العقد" : "Edit Contract"}
               </Button>
-              <Button onClick={() => window.print()}>
-                {language === "ar" ? "طباعة العقد" : "Print Contract"}
+              <Button 
+                onClick={handlePrintContract}
+                disabled={isPrinting || !contractData}
+                className="flex items-center gap-2"
+              >
+                {isPrinting ? (
+                  <span>{language === "ar" ? "جاري التحضير..." : "Preparing..."}</span>
+                ) : (
+                  <>
+                    <Printer className="h-4 w-4" />
+                    {language === "ar" ? "طباعة العقد" : "Print Contract"}
+                  </>
+                )}
               </Button>
             </CardFooter>
           </Card>

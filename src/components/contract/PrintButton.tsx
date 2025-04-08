@@ -47,6 +47,7 @@ const PrintButton = ({
   useEffect(() => {
     if (contractData) {
       console.log("Contract data available for printing:", contractId)
+      console.log("Contract data details:", contractData)
     }
   }, [contractData, contractId])
 
@@ -82,7 +83,7 @@ const PrintButton = ({
       })
       
       // Call the handlePrint function from usePrint hook
-      handlePrint('.print-container')
+      handlePrint()
 
     } catch (error) {
       console.error("Print error:", error)
