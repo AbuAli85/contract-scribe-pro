@@ -109,43 +109,12 @@ export const printService = {
             console.log('Executing print command...')
             
             try {
-              // FIXED: Use a safer approach to access window.print
-              // We need to check if we're in the main window context
-              // and not in an iframe or other restricted environment
-              if (typeof window !== 'undefined') {
-                // Get the top-level window object when possible
-                const windowToPrint = window.self === window.top ? window : window.parent;
-                
-                // Only if print is available as a function
-                if (typeof windowToPrint.print === 'function') {
-                  // Call the print method on the proper window object
-                  windowToPrint.print();
-                  console.log('Print function called successfully');
-                } else {
-                  // Fallback for environments where print isn't available directly
-                  const printFrame = document.createElement('iframe');
-                  printFrame.style.display = 'none';
-                  document.body.appendChild(printFrame);
-                  
-                  // Copy content to the frame
-                  const printContent = document.querySelector(selector);
-                  if (printFrame.contentDocument && printContent) {
-                    printFrame.contentDocument.write('<html><head><title>Print</title></head><body>');
-                    printFrame.contentDocument.write(printContent.innerHTML);
-                    printFrame.contentDocument.write('</body></html>');
-                    printFrame.contentDocument.close();
-                    
-                    // Try to print the frame
-                    try {
-                      printFrame.contentWindow?.print();
-                      console.log('Print function called via frame');
-                    } catch (frameError) {
-                      throw new Error('Print function not available: ' + frameError.message);
-                    }
-                  } else {
-                    throw new Error('Print function not available in this environment');
-                  }
-                }
+              // SAFER APPROACH: Use direct window.print method only
+              // Avoid cross-origin issues by not trying to access window.parent or other contexts
+              if (typeof window !== 'undefined' && window.self) {
+                // Direct approach - no framebusting or cross-origin attempts
+                window.print();
+                console.log('Print function called successfully directly on window');
               } else {
                 throw new Error('Window object not available');
               }

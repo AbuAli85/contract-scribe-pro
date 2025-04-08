@@ -40,10 +40,12 @@ function App() {
             console.log("Print function called - adding printing classes")
             
             try {
-              // Call the original print function directly on window
+              // Call the original print function directly on window (avoiding cross-origin issues)
               if (originalPrintRef.current) {
                 originalPrintRef.current()
               }
+            } catch (error) {
+              console.error("Error during print operation:", error)
             } finally {
               // Remove class after printing
               setTimeout(() => {

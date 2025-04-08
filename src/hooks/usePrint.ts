@@ -38,7 +38,9 @@ export function usePrint(options: UsePrintOptions = {}) {
         
         // Navigate to the print error page for serious errors
         if (error.message.includes('content validation failed') || 
-            error.message.includes('Print function not available')) {
+            error.message.includes('Print function not available') ||
+            error.message.includes('Permission denied') ||
+            error.message.includes('cross-origin')) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown printing error occurred'
           navigate('/print-error?error=' + encodeURIComponent(errorMessage))
         }
