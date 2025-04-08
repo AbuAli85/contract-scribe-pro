@@ -1,8 +1,8 @@
-
 import React, { useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Link, useSearchParams } from "react-router-dom"
 import { Home, Printer, AlertCircle, RefreshCw } from "lucide-react"
+import { printService } from '@/services/print.service'
 
 interface PrintErrorPageProps {
   language?: "en" | "ar";
@@ -41,18 +41,12 @@ const PrintErrorPage: React.FC<PrintErrorPageProps> = ({
   // Function to try printing again with a more direct approach
   const tryPrintAgain = () => {
     try {
-      // Add necessary print classes
-      document.body.classList.add('printing');
-      
-      // Wait for classes to be applied before printing
-      setTimeout(() => {
-        window.print();
-        
-        // Clean up classes after printing
-        setTimeout(() => {
-          document.body.classList.remove('printing');
-        }, 1000);
-      }, 500);
+      // Use our centralized print service
+      printService.print({
+        onError: (error) => {
+          console.error("Error in retry print:", error);
+        }
+      });
     } catch (error) {
       console.error("Error in retry print:", error);
     }
