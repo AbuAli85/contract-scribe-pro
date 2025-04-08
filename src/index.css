@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap');
 
@@ -150,7 +151,7 @@
   opacity: 0.8;
   z-index: 1;
   pointer-events: none;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
@@ -273,6 +274,7 @@
   .letterhead-background {
     display: block !important;
     opacity: 0.8 !important;
+    object-fit: contain !important;
   }
 
   .id-photo-wrapper {
