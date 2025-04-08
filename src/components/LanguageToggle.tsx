@@ -1,12 +1,6 @@
 
-import { Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 interface LanguageToggleProps {
   language: "ar" | "en";
@@ -15,22 +9,32 @@ interface LanguageToggleProps {
 
 const LanguageToggle = ({ language, onChange }: LanguageToggleProps) => {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="flex gap-2 items-center">
-          <Globe className="h-4 w-4" />
-          <span>{language === "ar" ? "العربية" : "English"}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => onChange("ar")}>
-          العربية
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onChange("en")}>
-          English
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center space-x-2 rtl:space-x-reverse bg-muted p-1 rounded-md">
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className={cn(
+          "text-muted-foreground",
+          language === "ar" && "bg-background text-foreground font-medium"
+        )}
+        onClick={() => onChange("ar")}
+      >
+        العربية
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className={cn(
+          "text-muted-foreground",
+          language === "en" && "bg-background text-foreground font-medium"
+        )}
+        onClick={() => onChange("en")}
+      >
+        English
+      </Button>
+    </div>
   );
 };
 

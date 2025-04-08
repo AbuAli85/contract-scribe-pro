@@ -7,11 +7,11 @@ interface LoadingOverlayProps {
 
 const LoadingOverlay = ({ language }: LoadingOverlayProps) => {
   return (
-    <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50">
-      <div className="bg-card p-6 rounded-lg shadow-lg flex flex-col items-center gap-4">
-        <Loader2 className="h-8 w-8 animate-spin" />
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <p className="text-lg font-medium">
-          {language === "ar" ? "جاري معالجة العقد..." : "Processing contract..."}
+          {language === "ar" ? "جاري إنشاء العقد..." : "Generating contract..."}
         </p>
       </div>
     </div>

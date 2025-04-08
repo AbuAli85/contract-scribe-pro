@@ -4,19 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { format } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface ContractPreviewProps {
   language: "ar" | "en";
-  contractData: {
-    companyName: string;
-    companyAddress: string;
-    promoterName: string;
-    promoterID: string;
-    contractDuration: number;
-    contractDate: Date;
-    monthlyCompensation: number;
-    duties: string;
-  };
+  contractData: any;
 }
 
 const ContractPreview = ({ language, contractData }: ContractPreviewProps) => {
@@ -24,63 +16,63 @@ const ContractPreview = ({ language, contractData }: ContractPreviewProps) => {
     window.print();
   };
 
-  const formatDate = (date: Date) => {
-    return format(date, "PPP", {
+  const formatDate = (dateStr: string) => {
+    const [day, month, year] = dateStr.split('/').map(Number);
+    return format(new Date(year, month - 1, day), "PPP", {
       locale: language === "ar" ? ar : enUS,
     });
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(language === "ar" ? "ar-SA" : "en-US", {
-      style: "currency",
-      currency: "SAR",
-    }).format(amount);
-  };
-
-  const texts = {
+  const translations = {
     ar: {
       title: "عقد توظيف مروج",
+      refNumber: "رقم المرجع",
       date: "التاريخ",
       parties: "أطراف العقد",
       firstParty: "الطرف الأول",
       secondParty: "الطرف الثاني",
-      address: "العنوان",
-      idNumber: "رقم الهوية",
+      promoter: "المروج",
+      crn: "رقم السجل التجاري",
+      id: "رقم الهوية",
       subject: "موضوع العقد",
-      subjectText: "يتفق الطرفان على توظيف الطرف الثاني كمروج لمنتجات الطرف الأول وفقًا للشروط المذكورة أدناه.",
+      subjectText: "يتفق الطرفان على توظيف المروج لتسويق وترويج المنتجات المذكورة أدناه وفقًا للشروط المذكورة في هذا العقد.",
+      product: "المنتج",
+      location: "الموقع",
       duration: "مدة العقد",
-      durationText: (months: number) => `مدة هذا العقد ${months} أشهر تبدأ من تاريخ هذا العقد.`,
-      compensation: "التعويض",
-      compensationText: (amount: string) => `يتم دفع راتب شهري للطرف الثاني قدره ${amount} ريال سعودي.`,
-      duties: "الواجبات والمسؤوليات",
+      durationText: (start: string, end: string) => `تبدأ مدة هذا العقد من ${start} وتنتهي في ${end}.`,
       signatures: "التوقيعات",
-      companySignature: "توقيع الشركة",
+      firstPartySignature: "توقيع الطرف الأول",
+      secondPartySignature: "توقيع الطرف الثاني",
       promoterSignature: "توقيع المروج",
       print: "طباعة العقد",
+      today: "تم إصدار هذا العقد في",
     },
     en: {
-      title: "Promoter Employment Contract",
+      title: "Promoter Assignment Contract",
+      refNumber: "Reference Number",
       date: "Date",
       parties: "Contract Parties",
       firstParty: "First Party",
       secondParty: "Second Party",
-      address: "Address",
-      idNumber: "ID Number",
+      promoter: "Promoter",
+      crn: "Commercial Registration Number",
+      id: "ID Number",
       subject: "Contract Subject",
-      subjectText: "The two parties agree to employ the second party as a promoter for the first party's products according to the conditions mentioned below.",
+      subjectText: "The parties agree to employ the promoter to market and promote the products mentioned below according to the terms mentioned in this contract.",
+      product: "Product",
+      location: "Location",
       duration: "Contract Duration",
-      durationText: (months: number) => `The duration of this contract is ${months} months starting from the date of this contract.`,
-      compensation: "Compensation",
-      compensationText: (amount: string) => `A monthly salary of ${amount} Saudi Riyals will be paid to the second party.`,
-      duties: "Duties and Responsibilities",
+      durationText: (start: string, end: string) => `This contract starts on ${start} and ends on ${end}.`,
       signatures: "Signatures",
-      companySignature: "Company Signature",
+      firstPartySignature: "First Party Signature",
+      secondPartySignature: "Second Party Signature",
       promoterSignature: "Promoter Signature",
       print: "Print Contract",
+      today: "This contract was issued on",
     },
   };
 
-  const t = texts[language];
+  const t = translations[language];
   const dir = language === "ar" ? "rtl" : "ltr";
 
   return (
@@ -94,66 +86,110 @@ const ContractPreview = ({ language, contractData }: ContractPreviewProps) => {
         <span>{t.print}</span>
       </Button>
 
-      <div className="contract-document bg-white border p-8 rounded-lg shadow-sm">
-        <h1 className="text-2xl font-bold text-center mb-8">{t.title}</h1>
-        
-        <div className="mb-6">
-          <h2 className="text-lg font-bold mb-2">{t.date}</h2>
-          <p>{formatDate(contractData.contractDate)}</p>
-        </div>
+      <Card className="contract-document bg-white border p-8 rounded-lg shadow-sm">
+        {contractData.letterhead && (
+          <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+            <img
+              src={contractData.letterhead}
+              alt="Letterhead"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
 
-        <div className="mb-6">
-          <h2 className="text-lg font-bold mb-2">{t.parties}</h2>
-          <div className="space-y-4">
+        <div className="relative z-10">
+          <h1 className="text-2xl font-bold text-center mb-8">{t.title}</h1>
+          
+          <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h3 className="font-semibold">{t.firstParty}: {contractData.companyName}</h3>
-              <p>{t.address}: {contractData.companyAddress}</p>
+              <h2 className="text-lg font-bold">{t.refNumber}</h2>
+              <p>{contractData.refNumber}</p>
             </div>
             <div>
-              <h3 className="font-semibold">{t.secondParty}: {contractData.promoterName}</h3>
-              <p>{t.idNumber}: {contractData.promoterID}</p>
+              <h2 className="text-lg font-bold">{t.date}</h2>
+              <p>{format(new Date(), "PPP", { locale: language === "ar" ? ar : enUS })}</p>
             </div>
           </div>
-        </div>
 
-        <div className="mb-6">
-          <h2 className="text-lg font-bold mb-2">{t.subject}</h2>
-          <p>{t.subjectText}</p>
-        </div>
-
-        <div className="mb-6">
-          <h2 className="text-lg font-bold mb-2">{t.duration}</h2>
-          <p>{t.durationText(contractData.contractDuration)}</p>
-        </div>
-
-        <div className="mb-6">
-          <h2 className="text-lg font-bold mb-2">{t.compensation}</h2>
-          <p>{t.compensationText(formatCurrency(contractData.monthlyCompensation))}</p>
-        </div>
-
-        <div className="mb-6">
-          <h2 className="text-lg font-bold mb-2">{t.duties}</h2>
-          <p className="whitespace-pre-line">{contractData.duties}</p>
-        </div>
-
-        <div className="mt-12">
-          <h2 className="text-lg font-bold mb-4">{t.signatures}</h2>
-          <div className="grid grid-cols-2 gap-8">
-            <div>
-              <p className="mb-8">{t.companySignature}</p>
-              <div className="border-t border-black pt-2">
-                {contractData.companyName}
+          <div className="mb-8">
+            <h2 className="text-lg font-bold mb-4">{t.parties}</h2>
+            <div className="space-y-4">
+              <div className="p-4 bg-muted/20 rounded-md">
+                <h3 className="font-semibold">{t.firstParty}: {contractData.firstParty.name[language]}</h3>
+                <p>{t.crn}: {contractData.firstParty.crn[language]}</p>
               </div>
-            </div>
-            <div>
-              <p className="mb-8">{t.promoterSignature}</p>
-              <div className="border-t border-black pt-2">
-                {contractData.promoterName}
+              <div className="p-4 bg-muted/20 rounded-md">
+                <h3 className="font-semibold">{t.secondParty}: {contractData.secondParty.name[language]}</h3>
+                <p>{t.crn}: {contractData.secondParty.crn[language]}</p>
+              </div>
+              <div className="p-4 bg-muted/20 rounded-md">
+                <h3 className="font-semibold">{t.promoter}: {contractData.promoter.name[language]}</h3>
+                <p>{t.id}: {contractData.promoter.id[language]}</p>
+                {contractData.promoterPhoto && (
+                  <div className="mt-2 w-24 h-24 border">
+                    <img
+                      src={contractData.promoterPhoto}
+                      alt="Promoter ID"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
+
+          <div className="mb-8">
+            <h2 className="text-lg font-bold mb-2">{t.subject}</h2>
+            <p>{t.subjectText}</p>
+          </div>
+
+          <div className="mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-muted/20 rounded-md">
+                <h3 className="font-semibold">{t.product}</h3>
+                <p>{contractData.product[language]}</p>
+              </div>
+              <div className="p-4 bg-muted/20 rounded-md">
+                <h3 className="font-semibold">{t.location}</h3>
+                <p>{contractData.location[language]}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <h2 className="text-lg font-bold mb-2">{t.duration}</h2>
+            <p>{t.durationText(formatDate(contractData.startDate[language]), formatDate(contractData.endDate[language]))}</p>
+          </div>
+
+          <div className="mb-4 text-sm text-muted-foreground">
+            <p>{t.today} {format(new Date(), "PPP", { locale: language === "ar" ? ar : enUS })}</p>
+          </div>
+
+          <div className="mt-12">
+            <h2 className="text-lg font-bold mb-4">{t.signatures}</h2>
+            <div className="grid grid-cols-3 gap-8">
+              <div>
+                <p className="mb-8">{t.firstPartySignature}</p>
+                <div className="border-t border-black pt-2">
+                  {contractData.firstParty.name[language]}
+                </div>
+              </div>
+              <div>
+                <p className="mb-8">{t.secondPartySignature}</p>
+                <div className="border-t border-black pt-2">
+                  {contractData.secondParty.name[language]}
+                </div>
+              </div>
+              <div>
+                <p className="mb-8">{t.promoterSignature}</p>
+                <div className="border-t border-black pt-2">
+                  {contractData.promoter.name[language]}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };
