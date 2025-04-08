@@ -10,10 +10,22 @@ const ArabicContractColumn = ({ contractData }: ArabicContractColumnProps) => {
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "";
     
-    const [day, month, year] = dateStr.split('/').map(Number);
-    return format(new Date(year, month - 1, day), "PPP", {
-      locale: ar,
-    });
+    // Check if the date is in DD/MM/YYYY format
+    if (dateStr.includes('/')) {
+      const [day, month, year] = dateStr.split('/').map(Number);
+      return format(new Date(year, month - 1, day), "PPP", {
+        locale: ar,
+      });
+    }
+    
+    // Handle ISO format
+    try {
+      return format(new Date(dateStr), "PPP", {
+        locale: ar,
+      });
+    } catch (e) {
+      return dateStr;
+    }
   };
 
   return (
@@ -48,8 +60,8 @@ const ArabicContractColumn = ({ contractData }: ArabicContractColumnProps) => {
             <strong>رقم الهوية:</strong> {contractData.promoter?.id?.ar || "126208869"}
           </div>
           <div className="info-row">
-            <strong>من:</strong> {contractData.startDate?.ar || "06/04/2025"} <strong>إلى:</strong>{" "}
-            {contractData.endDate?.ar || "06/06/2025"}
+            <strong>من:</strong> {formatDate(contractData.startDate?.ar || "06/04/2025")} <strong>إلى:</strong>{" "}
+            {formatDate(contractData.endDate?.ar || "06/06/2025")}
           </div>
         </div>
       </div>

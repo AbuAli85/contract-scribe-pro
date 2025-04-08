@@ -3,7 +3,7 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, FileText } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { DocumentUploader } from "@/components/DocumentUploader"
 import { DocumentsPanel } from "@/components/DocumentsPanel"
 import { Input } from "@/components/ui/input"
@@ -20,14 +20,19 @@ export default function CreateContract() {
   const [contractId] = useState(() => `temp-${generateUniqueId()}`)
   const [documents, setDocuments] = useState<any[]>([])
   const [formData, setFormData] = useState({
-    title: "",
+    title: "Promoter Assignment Contract",
     type: "employment",
-    description: "",
+    description: "Electronics promotion at Muscat Grand Mall",
     startDate: "",
     endDate: "",
     value: "",
     currency: "usd",
-    status: "draft"
+    status: "draft",
+    firstName: "Farzan",
+    lastName: "Riyaz Munde",
+    idNumber: "126208869",
+    location: "Muscat Grand Mall",
+    product: "Electronics"
   })
   const [useNewDocumentsPanel, setUseNewDocumentsPanel] = useState(false)
   const [activeTab, setActiveTab] = useState("edit")
@@ -94,21 +99,21 @@ export default function CreateContract() {
       },
       promoter: {
         name: {
-          en: "Farzan Riyaz Munde",
-          ar: "فرزان رياض موندي"
+          en: `${formData.firstName} ${formData.lastName}`,
+          ar: `${formData.firstName} ${formData.lastName}`
         },
         id: {
-          en: "126208869",
-          ar: "126208869"
+          en: formData.idNumber || "126208869",
+          ar: formData.idNumber || "126208869"
         }
       },
       product: {
-        en: formData.description || "Electronics",
-        ar: formData.description || "الإلكترونيات"
+        en: formData.product || "Electronics",
+        ar: formData.product || "الإلكترونيات"
       },
       location: {
-        en: "Muscat Grand Mall",
-        ar: "مسقط جراند مول"
+        en: formData.location || "Muscat Grand Mall",
+        ar: formData.location || "مسقط جراند مول"
       },
       startDate: {
         en: formData.startDate || "06/04/2025",
@@ -163,8 +168,8 @@ export default function CreateContract() {
         </div>
       </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="mb-6 grid w-full grid-cols-2">
           <TabsTrigger value="edit" className="flex items-center gap-1">
             <FileText className="h-4 w-4" />
             Edit Contract
@@ -175,11 +180,11 @@ export default function CreateContract() {
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="edit" className="grid gap-6">
+        <TabsContent value="edit" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Contract Information</CardTitle>
-              <CardDescription>Enter the basic information for this contract</CardDescription>
+              <CardDescription>Enter the basic information for this promoter assignment contract</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4">
@@ -208,10 +213,68 @@ export default function CreateContract() {
                         <SelectItem value="service">Service Agreement</SelectItem>
                         <SelectItem value="nda">Non-Disclosure</SelectItem>
                         <SelectItem value="rental">Rental/Lease</SelectItem>
+                        <SelectItem value="promoter">Promoter Assignment</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">Promoter First Name</Label>
+                    <Input 
+                      id="firstName" 
+                      name="firstName" 
+                      placeholder="Enter promoter first name" 
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Promoter Last Name</Label>
+                    <Input 
+                      id="lastName" 
+                      name="lastName" 
+                      placeholder="Enter promoter last name" 
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="idNumber">ID Number</Label>
+                    <Input 
+                      id="idNumber" 
+                      name="idNumber" 
+                      placeholder="Enter promoter ID number" 
+                      value={formData.idNumber}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Location</Label>
+                    <Input 
+                      id="location" 
+                      name="location" 
+                      placeholder="Enter promotion location" 
+                      value={formData.location}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="product">Product</Label>
+                  <Input 
+                    id="product" 
+                    name="product" 
+                    placeholder="Enter product being promoted" 
+                    value={formData.product}
+                    onChange={handleInputChange}
+                  />
                 </div>
                 
                 <div className="space-y-2">
@@ -275,6 +338,7 @@ export default function CreateContract() {
                         <SelectItem value="gbp">GBP</SelectItem>
                         <SelectItem value="aed">AED</SelectItem>
                         <SelectItem value="sar">SAR</SelectItem>
+                        <SelectItem value="omr">OMR</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -293,6 +357,7 @@ export default function CreateContract() {
             <Card>
               <CardHeader>
                 <CardTitle>Documents</CardTitle>
+                <CardDescription>Upload relevant documents for this contract</CardDescription>
               </CardHeader>
               <CardContent>
                 <DocumentUploader contractId={contractId} />
@@ -308,18 +373,28 @@ export default function CreateContract() {
         </TabsContent>
         
         <TabsContent value="preview" className="min-h-[600px]">
-          <Card className="overflow-auto">
+          <Card className="overflow-hidden">
             <CardHeader>
               <CardTitle>Contract Preview</CardTitle>
               <CardDescription>Preview how your contract will look</CardDescription>
             </CardHeader>
-            <CardContent>
-              <ContractPreview 
-                language={language} 
-                contractData={getContractData()}
-                signatures={[]}
-              />
+            <CardContent className="p-0 overflow-auto">
+              <div className="contract-container">
+                <ContractPreview 
+                  language={language} 
+                  contractData={getContractData()}
+                  signatures={[]}
+                />
+              </div>
             </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button variant="outline" onClick={() => setActiveTab("edit")}>
+                Edit Contract
+              </Button>
+              <Button onClick={() => window.print()}>
+                Print Contract
+              </Button>
+            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>

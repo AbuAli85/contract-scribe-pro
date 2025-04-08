@@ -10,10 +10,22 @@ const EnglishContractColumn = ({ contractData }: EnglishContractColumnProps) => 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "";
     
-    const [day, month, year] = dateStr.split('/').map(Number);
-    return format(new Date(year, month - 1, day), "PPP", {
-      locale: enUS,
-    });
+    // Check if the date is in DD/MM/YYYY format
+    if (dateStr.includes('/')) {
+      const [day, month, year] = dateStr.split('/').map(Number);
+      return format(new Date(year, month - 1, day), "PPP", {
+        locale: enUS,
+      });
+    }
+    
+    // Handle ISO format
+    try {
+      return format(new Date(dateStr), "PPP", {
+        locale: enUS,
+      });
+    } catch (e) {
+      return dateStr;
+    }
   };
 
   return (
@@ -48,8 +60,8 @@ const EnglishContractColumn = ({ contractData }: EnglishContractColumnProps) => 
             <strong>ID NO:</strong> {contractData.promoter?.id?.en || "126208869"}
           </div>
           <div className="info-row">
-            <strong>From:</strong> {contractData.startDate?.en || "06/04/2025"} <strong>to:</strong>{" "}
-            {contractData.endDate?.en || "06/07/2025"}
+            <strong>From:</strong> {formatDate(contractData.startDate?.en || "06/04/2025")} <strong>to:</strong>{" "}
+            {formatDate(contractData.endDate?.en || "06/07/2025")}
           </div>
         </div>
       </div>

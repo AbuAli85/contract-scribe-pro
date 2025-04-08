@@ -6,7 +6,8 @@
     padding: 0;
   }
   
-  .print:hidden {
+  .print-hidden,
+  .print\:hidden {
     display: none !important;
   }
   
@@ -24,11 +25,26 @@
     height: 297mm;
     page-break-after: always;
   }
+
+  /* Make sure all content is visible when printing */
+  .contract-preview * {
+    visibility: visible !important;
+    display: inherit !important;
+    opacity: 1 !important;
+  }
 }
 
 /* Print container */
 .print-container {
   position: relative;
+}
+
+/* Print button styling */
+.print-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 100;
 }
 
 /* Fix for Safari and Firefox rendering */

@@ -54,10 +54,17 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
           {/* Two Column Layout - English and Arabic sides */}
           <div className="two-column-layout">
             {/* Left Column - English */}
-            <EnglishContractColumn contractData={contractData} />
-
-            {/* Right Column - Arabic */}
-            <ArabicContractColumn contractData={contractData} />
+            {language === "en" ? (
+              <>
+                <EnglishContractColumn contractData={contractData} />
+                <ArabicContractColumn contractData={contractData} />
+              </>
+            ) : (
+              <>
+                <ArabicContractColumn contractData={contractData} />
+                <EnglishContractColumn contractData={contractData} />
+              </>
+            )}
           </div>
 
           {/* Signature Area */}

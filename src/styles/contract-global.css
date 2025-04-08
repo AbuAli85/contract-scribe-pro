@@ -4,6 +4,9 @@
 @import './contract-typography.css';
 @import './contract-components.css';
 @import './contract-print.css';
+@import './print-components.css';
+@import './print-layout.css';
+@import './print-typography.css';
 
 /* Global contract styles */
 .contract-preview {
@@ -23,4 +26,37 @@
 img {
   max-width: 100%;
   height: auto;
+}
+
+/* Container styles for the preview */
+.contract-container {
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* Preview tabs styles */
+.preview-tabs {
+  display: flex;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.preview-tab {
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.preview-tab.active {
+  border-bottom-color: #1a73e8;
+  color: #1a73e8;
+}
+
+/* Fix for letterhead image in preview */
+.letterhead-background {
+  opacity: 0.8;
+  object-fit: cover;
 }
