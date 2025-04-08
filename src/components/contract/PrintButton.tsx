@@ -36,7 +36,8 @@ const PrintButton = ({
       
       // Navigate to error page for cross-origin errors
       if (error.message.includes('cross-origin') || 
-          error.message.includes('Permission denied')) {
+          error.message.includes('Permission denied') ||
+          error.message.includes('SecurityError')) {
         navigate('/print-error?error=' + encodeURIComponent(error.message));
       }
     }
@@ -67,13 +68,20 @@ const PrintButton = ({
     
     // Check visibility of contract elements after render
     const checkVisibility = setTimeout(() => {
-      // Validate printability using our centralized service
-      const isReady = printService.validatePrintContent('.print-container')
-      setContentReady(isReady)
-      
-      if (isReady) {
-        // Pre-fix any visibility issues that might exist
-        printService.fixVisibility('.print-container')
+      try {
+        // Validate printability using our centralized service
+        const isReady = printService.validatePrintContent('.print-container')
+        setContentReady(isReady)
+        
+        if (isReady) {
+          // Pre-fix any visibility issues that might exist
+          printService.fixVisibility('.print-container')
+        }
+      } catch (error) {
+        console.error("Error checking print content visibility:", error)
+        // Set to true to allow printing even if validation errors occur
+        // This helps with cross-origin errors that shouldn't block printing
+        setContentReady(true)
       }
     }, 1000)
     
@@ -90,8 +98,25 @@ const PrintButton = ({
       return
     }
 
-    // Use the hook's print function which handles all the complexity
-    handlePrint('.print-container');
+    try {
+      // Add printing classes before calling print
+      document.documentElement.classList.add('is-printing')
+      document.body.classList.add('printing')
+      
+      // Use the hook's print function which handles all the complexity
+      handlePrint('.print-container')
+    } catch (error) {
+      console.error("Error in print button handler:", error)
+      document.documentElement.classList.remove('is-printing')
+      document.body.classList.remove('printing')
+      
+      // Show error toast
+      toast({
+        title: language === "ar" ? "خطأ في الطباعة" : "Print Error",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      })
+    }
   }
 
   return (

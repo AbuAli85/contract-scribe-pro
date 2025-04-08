@@ -25,18 +25,35 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
     
     // Short delay to allow content to render fully
     const timer = setTimeout(() => {
-      // Check if content is ready for printing
-      const isReady = printService.validatePrintContent('.print-container');
-      
-      // Apply visibility fixes if ready
-      if (isReady) {
-        printService.fixVisibility('.print-container');
+      try {
+        // Check if content is ready for printing
+        const isReady = printService.validatePrintContent('.print-container');
+        
+        // Apply visibility fixes if ready
+        if (isReady) {
+          // Add critical printing class to html/body
+          document.documentElement.classList.add('is-printing');
+          document.body.classList.add('printing');
+          
+          // Apply additional visibility fixes
+          printService.fixVisibility('.print-container');
+        }
+        
+        // Notify parent component
+        onReady?.(isReady);
+        
+        console.log('PrintPreview content ready:', isReady);
+      } catch (error) {
+        console.error('PrintPreview error:', error);
+        // Still notify parent, but with failure status
+        onReady?.(false);
+      } finally {
+        // Always clean up the printing classes after initialization
+        setTimeout(() => {
+          document.documentElement.classList.remove('is-printing');
+          document.body.classList.remove('printing');
+        }, 200);
       }
-      
-      // Notify parent component
-      onReady?.(isReady);
-      
-      console.log('PrintPreview content ready:', isReady);
     }, 500);
     
     return () => clearTimeout(timer);

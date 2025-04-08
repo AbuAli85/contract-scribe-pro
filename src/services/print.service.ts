@@ -111,6 +111,9 @@ export const printService = {
         // Short delay to ensure styles are applied
         setTimeout(() => {
           try {
+            // Skip stylesheet validation to avoid cross-origin errors
+            console.log('Executing print command (safe mode)...')
+            
             // Execute print using native window.print()
             if (typeof window !== 'undefined' && typeof window.print === 'function') {
               // Call the native print function directly
