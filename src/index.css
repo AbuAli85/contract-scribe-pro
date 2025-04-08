@@ -147,14 +147,14 @@
   left: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.05;
+  opacity: 0.1;
   z-index: 1;
   pointer-events: none;
   object-fit: cover;
   object-position: center;
 }
 
-/* ID Photo Styles - Increased width */
+/* ID Photo Styles - 400px width */
 .id-photo-container {
   display: flex;
   justify-content: center;
@@ -172,6 +172,49 @@
   width: 100%;
   height: auto;
   object-fit: contain;
+}
+
+/* Simplified header with reference number on left */
+.simplified-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10mm;
+}
+
+.reference-section {
+  text-align: left;
+  margin-bottom: 5mm;
+}
+
+.reference-number {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.company-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.company-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.falcon-text {
+  color: #00854a;
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.eye-text {
+  color: #1a73e8;
+  font-weight: bold;
+  font-size: 24px;
 }
 
 /* Contract Title */
@@ -204,43 +247,6 @@
   direction: rtl;
   text-align: right;
   font-family: var(--font-cairo);
-}
-
-/* Company Logo and Header */
-.contract-header {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 10mm;
-}
-
-.company-logo {
-  display: flex;
-  flex-direction: column;
-}
-
-.company-name {
-  display: flex;
-  align-items: center;
-  font-size: 18px;
-}
-
-.falcon-text {
-  color: #00854a;
-  font-weight: bold;
-  font-size: 24px;
-}
-
-.eye-text {
-  color: #1a73e8;
-  font-weight: bold;
-  font-size: 24px;
-}
-
-.reference-number {
-  text-align: right;
-  font-size: 12px;
 }
 
 /* Signature Area */
@@ -296,7 +302,7 @@
 
   .letterhead-background {
     display: block !important;
-    opacity: 0.05 !important;
+    opacity: 0.1 !important;
   }
 
   .id-photo-wrapper {

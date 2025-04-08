@@ -57,4 +57,10 @@
   .contract-preview {
     max-width: none;
   }
+  
+  /* Hide all other elements when printing */
+  body > *:not(.contract-preview),
+  .contract-preview > *:not(.a4-page) {
+    display: none !important;
+  }
 }

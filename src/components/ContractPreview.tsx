@@ -59,8 +59,13 @@ const ContractPreview = ({ language, contractData }: ContractPreviewProps) => {
         )}
         
         <div className="contract-content">
-          {/* Company Logo and Header */}
-          <div className="contract-header">
+          {/* Simplified header with company name and reference number on the left */}
+          <div className="simplified-header">
+            <div className="reference-section">
+              <div className="reference-number">
+                Reference Number: {formattedRefNumber()}
+              </div>
+            </div>
             <div className="company-logo">
               <div className="company-name">
                 <span className="falcon-text">Falcon</span>
@@ -68,9 +73,6 @@ const ContractPreview = ({ language, contractData }: ContractPreviewProps) => {
                 <span className="ml-2 text-base">Management and Business SPC</span>
               </div>
               <div className="text-base mt-1">عين الصقر للإدارة و الأعمال ش.م.و</div>
-            </div>
-            <div className="reference-number">
-              Reference Number: {formattedRefNumber()}
             </div>
           </div>
 
