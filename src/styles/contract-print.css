@@ -32,6 +32,11 @@
     display: inherit !important;
     opacity: 1 !important;
   }
+  
+  /* Hide popover content when printing */
+  .popover-content {
+    display: none !important;
+  }
 }
 
 /* Print container */
@@ -51,4 +56,9 @@
 @page {
   size: A4;
   margin: 0;
+}
+
+/* Ensure calendar popover is usable */
+.pointer-events-auto {
+  pointer-events: auto !important;
 }
