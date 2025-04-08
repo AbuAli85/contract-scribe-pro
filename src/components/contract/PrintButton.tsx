@@ -7,6 +7,7 @@ import { documentSystem, type AttachedDocument } from "@/lib/documents"
 import { useNavigate } from "react-router-dom"
 import { contractService } from "@/services/contract.service"
 import { printService } from "@/services/print.service"
+import { usePrint } from "@/hooks/usePrint"
 
 interface PrintButtonProps {
   language: "ar" | "en"
@@ -24,9 +25,22 @@ const PrintButton = ({
   const { toast } = useToast()
   const [documents, setDocuments] = useState<AttachedDocument[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [isPrinting, setIsPrinting] = useState(false)
   const [contentReady, setContentReady] = useState(false)
   const navigate = useNavigate()
+  
+  // Use the centralized print hook
+  const { isPrinting, handlePrint } = usePrint({
+    language,
+    onError: (error) => {
+      console.error("Print error in PrintButton:", error);
+      
+      // Navigate to error page for cross-origin errors
+      if (error.message.includes('cross-origin') || 
+          error.message.includes('Permission denied')) {
+        navigate('/print-error?error=' + encodeURIComponent(error.message));
+      }
+    }
+  });
   
   // Load documents that should be included in printing
   useEffect(() => {
@@ -76,54 +90,8 @@ const PrintButton = ({
       return
     }
 
-    setIsPrinting(true)
-    
-    try {
-      // Force visibility fixes before printing
-      printService.fixVisibility('.print-container')
-      
-      // Short timeout to ensure styles are applied
-      setTimeout(() => {
-        try {
-          // Use the direct printNow method to avoid cross-origin issues
-          printService.printNow()
-          
-          // Handle success
-          setTimeout(() => {
-            setIsPrinting(false)
-            toast({
-              title: language === "ar" ? "تمت الطباعة بنجاح" : "Print Successful",
-              description: language === "ar" ? "تم إرسال المستند إلى الطابعة" : "Document has been sent to the printer"
-            })
-          }, 1000)
-        } catch (error) {
-          console.error("Print error:", error)
-          setIsPrinting(false)
-          
-          toast({
-            title: language === "ar" ? "خطأ في الطباعة" : "Print Error",
-            description: error instanceof Error ? error.message : "An error occurred while printing",
-            variant: "destructive",
-          })
-          
-          // Navigate to error page for cross-origin errors
-          if (error instanceof Error && 
-              (error.message.includes('cross-origin') || 
-               error.message.includes('Permission denied'))) {
-            navigate('/print-error?error=' + encodeURIComponent(error.message))
-          }
-        }
-      }, 100)
-    } catch (error) {
-      console.error("Print setup error:", error)
-      setIsPrinting(false)
-      
-      toast({
-        title: language === "ar" ? "خطأ في الطباعة" : "Print Error",
-        description: error instanceof Error ? error.message : "An error occurred while printing",
-        variant: "destructive",
-      })
-    }
+    // Use the hook's print function which handles all the complexity
+    handlePrint('.print-container');
   }
 
   return (

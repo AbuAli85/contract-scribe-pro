@@ -26,11 +26,11 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
     // Short delay to allow content to render fully
     const timer = setTimeout(() => {
       // Check if content is ready for printing
-      const isReady = printService.validatePrintContent();
+      const isReady = printService.validatePrintContent('.print-container');
       
       // Apply visibility fixes if ready
       if (isReady) {
-        printService.fixVisibility();
+        printService.fixVisibility('.print-container');
       }
       
       // Notify parent component
@@ -46,6 +46,7 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
     <div 
       ref={previewRef} 
       className={`print-container ${className}`}
+      data-testid="print-container"
     >
       {children}
     </div>

@@ -1,6 +1,6 @@
 
 import { contractService } from './contract.service'
-import { toast } from '@/hooks/use-toast'
+import { useToast, toast } from '@/hooks/use-toast'
 import { navigationService } from './navigation.service'
 
 export type PrintElement = {

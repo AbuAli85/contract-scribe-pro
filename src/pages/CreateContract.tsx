@@ -14,6 +14,7 @@ import ContractForm from "@/components/ContractForm"
 import { usePrint } from "@/hooks/usePrint"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import PrintDebugButton from "@/components/print/PrintDebugButton"
+import PrintPreview from "@/components/print/PrintPreview"
 
 export default function CreateContract() {
   // Generate a temporary contract ID for document attachments
@@ -24,7 +25,7 @@ export default function CreateContract() {
   const [language, setLanguage] = useState<"en" | "ar">("en")
   const [contractData, setContractData] = useState<any>(null)
   const { toast } = useToast()
-  const { handlePrint, isPrinting } = usePrint()
+  const { handlePrint, isPrinting } = usePrint({ language })
 
   const handleGenerateContract = (data: any) => {
     console.log("Contract generated with data:", data);
@@ -56,7 +57,7 @@ export default function CreateContract() {
     }
     
     // Use the print hook
-    handlePrint()
+    handlePrint('.print-container')
   }
 
   return (
@@ -164,7 +165,7 @@ export default function CreateContract() {
                 )}
               </div>
             </CardHeader>
-            <CardContent className="p-0 overflow-auto print-container">
+            <CardContent className="p-0 overflow-auto print-container" data-testid="print-container">
               <div className="contract-container">
                 {contractData ? (
                   <ContractPreview 
