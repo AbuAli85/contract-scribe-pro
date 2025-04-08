@@ -6,12 +6,15 @@ import NotFound from "./pages/NotFound"
 import { Toaster } from "./components/ui/toaster"
 import { ThemeProvider } from "./components/ThemeProvider"
 import PrintErrorPage from "./components/contract/PrintErrorPage"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 
 // Apply print styles globally
 import "./styles/contract-global.css"
 
 function App() {
+  // Store a reference to the original print function
+  const originalPrintRef = useRef<typeof window.print | null>(null);
+  
   // Add global print error handler
   useEffect(() => {
     const handlePrintError = (error: ErrorEvent) => {
@@ -23,8 +26,8 @@ function App() {
     
     // Additional global print preparation
     const prepareGlobalPrinting = () => {
-      // Store the original print function
-      const originalPrint = window.print
+      // Store the original print function in the ref for access in cleanup
+      originalPrintRef.current = window.print
       
       // Add special class to html when window.print is called
       window.print = function() {
@@ -34,7 +37,7 @@ function App() {
         console.log("Print function called - adding printing classes")
         
         try {
-          originalPrint()
+          originalPrintRef.current?.()
         } finally {
           // Remove class after printing
           setTimeout(() => {
@@ -51,10 +54,9 @@ function App() {
     return () => {
       window.removeEventListener('error', handlePrintError)
       // Restore original print function if it was modified
-      if (window.print !== originalPrint) {
-        // No access to originalPrint here, so we can't restore it directly
-        // Instead, just note we can't restore it in the cleanup
-        console.log("Note: Could not restore original print function in cleanup")
+      if (originalPrintRef.current && window.print !== originalPrintRef.current) {
+        window.print = originalPrintRef.current
+        console.log("Original print function restored in cleanup")
       }
     }
   }, [])
