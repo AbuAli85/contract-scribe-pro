@@ -18,8 +18,41 @@ function App() {
       console.error("Print system error:", error)
     }
     
+    // Listen for window errors that might be related to printing
     window.addEventListener('error', handlePrintError)
-    return () => window.removeEventListener('error', handlePrintError)
+    
+    // Additional global print preparation
+    const prepareGlobalPrinting = () => {
+      // Add special class to html when window.print is called
+      const originalPrint = window.print
+      window.print = function() {
+        document.documentElement.classList.add('is-printing')
+        document.body.classList.add('printing')
+        
+        console.log("Print function called - adding printing classes")
+        
+        try {
+          originalPrint()
+        } finally {
+          // Remove class after printing
+          setTimeout(() => {
+            document.documentElement.classList.remove('is-printing')
+            document.body.classList.remove('printing')
+            console.log("Print finished - removing printing classes")
+          }, 1000)
+        }
+      }
+    }
+    
+    prepareGlobalPrinting()
+    
+    return () => {
+      window.removeEventListener('error', handlePrintError)
+      // Restore original print function if it was modified
+      if (window.print !== originalPrint) {
+        window.print = originalPrint
+      }
+    }
   }, [])
   
   return (
@@ -28,7 +61,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/create-contract" element={<CreateContract />} />
-          <Route path="/print-error" element={<PrintErrorPage redirectUrl="/create-contract" />} />
+          <Route path="/print-error" element={<PrintErrorPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

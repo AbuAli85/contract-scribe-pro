@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast"
 import { usePrint } from "@/hooks/usePrint"
 import { documentSystem, type AttachedDocument } from "@/lib/documents"
 import { useNavigate } from "react-router-dom"
+import { contractService } from "@/services/contract.service"
 
 interface PrintButtonProps {
   language: "ar" | "en"
@@ -25,6 +26,7 @@ const PrintButton = ({
   const [documents, setDocuments] = useState<AttachedDocument[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [visibilityChecked, setVisibilityChecked] = useState(false)
+  const [contentReady, setContentReady] = useState(false)
   const navigate = useNavigate()
   const printButtonRef = useRef<HTMLButtonElement>(null)
   
@@ -56,27 +58,40 @@ const PrintButton = ({
       const contractPreview = document.querySelector('.contract-preview')
       const contractContent = document.querySelector('.contract-content')
       const contractText = document.querySelectorAll('.contract-text')
+      const twoColumnLayout = document.querySelector('.two-column-layout')
       
-      const isPreviewVisible = contractPreview && 
-                        window.getComputedStyle(contractPreview).display !== 'none' &&
-                        window.getComputedStyle(contractPreview).visibility !== 'hidden'
+      // Detailed visibility check
+      const results = {
+        previewExists: !!contractPreview,
+        contentExists: !!contractContent,
+        textElements: contractText.length,
+        layoutExists: !!twoColumnLayout,
+        previewDisplay: contractPreview ? window.getComputedStyle(contractPreview).display : 'element not found',
+        contentDisplay: contractContent ? window.getComputedStyle(contractContent).display : 'element not found',
+        layoutDisplay: twoColumnLayout ? window.getComputedStyle(twoColumnLayout).display : 'element not found'
+      }
       
-      const isContentVisible = contractContent && 
-                        window.getComputedStyle(contractContent).display !== 'none' &&
-                        window.getComputedStyle(contractContent).visibility !== 'hidden'
+      console.log("Content visibility check results:", results)
       
-      console.log("Content visibility check:", {
-        isPreviewVisible,
-        isContentVisible,
-        textElements: contractText.length
-      })
+      // Set as ready only if all important elements exist
+      const isReady = results.previewExists && 
+                      results.contentExists && 
+                      results.textElements > 0 &&
+                      results.layoutExists;
       
+      setContentReady(isReady)
       setVisibilityChecked(true)
-    }, 500)
+      
+      // Auto-fix visibility issues
+      if (results.previewExists) {
+        contractService.fixPrintVisibility()
+      }
+    }, 1000)
     
     return () => clearTimeout(checkVisibility)
   }, [contractData])
 
+  // Validate all required elements before printing
   const validatePrintContent = () => {
     // Check if contractData is valid
     if (!contractData) {
@@ -89,69 +104,37 @@ const PrintButton = ({
       return false
     }
 
-    // Check if any documents are selected
-    if (selectedDocuments.length === 0) {
+    // Check if printing container exists and has content
+    const printContainer = document.querySelector('.print-container')
+    if (!printContainer || !printContainer.innerHTML || printContainer.innerHTML.trim() === '') {
       toast({
-        title: language === "ar" ? "لم يتم تحديد أي مستندات" : "No documents selected",
-        description: language === "ar" ? "يرجى تحديد مستند واحد على الأقل للطباعة" : "Please select at least one document to print",
+        title: language === "ar" ? "محتوى الطباعة غير موجود" : "Print content empty",
+        description: language === "ar" ? "لا يمكن العثور على محتوى للطباعة" : "Cannot find content to print",
         variant: "destructive",
       })
-      console.warn("No documents selected for printing")
+      console.error("Print container is empty or not found")
       return false
     }
 
-    // Check if printing container exists and has content
-    const printContainer = document.querySelector('.print-container')
-    if (!printContainer) {
-      toast({
-        title: language === "ar" ? "محتوى الطباعة غير موجود" : "Print content not found",
-        description: language === "ar" ? "لا يمكن العثور على محتوى الطباعة" : "Cannot find print content",
-        variant: "destructive",
-      })
-      console.error("Print container not found")
-      return false
-    }
+    // Log content length for debugging
+    console.log("Print container content length:", printContainer.innerHTML.length)
 
     // Check contract preview content visibility
     const contractPreview = document.querySelector('.contract-preview')
-    const isVisible = contractPreview && 
-                    window.getComputedStyle(contractPreview).display !== 'none' &&
-                    window.getComputedStyle(contractPreview).visibility !== 'hidden'
-    
-    if (!isVisible) {
-      toast({
-        title: language === "ar" ? "معاينة العقد غير مرئية" : "Contract preview not visible",
-        description: language === "ar" ? "يرجى التأكد من أن معاينة العقد مرئية قبل الطباعة" : "Please ensure contract preview is visible before printing",
-        variant: "destructive",
-      })
-      console.error("Contract preview not visible", { 
-        display: contractPreview ? window.getComputedStyle(contractPreview).display : 'element not found',
-        visibility: contractPreview ? window.getComputedStyle(contractPreview).visibility : 'element not found'
-      })
-      return false
-    }
-
-    // Check if contract content exists
     const contractContent = document.querySelector('.contract-content')
-    if (!contractContent) {
+    const twoColumnLayout = document.querySelector('.two-column-layout')
+    
+    if (!contractPreview || !contractContent || !twoColumnLayout) {
       toast({
-        title: language === "ar" ? "محتوى العقد غير موجود" : "Contract content not found",
-        description: language === "ar" ? "لا يمكن العثور على محتوى العقد" : "Cannot find contract content",
+        title: language === "ar" ? "عناصر العقد غير مكتملة" : "Contract elements incomplete",
+        description: language === "ar" ? "بعض عناصر العقد مفقودة. يرجى تحديث الصفحة." : "Some contract elements are missing. Try refreshing.",
         variant: "destructive",
       })
-      console.error("Contract content not found")
-      return false
-    }
-
-    // Check if contract text elements exist
-    const contractText = document.querySelectorAll('.contract-text')
-    if (contractText.length === 0) {
-      toast({
-        title: language === "ar" ? "نص العقد غير موجود" : "Contract text not found",
-        description: language === "ar" ? "لا يمكن العثور على نص العقد" : "Cannot find contract text elements",
-        variant: "destructive",
+      console.error("Missing critical contract elements", {
+        preview: !!contractPreview,
+        content: !!contractContent,
+        layout: !!twoColumnLayout
       })
-      console.error("Contract text elements not found")
       return false
     }
 
@@ -159,22 +142,21 @@ const PrintButton = ({
   }
 
   const prepareForPrinting = () => {
-    // Force visibility of critical elements before printing
-    const elements = document.querySelectorAll('.contract-text, .promoter-details, .responsibilities, .contract-title, .signature-area, .contract-column')
-    elements.forEach(el => {
-      if (el instanceof HTMLElement) {
-        el.style.display = el.classList.contains('contract-column') ? 'block' : 'block';
-        el.style.visibility = 'visible';
-        el.style.opacity = '1';
-      }
-    })
-
-    // Force two-column layout to be flex
-    const twoColumnLayout = document.querySelector('.two-column-layout')
-    if (twoColumnLayout instanceof HTMLElement) {
-      twoColumnLayout.style.display = 'flex';
-      twoColumnLayout.style.flexDirection = 'row';
-      twoColumnLayout.style.justifyContent = 'space-between';
+    // Apply visibility fixes via the contract service
+    contractService.fixPrintVisibility()
+    
+    // Get all contract elements and log their status
+    const elements = document.querySelectorAll('.contract-preview, .contract-content, .two-column-layout, .contract-column')
+    console.log(`Found ${elements.length} critical contract elements to prepare for printing`)
+    
+    // Extra step to ensure letterhead visibility
+    const letterhead = document.querySelector('.letterhead-background')
+    if (letterhead instanceof HTMLElement) {
+      letterhead.style.display = 'block'
+      letterhead.style.visibility = 'visible'
+      letterhead.style.opacity = '0.8'
+    } else {
+      console.warn("Letterhead background not found")
     }
   }
 
@@ -189,9 +171,9 @@ const PrintButton = ({
       
       // Log info about what will be printed
       console.log("Preparing document for print:", {
-        contractData,
-        selectedDocuments,
-        includedDocuments: documents.length
+        contractId,
+        contentReady,
+        documentCount: documents.length
       })
       
       // Call the handlePrint function from usePrint hook
@@ -208,7 +190,7 @@ const PrintButton = ({
       
       // Navigate to error page on error
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-      navigate(`/print-error?error=${encodeURIComponent(errorMessage)}&redirect=/create-contract`);
+      navigate(`/print-error?error=${encodeURIComponent(errorMessage)}`);
     }
   }
 
@@ -218,11 +200,13 @@ const PrintButton = ({
       variant="outline"
       onClick={handlePrintClick}
       className="mb-6 print:hidden flex gap-2 items-center"
-      disabled={isPrinting || isLoading}
+      disabled={isPrinting || isLoading || !contentReady}
     >
-      {isPrinting || isLoading ? (
+      {isPrinting ? (
         <Loader2 className="h-4 w-4 animate-spin" />
-      ) : !visibilityChecked ? (
+      ) : isLoading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : !visibilityChecked || !contentReady ? (
         <AlertTriangle className="h-4 w-4 text-yellow-500" />
       ) : (
         <Printer className="h-4 w-4" />
@@ -232,9 +216,11 @@ const PrintButton = ({
           ? (language === "ar" ? "جاري التحضير..." : "Preparing...") 
           : isLoading 
             ? (language === "ar" ? "جاري التحميل..." : "Loading...")
-            : (language === "ar" ? "طباعة" : "Print")}
+            : !contentReady 
+              ? (language === "ar" ? "تجهيز المحتوى..." : "Preparing content...")
+              : (language === "ar" ? "طباعة" : "Print")}
       </span>
-      {documents.length > 0 && (
+      {documents.length > 0 && contentReady && (
         <span className="ml-1 text-xs">
           ({documents.length} {language === "ar" ? "مستندات" : "documents"})
         </span>

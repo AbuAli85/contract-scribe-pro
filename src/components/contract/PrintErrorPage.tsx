@@ -1,8 +1,8 @@
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Button } from "@/components/ui/button"
-import { Link } from "react-router-dom"
-import { Home, Printer, AlertCircle } from "lucide-react"
+import { Link, useSearchParams } from "react-router-dom"
+import { Home, Printer, AlertCircle, RefreshCw } from "lucide-react"
 
 interface PrintErrorPageProps {
   language?: "en" | "ar";
@@ -13,8 +13,24 @@ interface PrintErrorPageProps {
 const PrintErrorPage: React.FC<PrintErrorPageProps> = ({ 
   language = "en",
   redirectUrl = "/", 
-  errorMessage
+  errorMessage: propErrorMessage
 }) => {
+  const [searchParams] = useSearchParams();
+  const errorFromUrl = searchParams.get('error');
+  const redirectFromUrl = searchParams.get('redirect');
+  
+  // Use URL params if available, otherwise use props
+  const finalErrorMessage = errorFromUrl || propErrorMessage;
+  const finalRedirectUrl = redirectFromUrl || redirectUrl;
+  
+  // Log details for debugging
+  useEffect(() => {
+    console.log("Print error page loaded with:", {
+      errorMessage: finalErrorMessage,
+      redirectUrl: finalRedirectUrl
+    });
+  }, [finalErrorMessage, finalRedirectUrl]);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
@@ -26,37 +42,59 @@ const PrintErrorPage: React.FC<PrintErrorPageProps> = ({
           {language === "ar" ? "نظام طباعة العقود" : "Contract Print System"}
         </h1>
         
-        {errorMessage && (
+        {finalErrorMessage && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
             <p className="text-red-700">
-              {language === "ar" ? "خطأ:" : "Error:"} {errorMessage}
+              {language === "ar" ? "خطأ:" : "Error:"} {finalErrorMessage}
             </p>
           </div>
         )}
         
         <p className="text-gray-600 mb-4">
           {language === "ar" 
-            ? "تم استبدال هذه الصفحة بطريقة طباعة أكثر موثوقية."
-            : "This page has been replaced with a more reliable printing method."}
+            ? "حدث خطأ أثناء محاولة طباعة العقد."
+            : "An error occurred while trying to print your contract."}
         </p>
         
         <p className="text-gray-600 mb-4">
           {language === "ar"
-            ? "يرجى استخدام زر الطباعة في صفحة العقد لطباعة العقد الخاص بك."
-            : "Please use the Print button on the contract page to print your contract."}
+            ? "يمكنك محاولة الطباعة مرة أخرى أو التحقق من إعدادات الطابعة والمتصفح."
+            : "You can try printing again or check your printer and browser settings."}
         </p>
         
-        <p className="text-gray-600 mb-6">
-          {language === "ar"
-            ? "إذا كنت ترى هذه الصفحة، فهذا يعني أنك تستخدم رابطًا قديمًا أو حدث خطأ في عملية الطباعة."
-            : "If you're seeing this page, it means you're using an outdated link or there was an error in the printing process."}
-        </p>
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+          <h3 className="font-bold text-blue-700 mb-2">
+            {language === "ar" ? "نصائح لحل المشكلة:" : "Tips to resolve the issue:"}
+          </h3>
+          <ul className="list-disc pl-5 text-blue-700">
+            <li className="mb-1">
+              {language === "ar" 
+                ? "تأكد من تشغيل الطابعة وتوصيلها بشكل صحيح"
+                : "Make sure your printer is on and properly connected"}
+            </li>
+            <li className="mb-1">
+              {language === "ar"
+                ? "تأكد من السماح للنوافذ المنبثقة في المتصفح"
+                : "Ensure pop-ups are allowed in your browser"}
+            </li>
+            <li className="mb-1">
+              {language === "ar"
+                ? "حاول تحديث الصفحة قبل الطباعة"
+                : "Try refreshing the page before printing"}
+            </li>
+            <li>
+              {language === "ar"
+                ? "جرب استخدام متصفح آخر"
+                : "Try using a different browser"}
+            </li>
+          </ul>
+        </div>
         
         <div className="flex justify-between">
-          <Link to={redirectUrl}>
+          <Link to={finalRedirectUrl}>
             <Button className="flex items-center gap-2">
               <Home className="h-4 w-4" />
-              {language === "ar" ? "العودة إلى لوحة التحكم" : "Return to Dashboard"}
+              {language === "ar" ? "العودة إلى الصفحة السابقة" : "Return to Previous Page"}
             </Button>
           </Link>
           
@@ -65,8 +103,8 @@ const PrintErrorPage: React.FC<PrintErrorPageProps> = ({
             onClick={() => window.history.back()}
             className="flex items-center gap-2"
           >
-            <Printer className="h-4 w-4" />
-            {language === "ar" ? "محاولة الطباعة مرة أخرى" : "Try Printing Again"}
+            <RefreshCw className="h-4 w-4" />
+            {language === "ar" ? "المحاولة مرة أخرى" : "Try Again"}
           </Button>
         </div>
       </div>

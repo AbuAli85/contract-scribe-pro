@@ -1,6 +1,7 @@
 
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { contractService } from '@/services/contract.service'
 
 export function usePrint() {
   const [isPrinting, setIsPrinting] = useState(false)
@@ -25,25 +26,12 @@ export function usePrint() {
           throw new Error('Print content is empty')
         }
         
-        // Validate that critical elements are visible
-        const contractPreview = document.querySelector('.contract-preview')
-        const contractContent = document.querySelector('.contract-content')
+        // Validate and force visibility of critical elements
+        contractService.fixPrintVisibility()
         
-        if (!contractPreview || !contractContent) {
-          console.error('Critical contract elements not found')
-          throw new Error('Contract preview elements not found')
-        }
+        // Create print window with proper debugging
+        console.log("Creating print window with content:", content.outerHTML.substring(0, 200) + "...")
         
-        // Force visibility of critical elements before printing
-        document.querySelectorAll('.contract-text, .promoter-details, .responsibilities, .contract-title, .signature-area').forEach(el => {
-          if (el instanceof HTMLElement) {
-            el.style.display = 'block'
-            el.style.visibility = 'visible'
-            el.style.opacity = '1'
-          }
-        })
-        
-        // Create print window
         const printWindow = window.open('', '_blank')
         if (!printWindow) {
           throw new Error('Could not open print window. Please check your popup blocker settings.')
@@ -65,7 +53,7 @@ export function usePrint() {
           }
         })
         
-        // Add print-specific styles
+        // Add essential print styles
         styles += `
           @page {
             size: A4;
@@ -74,17 +62,22 @@ export function usePrint() {
           body {
             margin: 0;
             padding: 0;
-            background: white;
+            background: white !important;
             width: 100%;
             height: 100%;
             overflow: visible !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
           }
-          .print-container, .contract-preview, .a4-page, .contract-content, .letterhead-background,
-          .contract-title-area, .reference-section, .id-photo-container, .signature-area,
-          .contract-column, .promoter-details, .responsibilities, .two-column-layout {
+          .print-container, .contract-preview, .a4-page, .contract-content, 
+          .letterhead-background, .contract-title-area, .reference-section, 
+          .id-photo-container, .signature-area, .contract-column, 
+          .promoter-details, .responsibilities, .two-column-layout {
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
+            background-color: white !important;
           }
           .two-column-layout {
             display: flex !important;
@@ -128,7 +121,7 @@ export function usePrint() {
           }
         `
         
-        // Write the HTML to the new window
+        // Write complete HTML to the new window with debugging
         printWindow.document.write(`
           <!DOCTYPE html>
           <html>
@@ -140,9 +133,19 @@ export function usePrint() {
             <body class="printing">
               ${content.innerHTML}
               <script>
+                // Log the content for debugging
+                console.log("Print window content loaded:", document.body.innerHTML.substring(0, 200) + "...");
+                
                 window.onload = function() {
+                  // Add visibility check
+                  const contractContent = document.querySelector('.contract-content');
+                  const twoColumnLayout = document.querySelector('.two-column-layout');
+                  
+                  console.log("Contract content found:", contractContent ? "Yes" : "No");
+                  console.log("Two column layout found:", twoColumnLayout ? "Yes" : "No");
+                  
                   // Force all elements to be visible
-                  document.querySelectorAll('.contract-text, .promoter-details, .responsibilities, .reference-number, .contract-title, .contract-main-title, .signature-area, .signature-block, .two-column-layout, .contract-column, .id-photo-container').forEach(function(el) {
+                  document.querySelectorAll('.contract-text, .promoter-details, .responsibilities, .reference-number, .contract-title, .contract-main-title, .signature-area, .signature-block, .two-column-layout, .contract-column, .id-photo-container, .letterhead-background, .a4-page, .contract-content').forEach(function(el) {
                     el.style.display = el.classList.contains('two-column-layout') ? 'flex' : 'block';
                     el.style.visibility = 'visible';
                     el.style.opacity = '1';
@@ -152,15 +155,18 @@ export function usePrint() {
                   });
                   
                   // Fix specific layout containers
-                  document.querySelectorAll('.two-column-layout').forEach(function(el) {
-                    el.style.display = 'flex';
-                    el.style.flexDirection = 'row';
-                    el.style.justifyContent = 'space-between';
-                    el.style.gap = '10mm';
-                  });
+                  if (twoColumnLayout) {
+                    twoColumnLayout.style.display = 'flex';
+                    twoColumnLayout.style.flexDirection = 'row';
+                    twoColumnLayout.style.justifyContent = 'space-between';
+                    twoColumnLayout.style.gap = '10mm';
+                    twoColumnLayout.style.visibility = 'visible';
+                    twoColumnLayout.style.opacity = '1';
+                  }
                   
                   // Wait for styles to apply before printing
                   setTimeout(function() {
+                    console.log("Printing now...");
                     window.print();
                     // Close after printing
                     setTimeout(function() {
@@ -179,7 +185,7 @@ export function usePrint() {
         
         // Navigate to the print error page
         const errorMessage = error instanceof Error ? error.message : 'Unknown printing error occurred';
-        navigate('/print-error?error=' + encodeURIComponent(errorMessage) + '&redirect=/create-contract');
+        navigate('/print-error?error=' + encodeURIComponent(errorMessage));
       } finally {
         // Remove printing class after a delay
         setTimeout(() => {

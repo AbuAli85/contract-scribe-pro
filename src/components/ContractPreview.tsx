@@ -23,49 +23,59 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
     if (!contractData) return;
     
     // Debug and fix visibility issues
-    setTimeout(() => {
+    const fixVisibilityIssues = () => {
       if (!previewRef.current) return;
       
       const contractPreview = previewRef.current;
-      const contractContent = contractPreview.querySelector('.contract-content');
-      const contractText = contractPreview.querySelectorAll('.contract-text');
-      const twoColumnLayout = contractPreview.querySelector('.two-column-layout');
       
-      console.log("ContractPreview visibility check:", {
-        previewDisplay: contractPreview ? window.getComputedStyle(contractPreview).display : 'element not found',
-        previewVisibility: contractPreview ? window.getComputedStyle(contractPreview).visibility : 'element not found',
-        contentDisplay: contractContent ? window.getComputedStyle(contractContent).display : 'element not found',
-        textElementsCount: contractText.length,
-        twoColumnDisplay: twoColumnLayout ? window.getComputedStyle(twoColumnLayout).display : 'element not found'
-      });
+      console.log("ContractPreview visibility check - element exists:", !!contractPreview);
       
-      // Fix visibility issues proactively
+      // Force visibility on all important elements
       if (contractPreview) {
+        // Make the preview visible
         contractPreview.style.display = 'block';
         contractPreview.style.visibility = 'visible';
-      }
-      
-      if (contractContent instanceof HTMLElement) {
-        contractContent.style.display = 'block';
-        contractContent.style.visibility = 'visible';
-      }
-      
-      if (twoColumnLayout instanceof HTMLElement) {
-        twoColumnLayout.style.display = 'flex';
-        twoColumnLayout.style.visibility = 'visible';
-      }
-      
-      // Make sure text elements are visible
-      contractText.forEach(el => {
-        if (el instanceof HTMLElement) {
-          el.style.display = 'block';
-          el.style.visibility = 'visible';
+        
+        // Force all children to be visible
+        const elements = contractPreview.querySelectorAll('.contract-content, .two-column-layout, .contract-column, .contract-text, .promoter-details, .responsibilities, .contract-title, .best-regards');
+        
+        elements.forEach(el => {
+          if (el instanceof HTMLElement) {
+            const display = el.classList.contains('two-column-layout') ? 'flex' : 'block';
+            el.style.display = display;
+            el.style.visibility = 'visible';
+            el.style.opacity = '1';
+            
+            // Add border for debugging
+            if (process.env.NODE_ENV === 'development') {
+              el.style.border = '1px dashed rgba(0,0,255,0.2)';
+            }
+          }
+        });
+        
+        // Special styling for two-column layout
+        const twoColumnLayout = contractPreview.querySelector('.two-column-layout');
+        if (twoColumnLayout instanceof HTMLElement) {
+          twoColumnLayout.style.display = 'flex';
+          twoColumnLayout.style.flexDirection = 'row';
+          twoColumnLayout.style.justifyContent = 'space-between';
+          twoColumnLayout.style.gap = '10mm';
         }
-      });
-    }, 500);
+        
+        console.log("Contract visibility fix applied");
+      }
+    };
+    
+    // First immediate fix
+    fixVisibilityIssues();
+    
+    // Schedule another fix after rendering completes
+    const timer = setTimeout(fixVisibilityIssues, 500);
+    
+    return () => clearTimeout(timer);
   }, [contractData]);
 
-  // Additional effect to validate printability
+  // Validate printability on load and when data changes
   useEffect(() => {
     if (contractData) {
       setTimeout(() => {

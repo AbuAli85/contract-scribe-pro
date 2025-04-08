@@ -88,6 +88,21 @@ export const contractService = {
       return false
     }
     
+    // Check letterhead background exists if that element is used
+    const letterhead = document.querySelector('.letterhead-background')
+    if (!letterhead) {
+      console.warn("Letterhead background not found (optional)")
+    }
+    
+    // Log all checked elements for debugging
+    console.log("Contract printability check passed with elements:", {
+      contractPreview: !!contractPreview,
+      contractContent: !!contractContent,
+      contractTextCount: contractText.length,
+      twoColumnLayout: !!twoColumnLayout,
+      letterhead: !!letterhead
+    })
+    
     return true
   },
   
@@ -95,6 +110,8 @@ export const contractService = {
    * Fix visibility of elements before printing
    */
   fixPrintVisibility: (): void => {
+    console.log("Applying contract visibility fixes")
+    
     // Add printing class to body
     document.body.classList.add('printing')
     
@@ -115,23 +132,40 @@ export const contractService = {
       '.signature-block',
       '.contract-title',
       '.contract-main-title',
-      '.best-regards'
+      '.best-regards',
+      '.id-photo-container',
+      '.reference-number',
+      '.info-row',
+      '.responsibilities-title'
     ]
     
-    selectors.forEach(selector => {
+    const elementsFixed = selectors.map(selector => {
       const elements = document.querySelectorAll(selector)
       elements.forEach(el => {
         if (el instanceof HTMLElement) {
-          el.style.display = selector === '.two-column-layout' ? 'flex' : 'block'
+          // Determine correct display style
+          const display = selector === '.two-column-layout' ? 'flex' : 'block'
+          el.style.display = display
           el.style.visibility = 'visible'
           el.style.opacity = '1'
           
-          if (selector !== '.two-column-layout') {
+          // Special color handling
+          if (!selector.includes('two-column-layout') && 
+              !selector.includes('a4-page') && 
+              !selector.includes('contract-preview')) {
             el.style.color = 'black'
+          }
+          
+          // Add padding for readability
+          if (selector === '.contract-content') {
+            el.style.padding = '20mm'
           }
         }
       })
+      return { selector, count: elements.length }
     })
+    
+    console.log("Visibility fixes applied to:", elementsFixed)
     
     // Special handling for two-column layout
     const twoColumnLayout = document.querySelector('.two-column-layout')
@@ -140,7 +174,15 @@ export const contractService = {
       twoColumnLayout.style.flexDirection = 'row'
       twoColumnLayout.style.justifyContent = 'space-between'
       twoColumnLayout.style.gap = '10mm'
+      console.log("Two-column layout style applied")
     }
+    
+    // Ensure any images are visible
+    document.querySelectorAll('img').forEach(img => {
+      img.style.visibility = 'visible'
+      img.style.display = 'block'
+      img.style.opacity = '1'
+    })
   },
   
   /**
@@ -149,5 +191,6 @@ export const contractService = {
   cleanupAfterPrinting: (): void => {
     // Remove printing class from body
     document.body.classList.remove('printing')
+    console.log("Print cleanup completed")
   }
 }

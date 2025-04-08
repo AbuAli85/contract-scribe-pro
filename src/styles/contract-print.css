@@ -11,6 +11,7 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
+    background-color: white !important;
   }
   
   /* Base container styles */
@@ -24,6 +25,7 @@
     width: 100% !important;
     position: relative !important;
     z-index: 9999 !important;
+    overflow: visible !important;
   }
   
   /* Hide non-printable elements */
@@ -51,6 +53,7 @@
     display: block !important;
     position: relative !important;
     background: white !important;
+    overflow: visible !important;
   }
 
   /* Critical: Force all content to be visible */
@@ -77,6 +80,34 @@
     color: black !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+  
+  /* Contract elements that must be displayed as block */
+  .contract-preview,
+  .a4-page,
+  .contract-content,
+  .contract-column,
+  .reference-section,
+  .id-photo-container,
+  .letterhead-background,
+  .contract-title-area,
+  .signature-area,
+  .signature-block,
+  .signature-line,
+  .signature-name,
+  .contract-title, 
+  .contract-text,
+  .promoter-details,
+  .promoter-info,
+  .responsibilities,
+  .responsibilities-title,
+  .best-regards,
+  .reference-number,
+  .contract-main-title,
+  .info-row {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
   
   /* Special handling for flex containers */
@@ -106,6 +137,8 @@
     display: block !important;
     visibility: visible !important;
     padding: 20mm !important;
+    color: black !important;
+    background-color: white !important;
   }
 
   /* Letterhead background */
@@ -163,9 +196,25 @@
     margin-top: 25mm !important;
   }
   
+  /* ID photo container */
+  .id-photo-container,
+  .id-photo {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    max-width: 100% !important;
+  }
+  
   /* Hide popover content when printing */
   .popover-content {
     display: none !important;
+  }
+  
+  /* Fix for Safari and Firefox rendering issues */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
 }
 
@@ -229,6 +278,15 @@ body.printing .two-column-layout {
 
 body.printing .signature-area {
   display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Extra fixes for image visibility */
+body.printing img,
+body.printing .letterhead-background,
+body.printing .id-photo {
+  display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
 }
