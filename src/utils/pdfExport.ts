@@ -7,6 +7,19 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { setupPrintContainer, cleanupPrinting } from './print-container';
 import { toast } from '@/hooks/use-toast';
+import { createContractPage, createPassportPage } from './pdfPageCreator';
+
+// Types for PDF export options
+export interface PDFExportOptions {
+  selector?: string;
+  filename?: string;
+  pageFormat?: 'a4' | 'letter';
+  language?: 'en' | 'ar';
+  contractData?: any;
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+  includePassport?: boolean;
+}
 
 /**
  * Hide UI elements that should not appear in the PDF
@@ -78,181 +91,64 @@ const restoreAfterExport = (hiddenElements: NodeListOf<Element>) => {
 };
 
 /**
- * Creates a second page with passport document if provided
+ * Convert an HTML element to a canvas for PDF generation
  */
-const createPassportPage = async (pdf: jsPDF, contractData: any): Promise<boolean> => {
-  try {
-    // Find passport/ID photo container
-    const passportElement = document.querySelector('.id-photo-container') as HTMLElement;
-    if (!passportElement) {
-      console.warn('No passport element found for second page');
-      return false;
-    }
+const convertElementToCanvas = async (element: HTMLElement): Promise<HTMLCanvasElement> => {
+  return html2canvas(element, {
+    scale: 2, // Higher scale for better quality
+    useCORS: true, // Allow images from other domains
+    logging: false,
+    allowTaint: true,
+    backgroundColor: '#ffffff'
+  });
+};
 
-    // Create a temporary container for the passport page
-    const passportPageContainer = document.createElement('div');
-    passportPageContainer.className = 'a4-page passport-page';
-    passportPageContainer.style.width = '210mm';
-    passportPageContainer.style.height = '297mm';
-    passportPageContainer.style.position = 'relative';
-    passportPageContainer.style.overflow = 'hidden';
-    passportPageContainer.style.backgroundColor = 'white';
-    
-    // Add letterhead background if available
-    if (contractData && contractData.letterhead) {
-      const letterheadBg = document.createElement('div');
-      letterheadBg.className = 'letterhead-background';
-      letterheadBg.style.position = 'absolute';
-      letterheadBg.style.top = '0';
-      letterheadBg.style.left = '0';
-      letterheadBg.style.width = '100%';
-      letterheadBg.style.height = '100%';
-      letterheadBg.style.backgroundImage = `url('${contractData.letterhead}')`;
-      letterheadBg.style.backgroundSize = 'cover';
-      letterheadBg.style.backgroundPosition = 'center';
-      letterheadBg.style.opacity = '0.8';
-      letterheadBg.style.zIndex = '1';
-      passportPageContainer.appendChild(letterheadBg);
-    }
-    
-    // Create content container
-    const contentContainer = document.createElement('div');
-    contentContainer.className = 'passport-content';
-    contentContainer.style.position = 'relative';
-    contentContainer.style.zIndex = '10';
-    contentContainer.style.padding = '20mm';
-    contentContainer.style.height = '100%';
-    contentContainer.style.boxSizing = 'border-box';
-    contentContainer.style.display = 'flex';
-    contentContainer.style.flexDirection = 'column';
-    contentContainer.style.alignItems = 'center';
-    
-    // Add title
-    const title = document.createElement('h1');
-    title.textContent = 'Passport / جواز السفر';
-    title.style.fontSize = '24px';
-    title.style.marginBottom = '20mm';
-    title.style.textAlign = 'center';
-    title.style.width = '100%';
-    contentContainer.appendChild(title);
-    
-    // Create a container for the passport image
-    const passportImageContainer = document.createElement('div');
-    passportImageContainer.style.width = '100%';
-    passportImageContainer.style.display = 'flex';
-    passportImageContainer.style.justifyContent = 'center';
-    passportImageContainer.style.marginBottom = '20mm';
-    
-    // Clone the passport photo for better quality
-    const originalPhoto = passportElement.querySelector('.id-photo') as HTMLImageElement;
-    if (originalPhoto && originalPhoto.src) {
-      const passportImage = document.createElement('img');
-      passportImage.src = originalPhoto.src;
-      passportImage.alt = 'Passport';
-      passportImage.style.maxWidth = '80%';
-      passportImage.style.maxHeight = '60%';
-      passportImage.style.objectFit = 'contain';
-      passportImage.style.border = '1px solid #ddd';
-      passportImage.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-      passportImageContainer.appendChild(passportImage);
-    }
-    
-    contentContainer.appendChild(passportImageContainer);
-    
-    // Add reference number if available
-    if (contractData && contractData.refNumber) {
-      const refNumber = document.createElement('div');
-      refNumber.className = 'reference-number';
-      refNumber.textContent = `Ref: ${contractData.refNumber}`;
-      refNumber.style.fontSize = '14px';
-      refNumber.style.marginBottom = '10mm';
-      refNumber.style.position = 'absolute';
-      refNumber.style.top = '10mm';
-      refNumber.style.left = '20mm';
-      contentContainer.appendChild(refNumber);
-    }
-    
-    // Add promoter details if available
-    if (contractData && contractData.promoter) {
-      const detailsContainer = document.createElement('div');
-      detailsContainer.className = 'passport-details';
-      detailsContainer.style.width = '80%';
-      detailsContainer.style.marginTop = 'auto';
-      detailsContainer.style.marginBottom = '20mm';
-      detailsContainer.style.padding = '15px';
-      detailsContainer.style.border = '1px solid #ddd';
-      detailsContainer.style.borderRadius = '5px';
-      detailsContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-      
-      // Create promoter info in English and Arabic
-      const infoHTML = `
-        <div style="display: flex; justify-content: space-between;">
-          <div style="width: 48%;">
-            <p><strong>Promoter Name:</strong> ${contractData.promoter.name?.en || 'N/A'}</p>
-            <p><strong>ID Number:</strong> ${contractData.promoter.id?.en || 'N/A'}</p>
-            <p><strong>From:</strong> ${contractData.startDate?.en || 'N/A'}</p>
-            <p><strong>To:</strong> ${contractData.endDate?.en || 'N/A'}</p>
-          </div>
-          <div style="width: 48%; text-align: right; direction: rtl;">
-            <p><strong>اسم المروج:</strong> ${contractData.promoter.name?.ar || 'N/A'}</p>
-            <p><strong>رقم الهوية:</strong> ${contractData.promoter.id?.ar || 'N/A'}</p>
-            <p><strong>من:</strong> ${contractData.startDate?.ar || 'N/A'}</p>
-            <p><strong>إلى:</strong> ${contractData.endDate?.ar || 'N/A'}</p>
-          </div>
-        </div>
-      `;
-      
-      detailsContainer.innerHTML = infoHTML;
-      contentContainer.appendChild(detailsContainer);
-    }
-    
-    passportPageContainer.appendChild(contentContainer);
-    
-    // Temporarily add to document but hide it
-    passportPageContainer.style.position = 'absolute';
-    passportPageContainer.style.left = '-9999px';
-    document.body.appendChild(passportPageContainer);
-    
-    // Add a new page for the passport
-    pdf.addPage([210, 297], 'portrait');
-    
-    // Convert the passport page to canvas
-    const canvas = await html2canvas(passportPageContainer, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      allowTaint: true,
-      backgroundColor: '#ffffff'
-    });
-    
-    // Add canvas to PDF - full page size
-    const imgData = canvas.toDataURL('image/png');
-    pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
-    
-    // Clean up - remove temporary elements
-    document.body.removeChild(passportPageContainer);
-    
-    return true;
-  } catch (error) {
-    console.error('Error creating passport page:', error);
-    return false;
-  }
+/**
+ * Create a new PDF document with proper settings
+ */
+const createPDFDocument = (pageFormat: 'a4' | 'letter'): jsPDF => {
+  return new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: pageFormat,
+    compress: true
+  });
+};
+
+/**
+ * Add an image to a PDF document with proper A4 sizing
+ */
+const addImageToPDF = (pdf: jsPDF, imgData: string): void => {
+  // Add the image to fill the entire page without margins - exact A4 size
+  pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+};
+
+/**
+ * Show a success toast message
+ */
+const showSuccessToast = (language: 'en' | 'ar'): void => {
+  toast({
+    title: language === "ar" ? "تم تحميل PDF بنجاح" : "PDF Downloaded",
+    description: language === "ar" ? "تم تحميل عقدك كملف PDF" : "Your contract has been downloaded as a PDF",
+  });
+};
+
+/**
+ * Show an error toast message
+ */
+const showErrorToast = (language: 'en' | 'ar', error: unknown): void => {
+  toast({
+    title: language === "ar" ? "خطأ في تحميل PDF" : "PDF Export Error",
+    description: error instanceof Error ? error.message : "An error occurred during PDF export",
+    variant: "destructive",
+  });
 };
 
 /**
  * Export contract content as PDF
  * @param options Configuration options for PDF export
  */
-export const exportToPDF = async (options: {
-  selector?: string;
-  filename?: string;
-  pageFormat?: 'a4' | 'letter';
-  language?: 'en' | 'ar';
-  contractData?: any;
-  onSuccess?: () => void;
-  onError?: (error: Error) => void;
-  includePassport?: boolean;
-}) => {
+export const exportToPDF = async (options: PDFExportOptions) => {
   const {
     selector = '.print-container',
     filename = 'contract.pdf',
@@ -277,28 +173,11 @@ export const exportToPDF = async (options: {
     // Hide UI elements and prepare for export
     const hiddenElements = prepareForExport(element as HTMLElement);
     
-    // Create PDF with appropriate dimensions (no margins)
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: pageFormat,
-      compress: true
-    });
+    // Create PDF with appropriate dimensions
+    const pdf = createPDFDocument(pageFormat);
     
-    // Convert HTML to canvas
-    const canvas = await html2canvas(element as HTMLElement, {
-      scale: 2, // Higher scale for better quality
-      useCORS: true, // Allow images from other domains
-      logging: false,
-      allowTaint: true,
-      backgroundColor: '#ffffff'
-    });
-    
-    // Add canvas image to PDF - using exact A4 dimensions with no margins
-    const imgData = canvas.toDataURL('image/png');
-    
-    // Add the image to fill the entire page without margins - exact A4 size
-    pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+    // Add the contract page
+    await createContractPage(pdf, element as HTMLElement);
     
     // Add passport document as a second page if requested
     if (includePassport) {
@@ -312,10 +191,7 @@ export const exportToPDF = async (options: {
     restoreAfterExport(hiddenElements);
     
     // Show success message
-    toast({
-      title: language === "ar" ? "تم تحميل PDF بنجاح" : "PDF Downloaded",
-      description: language === "ar" ? "تم تحميل عقدك كملف PDF" : "Your contract has been downloaded as a PDF",
-    });
+    showSuccessToast(language);
     
     // Callback if provided
     onSuccess?.();
@@ -323,11 +199,7 @@ export const exportToPDF = async (options: {
     console.error('Error exporting to PDF:', error);
     
     // Show error message
-    toast({
-      title: language === "ar" ? "خطأ في تحميل PDF" : "PDF Export Error",
-      description: error instanceof Error ? error.message : "An error occurred during PDF export",
-      variant: "destructive",
-    });
+    showErrorToast(language, error);
     
     // Callback if provided
     onError?.(error instanceof Error ? error : new Error(String(error)));
