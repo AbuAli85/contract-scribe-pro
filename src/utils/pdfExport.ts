@@ -21,7 +21,7 @@ const prepareForExport = (element: HTMLElement) => {
     }
   });
 
-  // Ensure letterhead covers full page
+  // Ensure letterhead covers full page with proper dimensions
   const letterhead = element.querySelector('.letterhead-background') as HTMLElement;
   if (letterhead) {
     letterhead.style.position = 'absolute';
@@ -32,6 +32,9 @@ const prepareForExport = (element: HTMLElement) => {
     letterhead.style.zIndex = '1';
     letterhead.style.opacity = '0.8';
     letterhead.style.objectFit = 'cover';
+    letterhead.style.margin = '0';
+    letterhead.style.padding = '0';
+    letterhead.style.border = 'none';
   }
 
   // Make sure the contract content is on top of the letterhead
@@ -39,6 +42,7 @@ const prepareForExport = (element: HTMLElement) => {
   if (content) {
     content.style.position = 'relative';
     content.style.zIndex = '10';
+    content.style.padding = '20mm';
   }
 
   // Ensure the reference number is visible
@@ -46,6 +50,7 @@ const prepareForExport = (element: HTMLElement) => {
   if (refNumber) {
     refNumber.style.display = 'block';
     refNumber.style.visibility = 'visible';
+    refNumber.style.marginBottom = '15mm';
   }
 
   // Ensure ID photo is properly displayed
@@ -61,7 +66,20 @@ const prepareForExport = (element: HTMLElement) => {
   const signatureArea = element.querySelector('.signature-area') as HTMLElement;
   if (signatureArea) {
     signatureArea.style.display = 'flex';
+    signatureArea.style.justifyContent = 'space-between';
     signatureArea.style.visibility = 'visible';
+    signatureArea.style.marginTop = '25mm';
+  }
+
+  // Set A4 page dimensions explicitly
+  const a4Page = element.querySelector('.a4-page') as HTMLElement;
+  if (a4Page) {
+    a4Page.style.width = '210mm';
+    a4Page.style.minHeight = '297mm';
+    a4Page.style.margin = '0';
+    a4Page.style.padding = '0';
+    a4Page.style.boxShadow = 'none';
+    a4Page.style.overflow = 'hidden';
   }
 
   return hiddenElements;
@@ -85,6 +103,48 @@ const restoreAfterExport = (hiddenElements: NodeListOf<Element>) => {
 };
 
 /**
+ * Creates a second page with passport/ID document if provided
+ */
+const createSecondPage = (pdf: jsPDF, passportElement: HTMLElement | null): Promise<boolean> => {
+  return new Promise(async (resolve) => {
+    if (!passportElement) {
+      resolve(false);
+      return;
+    }
+
+    try {
+      // Add a new page for the passport/ID
+      pdf.addPage('a4', 'portrait');
+      
+      // Convert passport element to canvas
+      const canvas = await html2canvas(passportElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+      
+      // Add canvas image to PDF
+      const imgData = canvas.toDataURL('image/png');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = (pdfHeight - imgHeight * ratio) / 2; // Center vertically
+      
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      resolve(true);
+    } catch (error) {
+      console.error('Error creating second page:', error);
+      resolve(false);
+    }
+  });
+};
+
+/**
  * Export contract content as PDF
  * @param options Configuration options for PDF export
  */
@@ -95,6 +155,7 @@ export const exportToPDF = async (options: {
   language?: 'en' | 'ar';
   onSuccess?: () => void;
   onError?: (error: Error) => void;
+  includePassport?: boolean;
 }) => {
   const {
     selector = '.print-container',
@@ -102,7 +163,8 @@ export const exportToPDF = async (options: {
     pageFormat = 'a4',
     language = 'en',
     onSuccess,
-    onError
+    onError,
+    includePassport = true
   } = options;
   
   try {
@@ -134,17 +196,21 @@ export const exportToPDF = async (options: {
       backgroundColor: '#ffffff'
     });
     
-    // Add canvas image to PDF
+    // Add canvas image to PDF - using exact A4 dimensions
     const imgData = canvas.toDataURL('image/png');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const imgWidth = canvas.width;
-    const imgHeight = canvas.height;
-    const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-    const imgX = (pdfWidth - imgWidth * ratio) / 2;
-    const imgY = 0;
+    const pdfWidth = 210; // A4 width in mm
+    const pdfHeight = 297; // A4 height in mm
     
-    pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+    // Add the image to fit perfectly on A4 page
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    
+    // Look for a passport/ID document element to add as second page
+    if (includePassport) {
+      const passportElement = document.querySelector('.id-photo-container') as HTMLElement;
+      if (passportElement) {
+        await createSecondPage(pdf, passportElement);
+      }
+    }
     
     // Save PDF
     pdf.save(filename);

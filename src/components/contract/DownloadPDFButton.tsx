@@ -13,6 +13,7 @@ interface DownloadPDFButtonProps {
   className?: string;
   buttonText?: string;
   variant?: "default" | "outline" | "secondary";
+  includePassport?: boolean;
 }
 
 const DownloadPDFButton = ({ 
@@ -21,7 +22,8 @@ const DownloadPDFButton = ({
   contractId = "default",
   className = "",
   buttonText,
-  variant = "default"
+  variant = "default",
+  includePassport = true
 }: DownloadPDFButtonProps) => {
   const { toast } = useToast();
   const [isExporting, setIsExporting] = useState(false);
@@ -45,11 +47,13 @@ const DownloadPDFButton = ({
       // Generate filename based on contract data
       const filename = `contract-${contractId}-${new Date().toISOString().slice(0, 10)}.pdf`;
       
-      // Export to PDF
+      // Export to PDF with enhanced settings
       await exportToPDF({
         selector: '.print-container',
         filename,
         language,
+        pageFormat: 'a4',
+        includePassport,
         onSuccess: () => {
           setIsExporting(false);
           console.log("PDF export successful");

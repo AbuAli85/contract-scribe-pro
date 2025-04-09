@@ -70,11 +70,12 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
           contractData={contractData}
           contractId={contractData.id || "default"}
           variant="outline"
+          includePassport={true}
         />
       </div>
 
       <div className="a4-page">
-        {/* Letterhead background - Set to full page */}
+        {/* Letterhead background - Set to full page with proper positioning */}
         {contractData.letterhead && (
           <img
             src={contractData.letterhead}
@@ -88,7 +89,10 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
               height: '100%',
               objectFit: 'cover',
               zIndex: 1,
-              opacity: 0.8
+              opacity: 0.8,
+              margin: 0,
+              padding: 0,
+              border: 'none'
             }}
           />
         )}

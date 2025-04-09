@@ -25,6 +25,8 @@
   /* Special layout handling */
   .two-column-layout {
     display: flex !important;
+    justify-content: space-between !important;
+    gap: 10mm !important;
   }
   
   /* Letterhead background - Ensure it covers full page */
@@ -37,13 +39,17 @@
     object-fit: cover !important;
     z-index: 1 !important;
     opacity: 0.8 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
   }
   
   /* Contract content - Ensure it's on top of the letterhead */
   .contract-content {
     position: relative !important;
     z-index: 10 !important;
-    padding: 20mm !important; 
+    padding: 20mm !important;
+    margin: 0 !important;
   }
   
   /* Page settings */
@@ -60,6 +66,19 @@
     padding: 0 !important;
     overflow: visible !important;
     background-color: white !important;
+  }
+  
+  /* A4 page container */
+  .a4-page {
+    width: 210mm !important;
+    height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    position: relative !important;
+    overflow: hidden !important;
+    page-break-after: always !important;
+    break-after: always !important;
   }
   
   /* Hide UI elements */
@@ -80,17 +99,53 @@
     margin-bottom: 20px !important;
   }
   
+  .id-photo-wrapper {
+    width: 400px !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    border: 1px solid #ddd !important;
+    overflow: hidden !important;
+  }
+  
+  .id-photo {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+  
   /* Ensure signature area displays properly */
   .signature-area {
     display: flex !important;
     justify-content: space-between !important;
-    margin-top: 20mm !important;
+    margin-top: 25mm !important;
   }
   
   /* Reference number */
   .reference-number {
     display: block !important;
     visibility: visible !important;
+    margin-bottom: 15mm !important;
+  }
+  
+  /* Contract columns */
+  .contract-column {
+    flex: 1 !important;
+    font-size: 11px !important;
+    line-height: 1.5 !important;
+  }
+  
+  /* Contract text and related elements */
+  .contract-text, 
+  .promoter-details, 
+  .responsibilities,
+  .info-row,
+  .promoter-info,
+  .responsibilities-title,
+  .best-regards {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: black !important;
   }
 }
 
@@ -130,4 +185,6 @@ body.printing .contract-content {
 
 body.printing .two-column-layout {
   display: flex !important;
+  justify-content: space-between !important;
+  gap: 10mm !important;
 }
