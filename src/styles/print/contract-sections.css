@@ -1,0 +1,70 @@
+
+/* Contract Section Print Styles */
+@media print {
+  /* Reference section */
+  .reference-section {
+    display: block !important;
+    visibility: visible !important;
+    text-align: left !important;
+    margin-top: 1cm !important;
+    margin-bottom: 15mm !important;
+    padding-left: 5mm !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
+  /* Contract title area */
+  .contract-title-area {
+    display: block !important;
+    visibility: visible !important;
+    text-align: center !important;
+    margin-bottom: 10mm !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
+  /* Promoter details */
+  .promoter-details {
+    display: block !important;
+    visibility: visible !important;
+    margin: 5mm 0 !important;
+    padding: 3mm !important;
+    background-color: rgba(249, 249, 249, 0.7) !important;
+    border-radius: 3px !important;
+    border-left: 2px solid #1a73e8 !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+  
+  /* Text content visibility fixes */
+  .contract-text,
+  .promoter-details p,
+  .responsibilities p,
+  .info-row,
+  .contract-title,
+  .best-regards,
+  .responsibilities-title {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: black !important;
+  }
+}
+
+/* When printing class is active - section elements */  
+body.printing .reference-section,
+body.printing .contract-title-area,
+body.printing .promoter-details,
+body.printing .responsibilities,
+body.printing .info-row,
+body.printing .best-regards,
+body.printing .contract-title,
+body.printing .contract-main-title,
+body.printing .responsibilities-title,
+body.printing .contract-text,
+body.printing .promoter-info {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: black !important;
+}

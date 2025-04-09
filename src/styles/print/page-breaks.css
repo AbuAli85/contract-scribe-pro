@@ -1,0 +1,20 @@
+
+/* Page Break Control Styles */
+@media print {
+  /* Page break controls */
+  .contract-preview,
+  .a4-page,
+  .contract-content,
+  .reference-section,
+  .id-photo-container,
+  .id-photo-wrapper,
+  .id-photo,
+  .contract-title-area,
+  .signature-area,
+  .signature-block,
+  .signature-line,
+  .contract-column,
+  .print-container {
+    break-inside: avoid !important;
+  }
+}

@@ -1,0 +1,39 @@
+
+/* Photo and Image Print Styles */
+@media print {
+  /* ID photo styles */
+  .id-photo-container {
+    display: flex !important;
+    visibility: visible !important;
+    justify-content: center !important;
+    margin: 15mm 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
+  .id-photo-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    width: 400px !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    border: 1px solid #ddd !important;
+    overflow: hidden !important;
+  }
+  
+  .id-photo {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+}
+
+/* When printing class is active - images and photos */
+body.printing .id-photo-container,
+body.printing .id-photo-wrapper,
+body.printing .id-photo {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}

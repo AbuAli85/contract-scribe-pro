@@ -1,0 +1,19 @@
+
+/* Print Styles Index File */
+
+/* Import all print style modules */
+@import './core.css';
+@import './contract-sections.css';
+@import './photos-images.css';
+@import './signature-area.css';
+@import './page-breaks.css';
+
+/* Styles that apply both for print and when printing class is active */
+@media print {
+  /* Fix for Safari and Firefox rendering issues */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+}

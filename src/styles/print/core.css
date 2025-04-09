@@ -1,0 +1,67 @@
+
+/* Core Print Styles */
+@media print {
+  /* Hide UI controls */
+  .print\:hidden,
+  button:not(.signature-block button),
+  .tabs-list,
+  header,
+  nav {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+  /* Core visibility styles */
+  .print-container {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: white !important;
+    min-height: 297mm !important;
+    width: 210mm !important;
+    margin: 0 auto !important;
+    position: relative !important;
+    z-index: 9999 !important;
+  }
+  
+  /* Force visibility for all contract elements when printing */
+  .print-container *,
+  .contract-preview *,
+  .a4-page *,
+  .contract-content * {
+    visibility: visible !important;
+    display: inherit !important;
+    opacity: 1 !important;
+    color: black !important;
+  }
+  
+  /* Page settings */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  
+  /* Error message */
+  .error-message {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+/* Printing class styles for immediate application */
+body.printing .print-container,
+body.printing .contract-preview,
+body.printing .a4-page,
+body.printing .contract-content {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: black !important;
+}
+
+/* Error element - Hide during printing */
+body.printing .error-message,
+.error-message.print\:hidden {
+  display: none !important;
+  visibility: hidden !important;
+}

@@ -4,7 +4,7 @@
 @import './contract-typography.css';
 @import './contract-components.css';
 @import './contract-print.css';
-@import './print-components.css';
+@import './print/index.css';
 @import './print-layout.css';
 @import './print-typography.css';
 
