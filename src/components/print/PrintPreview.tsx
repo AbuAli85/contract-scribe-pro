@@ -31,7 +31,7 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
     if (isNested || !containerRef.current) return;
     
     // Log container existence for debugging
-    console.log('PrintPreview: Added print-container class to element');
+    console.log('PrintPreview: Container initialized');
     
     // Setup print container
     setupPrintContainer();
@@ -109,11 +109,23 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
 
   // If nested, render without print container to avoid duplicates
   if (isNested) {
-    return <div className={className}>{children}</div>;
+    return (
+      <div 
+        ref={containerRef}
+        className={`print-nested-container ${className}`}
+        data-testid="nested-print-content"
+      >
+        {children}
+      </div>
+    );
   }
 
   return (
-    <div ref={containerRef} className={`print-container ${className}`} data-testid="print-container">
+    <div 
+      ref={containerRef} 
+      className={`print-container print-section ${className}`} 
+      data-testid="print-container"
+    >
       {showWarnings && warnings.length > 0 && (
         <Alert variant="destructive" className="mb-4 print:hidden">
           <AlertTriangle className="h-4 w-4" />

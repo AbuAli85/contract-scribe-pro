@@ -14,7 +14,9 @@ export function useNestedPrintContainer() {
     if (typeof document === 'undefined' || !containerRef.current) return false;
     
     // Check if this container is inside another print container
-    const isInsideContainer = !!containerRef.current?.closest('.print-container:not(.print-nested-container)');
+    // We look for any parent with print-container class that is NOT this element
+    const parent = containerRef.current.closest('.print-container');
+    const isInsideContainer = parent !== null && parent !== containerRef.current;
     
     // Log warning if nested container is detected
     if (isInsideContainer) {
@@ -42,6 +44,10 @@ export function useNestedPrintContainer() {
       if (!containerRef.current.hasAttribute('data-testid')) {
         containerRef.current.setAttribute('data-testid', 'print-container');
       }
+    } else if (isNested && containerRef.current) {
+      // Add print-nested-container class to help with CSS targeting
+      containerRef.current.classList.add('print-nested-container');
+      containerRef.current.setAttribute('data-testid', 'nested-print-container');
     }
   }, [isNested]);
   

@@ -24,16 +24,52 @@ const ContractContent: React.FC<ContractContentProps> = ({
   const documentLabel = documentType === 'passport' ? 'Passport / جواز السفر' : 'ID Card / بطاقة الهوية';
 
   // Use our custom hook to detect nesting and prevent duplicate print content
-  const { isNested } = useNestedPrintContainer();
+  const { containerRef, isNested } = useNestedPrintContainer();
   
-  // If nested, return null to prevent duplication
+  // Return simplified content if nested to prevent duplication
   if (isNested) {
-    console.warn('Warning: Nested contract content detected. Returning null to prevent duplication.');
-    return null;
+    return (
+      <div 
+        ref={containerRef}
+        className="print-nested-container" 
+        data-testid="nested-contract-content"
+      >
+        {/* Limited content for nested containers */}
+        <div className="nested-content-notice p-4 bg-gray-50 rounded border border-gray-200 mb-4 print:hidden">
+          <p className="text-sm text-gray-600">
+            {language === "ar" 
+              ? "هذا محتوى متداخل. سيتم عرضه في واجهة المستخدم ولكن لن يتم طباعته لتجنب التكرار."
+              : "This is nested content. It will be shown in the UI but won't be printed to avoid duplication."}
+          </p>
+        </div>
+        
+        {/* Minimal UI content */}
+        <div className="contract-title-area">
+          <ContractTitle language={language} />
+        </div>
+        
+        {/* Basic information for UI only */}
+        <div className="print:hidden">
+          <div className="p-4">
+            <h3 className="text-lg font-medium">{language === "ar" ? "محتوى العقد" : "Contract Content"}</h3>
+            <p className="text-sm text-gray-500">
+              {language === "ar" 
+                ? "هذا المحتوى مضمن في حاوية أخرى وسيتم طباعة النسخة الأصلية فقط."
+                : "This content is embedded in another container and only the original will be printed."}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
+  // If not nested, return full content with all elements
   return (
-    <div className="contract-content print-section">
+    <div 
+      ref={containerRef}
+      className="contract-content print-section"
+      data-testid="contract-content"
+    >
       {/* Letterhead background - if available */}
       {contractData.letterhead && (
         <div 

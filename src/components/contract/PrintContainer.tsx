@@ -66,10 +66,20 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
     };
   }, [onReady, isNested]);
   
-  // If nested, wrap in a div without print-container class to avoid duplicates
+  // If nested, wrap in a div with print-nested-container class to avoid duplicates
   if (isNested) {
     return (
-      <div className={`print-nested-container ${className}`} data-testid="nested-print-content">
+      <div 
+        ref={containerRef}
+        className={`print-nested-container ${className}`} 
+        data-testid="nested-print-container"
+      >
+        {/* Show debug info if needed */}
+        {showDebugInfo && process.env.NODE_ENV === 'development' && (
+          <div className="print-debug-info print:hidden bg-yellow-50 border border-yellow-200 p-2 text-xs mb-4 rounded">
+            <p>Nested print container - Content suppressed for printing</p>
+          </div>
+        )}
         {children}
       </div>
     );
@@ -87,7 +97,7 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
       
       <div 
         ref={containerRef} 
-        className={`print-container print-container-wrapper ${className}`}
+        className={`print-container print-section print-container-wrapper ${className}`}
         data-testid="print-container"
       >
         {showDebugInfo && process.env.NODE_ENV === 'development' && (

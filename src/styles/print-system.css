@@ -48,14 +48,19 @@
   z-index: 10;
 }
 
-.print-nested-container {
-  /* For nested content, we don't want print classes but still need proper styling */
-  position: relative;
-}
-
+/* Print-specific background elements */
 .print-background {
   position: absolute;
   z-index: 1;
+}
+
+/* 
+ * Nested container handling - CRITICAL for preventing duplicate content
+ * When a print container is nested inside another, it should be hidden during printing
+ */
+.print-nested-container {
+  /* For nested content, don't apply print container styles */
+  position: relative;
 }
 
 /* Print container debug styles */
@@ -84,10 +89,16 @@
     overflow: visible !important;
   }
   
-  /* Handle nested containers */
+  /* Hide nested containers during printing - This is crucial to prevent duplication */
   .print-nested-container {
     display: none !important;
     visibility: hidden !important;
+  }
+  
+  /* Core print container */
+  .print-container {
+    display: block !important;
+    visibility: visible !important;
   }
 }
 
