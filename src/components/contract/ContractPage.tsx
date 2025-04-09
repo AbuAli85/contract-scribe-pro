@@ -22,8 +22,7 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
         position: 'relative',
         boxSizing: 'border-box',
         boxShadow: '0 0 15px rgba(0, 0, 0, 0.15)',
-        background: 'white',
-        left: '0'
+        background: 'white'
       }}
     >
       {/* Letterhead background that spans full width */}
@@ -35,15 +34,12 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
             top: 0,
             left: 0,
             width: '100%',
-            height: '40mm', // Increased height for better visibility
+            height: '35mm',
             backgroundImage: `url('${contractData.letterhead}')`,
             backgroundSize: 'cover',
             backgroundPosition: 'top center',
-            opacity: 0.08, // Reduced opacity for better readability
-            zIndex: 1,
-            margin: 0,
-            padding: 0,
-            border: 'none'
+            opacity: 0.08,
+            zIndex: 1
           }}
         />
       )}
@@ -75,11 +71,10 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
         style={{ 
           position: 'relative',
           zIndex: 10,
-          padding: '45mm 20mm 20mm', // Increased top padding to accommodate letterhead
+          padding: '40mm 20mm 20mm',
           width: '100%',
           height: '100%',
-          boxSizing: 'border-box',
-          margin: '0'
+          boxSizing: 'border-box'
         }}
       >
         {children}

@@ -35,7 +35,7 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
       top: 0;
       left: 0;
       width: 100%;
-      height: 40mm;
+      height: 100%;
       background-image: url('${contractData.letterhead}');
       background-size: cover;
       background-position: top center;
@@ -45,7 +45,7 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
     
     <div style="
       position: relative;
-      padding: 45mm 20mm 20mm;
+      padding: 40mm 20mm 20mm;
       height: 100%;
       box-sizing: border-box;
       z-index: 10;

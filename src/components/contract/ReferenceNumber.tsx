@@ -22,7 +22,7 @@ const ReferenceNumber = ({ refNumber }: ReferenceNumberProps) => {
   };
 
   return (
-    <div className="reference-section mt-6 mb-5">
+    <div className="reference-section mt-4 mb-5">
       <div className="reference-number font-mono text-gray-700 text-sm">
         <span className="font-bold">Reference Number:</span> {formattedRefNumber()}
       </div>
