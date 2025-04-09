@@ -12,7 +12,7 @@
     margin: 0 !important;
     padding: 0 !important;
     position: absolute !important;
-    top: 85mm !important; /* 8.5cm from top */
+    top: 35mm !important; /* 3.5cm from top */
     left: 10mm !important;
     width: calc(100% - 20mm) !important;
   }
@@ -74,7 +74,7 @@ body.printing .two-column-layout {
   margin: 0 !important;
   padding: 0 !important;
   position: absolute !important;
-  top: 85mm !important; /* 8.5cm from top */
+  top: 35mm !important; /* 3.5cm from top */
   left: 10mm !important;
   width: calc(100% - 20mm) !important;
 }

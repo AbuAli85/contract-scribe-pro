@@ -104,10 +104,10 @@
   object-fit: contain;
 }
 
-/* Two Column Layout for Contract Text - Positioned exactly 8.5cm from top */
+/* Two Column Layout for Contract Text - Positioned exactly 3.5cm from top */
 .two-column-layout {
   position: absolute;
-  top: 85mm; /* 8.5cm from top - adjusted to account for photo space */
+  top: 35mm; /* 3.5cm from top */
   left: 10mm; /* 1cm from left */
   width: calc(100% - 20mm);
   display: flex;
@@ -210,7 +210,7 @@
   
   .two-column-layout {
     position: absolute !important;
-    top: 85mm !important; /* Position after photo with some spacing */
+    top: 35mm !important; /* 3.5cm from top */
     left: 10mm !important;
     width: calc(100% - 20mm) !important;
   }

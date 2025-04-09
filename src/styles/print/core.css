@@ -102,10 +102,10 @@
     z-index: 10 !important;
   }
   
-  /* Contract content - positioned at 8.5cm from top */
+  /* Contract content - positioned at 3.5cm from top */
   .two-column-layout {
     position: absolute !important;
-    top: 85mm !important; /* 8.5cm from top - adjusted to account for photo height */
+    top: 35mm !important; /* 3.5cm from top */
     left: 10mm !important;
     width: calc(100% - 20mm) !important;
     display: flex !important;
@@ -167,7 +167,7 @@ body.printing .id-photo-container {
 
 body.printing .two-column-layout {
   position: absolute !important;
-  top: 85mm !important;
+  top: 35mm !important; /* 3.5cm from top */
   left: 10mm !important;
   width: calc(100% - 20mm) !important;
 }

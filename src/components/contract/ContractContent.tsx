@@ -39,7 +39,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
         />
       )}
 
-      {/* Two Column Layout - contract content (positioned at 8.5cm from top) */}
+      {/* Two Column Layout - contract content (positioned at 3.5cm from top) */}
       <div className="two-column-layout">
         {/* Columns order based on language */}
         {language === "en" ? (

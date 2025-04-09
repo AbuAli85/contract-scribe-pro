@@ -121,7 +121,7 @@
   
   .two-column-layout {
     position: absolute !important;
-    top: 85mm !important; /* 8.5cm from top - adjusted for photo space */
+    top: 35mm !important; /* 3.5cm from top */
     left: 10mm !important;
     width: calc(100% - 20mm) !important;
   }
