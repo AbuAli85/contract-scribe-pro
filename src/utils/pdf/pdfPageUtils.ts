@@ -27,6 +27,7 @@ export const convertElementToCanvas = async (element: HTMLElement): Promise<HTML
         clonedElement.style.padding = '0';
         clonedElement.style.overflow = 'hidden';
         clonedElement.style.position = 'relative';
+        clonedElement.style.left = '0'; // Ensure no left offset
         
         // Make sure all child elements are visible
         const allElements = clonedElement.querySelectorAll('*');
@@ -35,6 +36,14 @@ export const convertElementToCanvas = async (element: HTMLElement): Promise<HTML
             el.style.visibility = 'visible';
             el.style.display = el.tagName.toLowerCase() === 'div' ? 'block' : '';
             el.style.opacity = '1';
+            
+            // Remove any left margin or padding that might cause spacing
+            if (el.classList.contains('contract-content')) {
+              el.style.paddingLeft = '0';
+              el.style.marginLeft = '0';
+              el.style.width = '100%';
+              el.style.boxSizing = 'border-box';
+            }
           }
         });
         
@@ -89,6 +98,10 @@ export const convertElementToCanvas = async (element: HTMLElement): Promise<HTML
         if (content instanceof HTMLElement) {
           content.style.position = 'relative';
           content.style.zIndex = '10';
+          content.style.padding = '10mm'; // Adjusted for consistent padding on all sides
+          content.style.width = '100%';
+          content.style.margin = '0';
+          content.style.boxSizing = 'border-box';
         }
       }
     }

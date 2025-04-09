@@ -13,13 +13,14 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
       style={{ 
         width: '210mm', 
         height: '297mm', 
-        margin: '0 auto', 
+        margin: '0', 
         padding: '0', 
         overflow: 'hidden', 
         position: 'relative',
         boxSizing: 'border-box',
         boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
-        background: 'white'
+        background: 'white',
+        left: '0'
       }}
     >
       {/* Letterhead background */}
@@ -54,7 +55,8 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
           padding: '10mm', 
           width: '100%', 
           height: '100%', 
-          boxSizing: 'border-box' 
+          boxSizing: 'border-box',
+          margin: '0'
         }}
       >
         {children}

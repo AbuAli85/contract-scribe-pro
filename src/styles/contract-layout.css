@@ -11,6 +11,7 @@
   padding: 0;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
   overflow: hidden;
+  left: 0;
 }
 
 .contract-content {
@@ -20,6 +21,8 @@
   height: 100%;
   padding: 15mm;
   box-sizing: border-box;
+  margin: 0;
+  left: 0;
 }
 
 .letterhead-background {
@@ -47,12 +50,18 @@
   margin-bottom: 15mm;
   position: relative;
   z-index: 10;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0;
 }
 
 .contract-column {
   flex: 1;
   font-size: 11px;
   line-height: 1.5;
+  margin: 0;
+  padding: 0;
 }
 
 .rtl {
@@ -90,6 +99,7 @@
   margin: 15mm 0;
   position: relative;
   z-index: 10;
+  width: 100%;
 }
 
 .id-photo-wrapper {

@@ -18,7 +18,7 @@ export const createContractPage = async (pdf: jsPDF, element: HTMLElement): Prom
   // Add canvas image to PDF - using exact A4 dimensions with no margins
   const imgData = canvas.toDataURL('image/png');
   
-  // Add the image to fill the entire page without margins
-  // Using precise A4 dimensions (210×297 mm)
+  // Use 0,0 as starting coordinates to eliminate any margin
+  // and exact A4 dimensions (210×297 mm)
   pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
 };

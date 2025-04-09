@@ -24,6 +24,7 @@
     position: relative !important;
     z-index: 9999 !important;
     overflow: visible !important;
+    left: 0 !important;
   }
   
   /* Force visibility for all contract elements when printing */
@@ -56,6 +57,7 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
+    left: 0 !important;
   }
   
   /* A4 page container - exact dimensions */
@@ -70,6 +72,7 @@
     page-break-after: always !important;
     break-after: always !important;
     display: block !important;
+    left: 0 !important;
   }
   
   /* Contract content positioning */
@@ -82,6 +85,8 @@
     z-index: 10 !important;
     display: block !important;
     visibility: visible !important;
+    margin: 0 !important;
+    left: 0 !important;
   }
   
   /* Letterhead background - full page coverage */
@@ -137,12 +142,16 @@
     justify-content: space-between !important;
     gap: 10mm !important;
     width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
   .contract-column {
     flex: 1 !important;
     font-size: 11px !important;
     line-height: 1.5 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
   /* Error message */
@@ -162,6 +171,8 @@ body.printing .contract-content {
   opacity: 1 !important;
   color: black !important;
   overflow: visible !important;
+  left: 0 !important;
+  margin: 0 !important;
 }
 
 /* A4 page specific settings when printing class is active */
@@ -173,6 +184,7 @@ body.printing .a4-page {
   overflow: visible !important;
   position: relative !important;
   box-shadow: none !important;
+  left: 0 !important;
 }
 
 /* Content positioning when printing class is active */
@@ -183,6 +195,8 @@ body.printing .contract-content {
   width: 100% !important;
   height: 100% !important;
   box-sizing: border-box !important;
+  margin: 0 !important;
+  left: 0 !important;
 }
 
 /* Letterhead background when printing class is active */
