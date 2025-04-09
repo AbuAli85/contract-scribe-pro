@@ -83,15 +83,16 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
       if (part0 === 'firstParty' || part0 === 'secondParty') {
         setFormData(prev => {
           const newState = { ...prev };
-          const firstLevelCopy = { ...prev[part0 as keyof FormData] };
+          // Type assertion to ensure TypeScript knows this is an object
+          const firstLevelCopy = { ...(prev[part0 as keyof FormData] as object) };
           
-          if (typeof firstLevelCopy[part1 as keyof typeof firstLevelCopy] === 'string') {
-            // @ts-ignore - We know this is safe within our controlled data structure
-            firstLevelCopy[part1] = value;
+          if (part0 === 'secondParty' && part1 === 'idNumber') {
+            // Handle the special case for idNumber which is a string
+            const secondPartyCopy = firstLevelCopy as SecondParty;
+            secondPartyCopy.idNumber = value;
+            newState.secondParty = secondPartyCopy;
           }
           
-          // @ts-ignore - Type safety is maintained by our controlled structure
-          newState[part0] = firstLevelCopy;
           return newState;
         });
       }
