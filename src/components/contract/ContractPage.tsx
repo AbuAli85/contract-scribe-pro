@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 
 interface ContractPageProps {
   contractData: any;
@@ -11,13 +11,18 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children, pag
   // Generate a watermark if the contract is in draft status
   const isDraft = contractData.status === 'draft';
   
+  // Force visibility after mounting
+  useEffect(() => {
+    console.log("Contract page mounted");
+  }, []);
+  
   return (
     <div 
       className={`a4-page ${pageType === 'passport' ? 'passport-page' : ''}`}
       style={{ 
         width: '210mm',
         height: '297mm',
-        margin: '0 auto',
+        margin: '20px auto',
         padding: '0',
         overflow: 'hidden',
         position: 'relative',
@@ -25,8 +30,11 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children, pag
         boxShadow: '0 0 15px rgba(0, 0, 0, 0.15)',
         background: 'white',
         pageBreakAfter: 'always',
-        breakAfter: 'always'
+        breakAfter: 'always',
+        display: 'block',
+        visibility: 'visible'
       }}
+      data-testid="contract-page"
     >
       {/* Letterhead background that spans full width and height */}
       {contractData.letterhead && (
@@ -42,8 +50,11 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children, pag
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             opacity: 0.1,
-            zIndex: 1
+            zIndex: 1,
+            display: 'block',
+            visibility: 'visible'
           }}
+          data-testid="letterhead-background"
         />
       )}
       
@@ -74,11 +85,13 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children, pag
         style={{ 
           position: 'relative',
           zIndex: 10,
-          padding: '0 20mm',
           width: '100%',
           height: '100%',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          display: 'block',
+          visibility: 'visible'
         }}
+        data-testid="contract-page-content"
       >
         {children}
       </div>

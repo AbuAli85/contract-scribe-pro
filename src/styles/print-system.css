@@ -63,6 +63,23 @@
   position: relative;
 }
 
+/* Extra visibility class */
+.content-visible .contract-content,
+.content-visible .a4-page,
+.content-visible .two-column-layout,
+.content-visible .contract-column,
+.content-visible .reference-section,
+.content-visible .signature-area,
+.content-visible .id-photo-container {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.content-visible .two-column-layout {
+  display: flex !important;
+}
+
 /* Print container debug styles */
 .print-debug-info {
   background-color: #fffbea;
@@ -122,6 +139,33 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
+  }
+  
+  /* Contract content must be visible */
+  .contract-content,
+  .a4-page,
+  .two-column-layout,
+  .contract-column,
+  .reference-section,
+  .signature-area,
+  .id-photo-container,
+  .letterhead-background {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .two-column-layout {
+    display: flex !important;
+  }
+  
+  /* Last resort critical visibility fixes */
+  body .contract-content,
+  body .a4-page,
+  body .contract-preview {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 }
 

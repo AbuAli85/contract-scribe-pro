@@ -25,6 +25,7 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
 }) => {
   const { containerRef, isNested } = useNestedPrintContainer();
   const [error, setError] = useState<string | null>(null);
+  const [contentVisible, setContentVisible] = useState(false);
   
   // Initialize and validate print container
   useEffect(() => {
@@ -49,6 +50,7 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
         
         // Notify parent that container is ready
         onReady?.(true);
+        setContentVisible(true);
         
         // Add print-specific class to ensure styles apply
         document.documentElement.classList.add('print-ready');
@@ -72,6 +74,28 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
     };
   }, [onReady, isNested]);
   
+  // Add a forced visibility mechanism
+  useEffect(() => {
+    // Force visibility of content after a short delay
+    const visibilityTimer = setTimeout(() => {
+      if (!isNested && containerRef.current) {
+        setContentVisible(true);
+        // Apply critical styles inline for maximum compatibility
+        const elements = containerRef.current.querySelectorAll('.contract-content, .a4-page, .two-column-layout, .contract-column');
+        elements.forEach(el => {
+          if (el instanceof HTMLElement) {
+            el.style.display = el.classList.contains('two-column-layout') ? 'flex' : 'block';
+            el.style.visibility = 'visible';
+            el.style.opacity = '1';
+          }
+        });
+        console.log('Content visibility forced');
+      }
+    }, 600);
+    
+    return () => clearTimeout(visibilityTimer);
+  }, [isNested]);
+  
   // If nested, wrap in a div with print-nested-container class to avoid duplicates
   if (isNested) {
     return (
@@ -91,8 +115,32 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
     );
   }
   
+  // Add critical print styles
+  const inlineStyle = `
+    @media print {
+      .print-container, .contract-preview, .a4-page, .contract-content,
+      .letterhead-background, .two-column-layout, .contract-column, 
+      .reference-section, .signature-area, .id-photo-container {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      .two-column-layout {
+        display: flex !important;
+      }
+      
+      .print-nested-container {
+        display: none !important;
+        visibility: hidden !important;
+      }
+    }
+  `;
+  
   return (
     <>
+      <style>{inlineStyle}</style>
+      
       {error && (
         <Alert variant="destructive" className="mb-4 print:hidden">
           <AlertTriangle className="h-4 w-4" />
@@ -103,7 +151,7 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
       
       <div 
         ref={containerRef} 
-        className={`print-container print-section ${className}`}
+        className={`print-container print-section ${contentVisible ? 'content-visible' : 'content-loading'} ${className}`}
         data-testid="print-container"
       >
         {showDebugInfo && process.env.NODE_ENV === 'development' && (

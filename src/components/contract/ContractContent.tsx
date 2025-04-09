@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import ReferenceNumber from "./ReferenceNumber";
 import PromoterPhoto from "./PromoterPhoto";
 import ContractTitle from "./ContractTitle";
@@ -25,6 +25,35 @@ const ContractContent: React.FC<ContractContentProps> = ({
 
   // Use our custom hook to detect nesting and prevent duplicate print content
   const { containerRef, isNested } = useNestedPrintContainer();
+  
+  // Force visibility of content after mounting
+  useEffect(() => {
+    console.log("ContractContent mounted with data:", contractData);
+    
+    if (!isNested && containerRef.current) {
+      // Force visibility on critical elements
+      const forceVisible = (selector: string, display: string = 'block') => {
+        const elements = containerRef.current?.querySelectorAll(selector);
+        elements?.forEach(el => {
+          if (el instanceof HTMLElement) {
+            el.style.display = display;
+            el.style.visibility = 'visible';
+            el.style.opacity = '1';
+          }
+        });
+      };
+      
+      setTimeout(() => {
+        forceVisible('.contract-column');
+        forceVisible('.two-column-layout', 'flex');
+        forceVisible('.reference-section');
+        forceVisible('.contract-title-area');
+        forceVisible('.signature-area');
+        forceVisible('.id-photo-container');
+        console.log("Forced visibility on contract content elements");
+      }, 100);
+    }
+  }, [isNested, contractData]);
   
   // Return simplified content if nested to prevent duplication
   if (isNested) {
@@ -82,7 +111,15 @@ const ContractContent: React.FC<ContractContentProps> = ({
       ref={containerRef}
       className="contract-content print-section"
       data-testid="contract-content"
+      style={{position: 'relative', zIndex: 10, width: '100%', height: '100%'}}
     >
+      {/* Debug info */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="print:hidden bg-blue-50 text-xs p-2 mb-2 rounded">
+          Content loaded. RefNumber: {contractData.refNumber}
+        </div>
+      )}
+      
       {/* Letterhead background - if available */}
       {contractData.letterhead && (
         <div 
