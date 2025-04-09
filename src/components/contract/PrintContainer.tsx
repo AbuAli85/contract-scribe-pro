@@ -60,6 +60,26 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
     };
   }, [onReady]);
   
+  // Prevent nested duplicates by checking if we're already inside a print container
+  const isNested = React.useMemo(() => {
+    if (typeof document === 'undefined') return false;
+    
+    // Check if this container is inside another print container
+    const isInsideContainer = containerRef.current?.closest('.print-container') !== null 
+                             && containerRef.current?.closest('.print-container') !== containerRef.current;
+    
+    if (isInsideContainer) {
+      console.warn('Warning: Nested print container detected. This may cause duplicate content when printing.');
+    }
+    
+    return isInsideContainer;
+  }, []);
+  
+  // If nested, wrap in a div without print-container class to avoid duplicates
+  if (isNested) {
+    return <div className={className}>{children}</div>;
+  }
+  
   return (
     <div 
       ref={containerRef} 

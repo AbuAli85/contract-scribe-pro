@@ -24,3 +24,18 @@
 
 /* Utility classes for print debugging and fixes */
 @import './print/utilities.css';
+
+/* Contract sections specific styling */
+@import './print/contract-sections.css';
+
+/* Signature area specific styling */
+@import './print/signature-area.css';
+
+/* Page breaks control */
+@import './print/page-breaks.css';
+
+/* Error handling */
+@import './print/error-handling.css';
+
+/* Photos and images */
+@import './print/photos-images.css';
