@@ -69,20 +69,31 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
           language={language}
           contractData={contractData}
           contractId={contractData.id || "default"}
+          variant="outline"
         />
       </div>
 
       <div className="a4-page">
-        {/* Letterhead background */}
+        {/* Letterhead background - Set to full page */}
         {contractData.letterhead && (
           <img
             src={contractData.letterhead}
             alt="Letterhead"
             className="letterhead-background"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              zIndex: 1,
+              opacity: 0.8
+            }}
           />
         )}
         
-        <div className="contract-content">
+        <div className="contract-content" style={{ position: 'relative', zIndex: 10, padding: '20mm' }}>
           {/* Reference number */}
           <ReferenceNumber refNumber={contractData.refNumber} />
 

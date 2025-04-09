@@ -9,6 +9,82 @@ import { setupPrintContainer, cleanupPrinting } from './print-container';
 import { toast } from '@/hooks/use-toast';
 
 /**
+ * Hide UI elements that should not appear in the PDF
+ */
+const prepareForExport = (element: HTMLElement) => {
+  // Temporarily hide all print:hidden elements
+  const hiddenElements = element.querySelectorAll('.print\\:hidden, button, nav, header, .tabs-list');
+  hiddenElements.forEach((el) => {
+    if (el instanceof HTMLElement) {
+      el.setAttribute('data-original-display', el.style.display);
+      el.style.display = 'none';
+    }
+  });
+
+  // Ensure letterhead covers full page
+  const letterhead = element.querySelector('.letterhead-background') as HTMLElement;
+  if (letterhead) {
+    letterhead.style.position = 'absolute';
+    letterhead.style.top = '0';
+    letterhead.style.left = '0';
+    letterhead.style.width = '100%';
+    letterhead.style.height = '100%';
+    letterhead.style.zIndex = '1';
+    letterhead.style.opacity = '0.8';
+    letterhead.style.objectFit = 'cover';
+  }
+
+  // Make sure the contract content is on top of the letterhead
+  const content = element.querySelector('.contract-content') as HTMLElement;
+  if (content) {
+    content.style.position = 'relative';
+    content.style.zIndex = '10';
+  }
+
+  // Ensure the reference number is visible
+  const refNumber = element.querySelector('.reference-number') as HTMLElement;
+  if (refNumber) {
+    refNumber.style.display = 'block';
+    refNumber.style.visibility = 'visible';
+  }
+
+  // Ensure ID photo is properly displayed
+  const idPhoto = element.querySelector('.id-photo-container') as HTMLElement;
+  if (idPhoto) {
+    idPhoto.style.display = 'flex';
+    idPhoto.style.justifyContent = 'center';
+    idPhoto.style.width = '100%';
+    idPhoto.style.marginBottom = '20px';
+  }
+
+  // Ensure signature area is visible
+  const signatureArea = element.querySelector('.signature-area') as HTMLElement;
+  if (signatureArea) {
+    signatureArea.style.display = 'flex';
+    signatureArea.style.visibility = 'visible';
+  }
+
+  return hiddenElements;
+};
+
+/**
+ * Restore the original display properties
+ */
+const restoreAfterExport = (hiddenElements: NodeListOf<Element>) => {
+  hiddenElements.forEach((el) => {
+    if (el instanceof HTMLElement) {
+      const originalDisplay = el.getAttribute('data-original-display');
+      if (originalDisplay) {
+        el.style.display = originalDisplay;
+      } else {
+        el.style.display = '';
+      }
+      el.removeAttribute('data-original-display');
+    }
+  });
+};
+
+/**
  * Export contract content as PDF
  * @param options Configuration options for PDF export
  */
@@ -38,6 +114,9 @@ export const exportToPDF = async (options: {
     if (!element) {
       throw new Error('Element not found: ' + selector);
     }
+    
+    // Hide UI elements and prepare for export
+    const hiddenElements = prepareForExport(element as HTMLElement);
     
     // Create PDF with appropriate dimensions
     const pdf = new jsPDF({
@@ -69,6 +148,9 @@ export const exportToPDF = async (options: {
     
     // Save PDF
     pdf.save(filename);
+    
+    // Restore original element display properties
+    restoreAfterExport(hiddenElements);
     
     // Show success message
     toast({

@@ -27,6 +27,25 @@
     display: flex !important;
   }
   
+  /* Letterhead background - Ensure it covers full page */
+  .letterhead-background {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    z-index: 1 !important;
+    opacity: 0.8 !important;
+  }
+  
+  /* Contract content - Ensure it's on top of the letterhead */
+  .contract-content {
+    position: relative !important;
+    z-index: 10 !important;
+    padding: 20mm !important; 
+  }
+  
   /* Page settings */
   @page {
     size: A4 portrait;
@@ -52,6 +71,27 @@
   nav {
     display: none !important;
   }
+  
+  /* Ensure ID photo displays properly */
+  .id-photo-container {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+    margin-bottom: 20px !important;
+  }
+  
+  /* Ensure signature area displays properly */
+  .signature-area {
+    display: flex !important;
+    justify-content: space-between !important;
+    margin-top: 20mm !important;
+  }
+  
+  /* Reference number */
+  .reference-number {
+    display: block !important;
+    visibility: visible !important;
+  }
 }
 
 /* Non-media query styles - applied immediately when printing classes are added */
@@ -69,6 +109,23 @@ body.printing .contract-column {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
+}
+
+body.printing .letterhead-background {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  z-index: 1 !important;
+  opacity: 0.8 !important;
+}
+
+body.printing .contract-content {
+  position: relative !important;
+  z-index: 10 !important;
+  padding: 20mm !important;
 }
 
 body.printing .two-column-layout {

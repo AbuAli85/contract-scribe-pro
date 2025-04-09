@@ -12,6 +12,7 @@ interface DownloadPDFButtonProps {
   contractId?: string;
   className?: string;
   buttonText?: string;
+  variant?: "default" | "outline" | "secondary";
 }
 
 const DownloadPDFButton = ({ 
@@ -19,7 +20,8 @@ const DownloadPDFButton = ({
   contractData,
   contractId = "default",
   className = "",
-  buttonText
+  buttonText,
+  variant = "default"
 }: DownloadPDFButtonProps) => {
   const { toast } = useToast();
   const [isExporting, setIsExporting] = useState(false);
@@ -50,9 +52,11 @@ const DownloadPDFButton = ({
         language,
         onSuccess: () => {
           setIsExporting(false);
+          console.log("PDF export successful");
         },
         onError: (error) => {
           setIsExporting(false);
+          console.error("PDF export error:", error);
           toast({
             title: language === "ar" ? "خطأ في التحميل" : "Download Error",
             description: error.message,
@@ -74,7 +78,7 @@ const DownloadPDFButton = ({
 
   return (
     <Button
-      variant="default"
+      variant={variant}
       onClick={handleDownloadPDF}
       className={`print:hidden flex gap-2 items-center ${className}`}
       disabled={isExporting || !contractData}
