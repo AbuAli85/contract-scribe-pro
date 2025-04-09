@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, FileText, Edit, Eye, Printer } from "lucide-react"
+import { ArrowLeft, FileText, Edit, Eye, Printer, FileDown } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { DocumentUploader } from "@/components/DocumentUploader"
 import { DocumentsPanel } from "@/components/DocumentsPanel"
@@ -16,9 +16,9 @@ import PrintDebugButton from "@/components/print/PrintDebugButton"
 import PrintPreview from "@/components/print/PrintPreview"
 import { printService } from "@/services/print.service"
 import { directPrint } from "@/utils/direct-print"
+import DownloadPDFButton from "@/components/contract/DownloadPDFButton"
 
 export default function CreateContract() {
-  // Generate a temporary contract ID for document attachments
   const [contractId] = useState(() => `temp-${generateUniqueId()}`)
   const [documents, setDocuments] = useState<any[]>([])
   const [useNewDocumentsPanel, setUseNewDocumentsPanel] = useState(false)
@@ -27,19 +27,15 @@ export default function CreateContract() {
   const [contractData, setContractData] = useState<any>(null)
   const { toast } = useToast()
   const { handlePrint, isPrinting } = usePrint({ language, forceDirectPrint: true })
-  
-  // Ensure print container exists when component mounts and when tab changes
+
   useEffect(() => {
     if (activeTab === "preview" && contractData) {
-      // Short delay to ensure the DOM is ready
       const timer = setTimeout(() => {
-        // Check if print container exists
         const printContainer = document.querySelector('.print-container');
         
         if (!printContainer) {
           console.log('Print container not found, creating one');
           
-          // Try to find suitable container and add print-container class
           const containers = [
             '.contract-preview',
             '.contract-container',
@@ -59,7 +55,6 @@ export default function CreateContract() {
             }
           }
           
-          // If no suitable container found, wrap content in new container
           if (!containerFound && document.querySelector('.contract-container')) {
             const content = document.querySelector('.contract-container');
             const wrapper = document.createElement('div');
@@ -74,7 +69,6 @@ export default function CreateContract() {
           }
         }
         
-        // Apply print visibility fixes
         printService.fixVisibility('.print-container');
         
         console.log('Print container check complete:', !!document.querySelector('.print-container'));
@@ -96,7 +90,6 @@ export default function CreateContract() {
   }
 
   const handleSaveContract = () => {
-    // In a real app, this would save the contract to a database
     toast({
       title: language === "ar" ? "تم حفظ العقد" : "Contract saved",
       description: language === "ar" ? "تم حفظ العقد بنجاح" : "Your contract has been saved successfully",
@@ -113,7 +106,6 @@ export default function CreateContract() {
       return
     }
     
-    // Ensure print container exists before printing
     const printContainer = document.querySelector('.print-container');
     if (!printContainer) {
       console.log('Print container not found, adding to contract-preview');
@@ -124,11 +116,9 @@ export default function CreateContract() {
       }
     }
     
-    // Apply visibility fixes and use direct print for maximum compatibility
     printService.fixVisibility('.print-container');
     directPrint('.print-container');
     
-    // Show success toast
     setTimeout(() => {
       toast({
         title: language === "ar" ? "تم إرسال الطباعة" : "Print Sent",
@@ -153,7 +143,6 @@ export default function CreateContract() {
           {language === "ar" ? "إنشاء عقد جديد" : "Create New Contract"}
         </h1>
         <div className="flex gap-2">
-          {/* Only show development tools in development mode */}
           {process.env.NODE_ENV === "development" && (
             <>
               <Button 
@@ -263,20 +252,27 @@ export default function CreateContract() {
               <Button variant="outline" onClick={() => setActiveTab("edit")}>
                 {language === "ar" ? "تحرير العقد" : "Edit Contract"}
               </Button>
-              <Button 
-                onClick={handlePrintContract}
-                disabled={isPrinting || !contractData}
-                className="flex items-center gap-2"
-              >
-                {isPrinting ? (
-                  <span>{language === "ar" ? "جاري التحضير..." : "Preparing..."}</span>
-                ) : (
-                  <>
-                    <Printer className="h-4 w-4" />
-                    {language === "ar" ? "طباعة العقد" : "Print Contract"}
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <DownloadPDFButton
+                  language={language}
+                  contractData={contractData}
+                  contractId={contractId}
+                />
+                <Button 
+                  onClick={handlePrintContract}
+                  disabled={isPrinting || !contractData}
+                  className="flex items-center gap-2"
+                >
+                  {isPrinting ? (
+                    <span>{language === "ar" ? "جاري التحضير..." : "Preparing..."}</span>
+                  ) : (
+                    <>
+                      <Printer className="h-4 w-4" />
+                      {language === "ar" ? "طباعة العقد" : "Print Contract"}
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardFooter>
           </Card>
         </TabsContent>

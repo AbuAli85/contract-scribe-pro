@@ -9,6 +9,7 @@ import ArabicContractColumn from "./contract/ArabicContractColumn";
 import SignatureArea from "./contract/SignatureArea";
 import { contractService } from "@/services/contract.service";
 import { setupPrintContainer } from "@/utils/print-container";
+import DownloadPDFButton from "./contract/DownloadPDFButton";
 
 interface ContractPreviewProps {
   language: "ar" | "en";
@@ -29,24 +30,6 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
       // Add data-testid for easier targeting
       containerRef.current.setAttribute('data-testid', 'print-container');
       
-      // Add inline critical print styles
-      const style = document.createElement('style');
-      style.setAttribute('media', 'print');
-      style.textContent = `
-        @media print {
-          .print-container, .contract-preview, .a4-page, .contract-content {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-          }
-          .two-column-layout {
-            display: flex !important;
-          }
-          @page { size: A4 portrait; margin: 0; }
-        }
-      `;
-      document.head.appendChild(style);
-      
       // Log for debug purposes
       console.log('Print container setup in ContractPreview:', !!containerRef.current);
       
@@ -61,18 +44,7 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
         
         // Set content ready to allow printing
         setContentReady(true);
-        
-        // Cleanup style after initialization
-        document.head.removeChild(style);
       }, 500);
-      
-      return () => {
-        try {
-          document.head.removeChild(style);
-        } catch (e) {
-          // Style might already be removed
-        }
-      };
     }
   }, [contractData]);
 
@@ -87,11 +59,18 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
 
   return (
     <div ref={containerRef} className="contract-preview print-container" data-testid="print-container">
-      <PrintButton 
-        language={language} 
-        contractData={contractData} 
-        contractId={contractData.id || "default"}
-      />
+      <div className="flex gap-2 mb-6 print:hidden">
+        <PrintButton 
+          language={language} 
+          contractData={contractData} 
+          contractId={contractData.id || "default"}
+        />
+        <DownloadPDFButton
+          language={language}
+          contractData={contractData}
+          contractId={contractData.id || "default"}
+        />
+      </div>
 
       <div className="a4-page">
         {/* Letterhead background */}
