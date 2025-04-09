@@ -8,6 +8,7 @@ import { setupPrintContainer, cleanupPrinting } from '../print-container';
 import { createContractPage, createPassportPage } from './pdfPageCreator';
 import { prepareForExport, restoreAfterExport } from './pdfPrepare';
 import { displayToasts } from './pdfToasts';
+import { pdfDebugger } from './pdfDebugger';
 import jsPDF from 'jspdf';
 
 // Types for PDF export options
@@ -20,6 +21,7 @@ export interface PDFExportOptions {
   onSuccess?: () => void;
   onError?: (error: Error) => void;
   includePassport?: boolean;
+  debug?: boolean;
 }
 
 /**
@@ -35,8 +37,15 @@ export const exportToPDF = async (options: PDFExportOptions) => {
     contractData,
     onSuccess,
     onError,
-    includePassport = true
+    includePassport = true,
+    debug = process.env.NODE_ENV === 'development'
   } = options;
+  
+  // Run diagnostics in debug mode
+  if (debug) {
+    console.log('Running PDF export diagnostics...');
+    await pdfDebugger.diagnose({ selector, showToasts: false });
+  }
   
   try {
     // Set up print container
@@ -85,6 +94,12 @@ export const exportToPDF = async (options: PDFExportOptions) => {
     
     // Show error message
     displayToasts.error(language, error);
+    
+    // In debug mode, run diagnostics after error to help identify issues
+    if (debug) {
+      console.log('Running post-error diagnostics...');
+      await pdfDebugger.diagnose({ selector, showToasts: true });
+    }
     
     // Callback if provided
     onError?.(error instanceof Error ? error : new Error(String(error)));

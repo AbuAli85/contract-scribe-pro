@@ -1,0 +1,100 @@
+
+import React, { useEffect, useRef } from 'react';
+import { setupPrintContainer, cleanupPrinting } from '@/utils/print-container';
+import { printDebugTools } from '@/utils/print-debug-tools';
+
+interface PrintContainerProps {
+  children: React.ReactNode;
+  onReady?: (isReady: boolean) => void;
+  className?: string;
+}
+
+/**
+ * A container for print-related content that ensures proper visibility
+ */
+const PrintContainer: React.FC<PrintContainerProps> = ({
+  children,
+  onReady,
+  className = ""
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Initialize and validate print container
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    // Add print-container class and data-testid
+    containerRef.current.classList.add('print-container');
+    containerRef.current.setAttribute('data-testid', 'print-container');
+    
+    // Set up print container and critical styles
+    const timer = setTimeout(() => {
+      try {
+        // Setup for printing
+        setupPrintContainer();
+        
+        // Apply automatic fixes in development
+        if (process.env.NODE_ENV === 'development') {
+          printDebugTools.troubleshoot();
+        }
+        
+        // Notify parent that container is ready
+        onReady?.(true);
+        
+        // Log container setup for debugging
+        console.log('Print container setup complete');
+      } catch (error) {
+        console.error('Error setting up print container:', error);
+        onReady?.(false);
+      } finally {
+        // Clean up after setup
+        cleanupPrinting();
+      }
+    }, 300);
+    
+    return () => {
+      clearTimeout(timer);
+      cleanupPrinting();
+    };
+  }, [onReady]);
+  
+  // Critical print styles
+  const printStyles = `
+    @media print {
+      .print-container, .contract-preview, .a4-page {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      .contract-content, .two-column-layout, .contract-column, .signature-area {
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      .two-column-layout {
+        display: flex !important;
+      }
+      
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+    }
+  `;
+  
+  return (
+    <>
+      <style>{printStyles}</style>
+      <div 
+        ref={containerRef} 
+        className={`print-container ${className}`}
+        data-testid="print-container"
+      >
+        {children}
+      </div>
+    </>
+  );
+};
+
+export default PrintContainer;

@@ -1,10 +1,12 @@
 
 import React, { useState } from 'react';
-import { FileDown, Loader2 } from 'lucide-react';
+import { FileDown, Loader2, Bug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { exportToPDF } from '@/utils/pdf'; // Updated import path
 import { setupPrintContainer } from '@/utils/print-container';
+import { pdfDebugger } from '@/utils/pdf/pdfDebugger';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface DownloadPDFButtonProps {
   language: "ar" | "en";
@@ -27,6 +29,7 @@ const DownloadPDFButton = ({
 }: DownloadPDFButtonProps) => {
   const { toast } = useToast();
   const [isExporting, setIsExporting] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
   
   const handleDownloadPDF = async () => {
     if (!contractData) {
@@ -58,6 +61,7 @@ const DownloadPDFButton = ({
         pageFormat: 'a4', // Use A4 format
         contractData: contractData, // Pass the full contract data for passport page
         includePassport,
+        debug: showDebug, // Use debug mode if enabled
         onSuccess: () => {
           document.body.classList.remove('printing');
           setIsExporting(false);
@@ -87,24 +91,62 @@ const DownloadPDFButton = ({
     }
   };
 
+  const handleRunDiagnostics = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await pdfDebugger.diagnose();
+  };
+
+  const toggleDebugMode = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowDebug(!showDebug);
+    toast({
+      title: showDebug ? "Debug Mode Disabled" : "Debug Mode Enabled",
+      description: showDebug 
+        ? "PDF export will run normally." 
+        : "PDF export will run with extra diagnostics.",
+    });
+  };
+
   return (
-    <Button
-      variant={variant}
-      onClick={handleDownloadPDF}
-      className={`print:hidden flex gap-2 items-center ${className}`}
-      disabled={isExporting || !contractData}
-    >
-      {isExporting ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <FileDown className="h-4 w-4" />
+    <div className="print:hidden inline-flex gap-1">
+      <Button
+        variant={variant}
+        onClick={handleDownloadPDF}
+        className={`flex gap-2 items-center ${className}`}
+        disabled={isExporting || !contractData}
+      >
+        {isExporting ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <FileDown className="h-4 w-4" />
+        )}
+        <span>
+          {isExporting 
+            ? (language === "ar" ? "جاري التحميل..." : "Exporting...") 
+            : buttonText || (language === "ar" ? "تحميل PDF" : "Download PDF")}
+        </span>
+      </Button>
+      
+      {process.env.NODE_ENV === 'development' && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="w-8 h-8 p-0" 
+                onClick={toggleDebugMode}
+              >
+                <Bug className={`h-4 w-4 ${showDebug ? 'text-green-500' : ''}`} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{showDebug ? 'Disable' : 'Enable'} PDF Debug Mode</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
-      <span>
-        {isExporting 
-          ? (language === "ar" ? "جاري التحميل..." : "Exporting...") 
-          : buttonText || (language === "ar" ? "تحميل PDF" : "Download PDF")}
-      </span>
-    </Button>
+    </div>
   );
 };
 
