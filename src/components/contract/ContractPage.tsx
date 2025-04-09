@@ -4,15 +4,16 @@ import React from 'react';
 interface ContractPageProps {
   contractData: any;
   children: React.ReactNode;
+  pageType?: 'contract' | 'passport';
 }
 
-const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) => {
+const ContractPage: React.FC<ContractPageProps> = ({ contractData, children, pageType = 'contract' }) => {
   // Generate a watermark if the contract is in draft status
   const isDraft = contractData.status === 'draft';
   
   return (
     <div 
-      className="a4-page"
+      className={`a4-page ${pageType === 'passport' ? 'passport-page' : ''}`}
       style={{ 
         width: '210mm',
         height: '297mm',
@@ -22,7 +23,9 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
         position: 'relative',
         boxSizing: 'border-box',
         boxShadow: '0 0 15px rgba(0, 0, 0, 0.15)',
-        background: 'white'
+        background: 'white',
+        pageBreakAfter: 'always',
+        breakAfter: 'always'
       }}
     >
       {/* Letterhead background that spans full width */}
@@ -67,11 +70,11 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
       )}
       
       <div 
-        className="contract-content"
+        className={`${pageType === 'passport' ? 'passport-content' : 'contract-content'}`}
         style={{ 
           position: 'relative',
           zIndex: 10,
-          padding: '42mm 20mm 20mm',
+          padding: pageType === 'passport' ? '35mm 20mm 20mm' : '35mm 20mm 20mm',
           width: '100%',
           height: '100%',
           boxSizing: 'border-box'
