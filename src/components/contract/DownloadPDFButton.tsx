@@ -53,6 +53,7 @@ const DownloadPDFButton = ({
         filename,
         language,
         pageFormat: 'a4', // Use A4 format
+        contractData: contractData, // Pass the full contract data for passport page
         includePassport,
         onSuccess: () => {
           setIsExporting(false);

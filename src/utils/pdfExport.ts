@@ -42,33 +42,8 @@ const prepareForExport = (element: HTMLElement) => {
   if (content) {
     content.style.position = 'relative';
     content.style.zIndex = '10';
-    content.style.padding = '15mm';
-  }
-
-  // Ensure the reference number is visible
-  const refNumber = element.querySelector('.reference-number') as HTMLElement;
-  if (refNumber) {
-    refNumber.style.display = 'block';
-    refNumber.style.visibility = 'visible';
-    refNumber.style.marginBottom = '15mm';
-  }
-
-  // Ensure ID photo is properly displayed
-  const idPhoto = element.querySelector('.id-photo-container') as HTMLElement;
-  if (idPhoto) {
-    idPhoto.style.display = 'flex';
-    idPhoto.style.justifyContent = 'center';
-    idPhoto.style.width = '100%';
-    idPhoto.style.marginBottom = '20px';
-  }
-
-  // Ensure signature area is visible
-  const signatureArea = element.querySelector('.signature-area') as HTMLElement;
-  if (signatureArea) {
-    signatureArea.style.display = 'flex';
-    signatureArea.style.justifyContent = 'space-between';
-    signatureArea.style.visibility = 'visible';
-    signatureArea.style.marginTop = '25mm';
+    // Use smaller padding to maximize content area
+    content.style.padding = '10mm';
   }
 
   // Set A4 page dimensions explicitly without margins
@@ -103,45 +78,165 @@ const restoreAfterExport = (hiddenElements: NodeListOf<Element>) => {
 };
 
 /**
- * Creates a second page with passport/ID document if provided
+ * Creates a second page with passport document if provided
  */
-const createSecondPage = (pdf: jsPDF, passportElement: HTMLElement | null): Promise<boolean> => {
-  return new Promise(async (resolve) => {
+const createPassportPage = async (pdf: jsPDF, contractData: any): Promise<boolean> => {
+  try {
+    // Find passport/ID photo container
+    const passportElement = document.querySelector('.id-photo-container') as HTMLElement;
     if (!passportElement) {
-      resolve(false);
-      return;
+      console.warn('No passport element found for second page');
+      return false;
     }
 
-    try {
-      // Add a new page for the passport/ID
-      pdf.addPage('a4', 'portrait');
-      
-      // Convert passport element to canvas
-      const canvas = await html2canvas(passportElement, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        allowTaint: true,
-        backgroundColor: '#ffffff'
-      });
-      
-      // Add canvas image to PDF
-      const imgData = canvas.toDataURL('image/png');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = (pdfHeight - imgHeight * ratio) / 2; // Center vertically
-      
-      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-      resolve(true);
-    } catch (error) {
-      console.error('Error creating second page:', error);
-      resolve(false);
+    // Create a temporary container for the passport page
+    const passportPageContainer = document.createElement('div');
+    passportPageContainer.className = 'a4-page passport-page';
+    passportPageContainer.style.width = '210mm';
+    passportPageContainer.style.height = '297mm';
+    passportPageContainer.style.position = 'relative';
+    passportPageContainer.style.overflow = 'hidden';
+    passportPageContainer.style.backgroundColor = 'white';
+    
+    // Add letterhead background if available
+    if (contractData && contractData.letterhead) {
+      const letterheadBg = document.createElement('div');
+      letterheadBg.className = 'letterhead-background';
+      letterheadBg.style.position = 'absolute';
+      letterheadBg.style.top = '0';
+      letterheadBg.style.left = '0';
+      letterheadBg.style.width = '100%';
+      letterheadBg.style.height = '100%';
+      letterheadBg.style.backgroundImage = `url('${contractData.letterhead}')`;
+      letterheadBg.style.backgroundSize = 'cover';
+      letterheadBg.style.backgroundPosition = 'center';
+      letterheadBg.style.opacity = '0.8';
+      letterheadBg.style.zIndex = '1';
+      passportPageContainer.appendChild(letterheadBg);
     }
-  });
+    
+    // Create content container
+    const contentContainer = document.createElement('div');
+    contentContainer.className = 'passport-content';
+    contentContainer.style.position = 'relative';
+    contentContainer.style.zIndex = '10';
+    contentContainer.style.padding = '20mm';
+    contentContainer.style.height = '100%';
+    contentContainer.style.boxSizing = 'border-box';
+    contentContainer.style.display = 'flex';
+    contentContainer.style.flexDirection = 'column';
+    contentContainer.style.alignItems = 'center';
+    
+    // Add title
+    const title = document.createElement('h1');
+    title.textContent = 'Passport / جواز السفر';
+    title.style.fontSize = '24px';
+    title.style.marginBottom = '20mm';
+    title.style.textAlign = 'center';
+    title.style.width = '100%';
+    contentContainer.appendChild(title);
+    
+    // Create a container for the passport image
+    const passportImageContainer = document.createElement('div');
+    passportImageContainer.style.width = '100%';
+    passportImageContainer.style.display = 'flex';
+    passportImageContainer.style.justifyContent = 'center';
+    passportImageContainer.style.marginBottom = '20mm';
+    
+    // Clone the passport photo for better quality
+    const originalPhoto = passportElement.querySelector('.id-photo') as HTMLImageElement;
+    if (originalPhoto && originalPhoto.src) {
+      const passportImage = document.createElement('img');
+      passportImage.src = originalPhoto.src;
+      passportImage.alt = 'Passport';
+      passportImage.style.maxWidth = '80%';
+      passportImage.style.maxHeight = '60%';
+      passportImage.style.objectFit = 'contain';
+      passportImage.style.border = '1px solid #ddd';
+      passportImage.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+      passportImageContainer.appendChild(passportImage);
+    }
+    
+    contentContainer.appendChild(passportImageContainer);
+    
+    // Add reference number if available
+    if (contractData && contractData.refNumber) {
+      const refNumber = document.createElement('div');
+      refNumber.className = 'reference-number';
+      refNumber.textContent = `Ref: ${contractData.refNumber}`;
+      refNumber.style.fontSize = '14px';
+      refNumber.style.marginBottom = '10mm';
+      refNumber.style.position = 'absolute';
+      refNumber.style.top = '10mm';
+      refNumber.style.left = '20mm';
+      contentContainer.appendChild(refNumber);
+    }
+    
+    // Add promoter details if available
+    if (contractData && contractData.promoter) {
+      const detailsContainer = document.createElement('div');
+      detailsContainer.className = 'passport-details';
+      detailsContainer.style.width = '80%';
+      detailsContainer.style.marginTop = 'auto';
+      detailsContainer.style.marginBottom = '20mm';
+      detailsContainer.style.padding = '15px';
+      detailsContainer.style.border = '1px solid #ddd';
+      detailsContainer.style.borderRadius = '5px';
+      detailsContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+      
+      // Create promoter info in English and Arabic
+      const infoHTML = `
+        <div style="display: flex; justify-content: space-between;">
+          <div style="width: 48%;">
+            <p><strong>Promoter Name:</strong> ${contractData.promoter.name?.en || 'N/A'}</p>
+            <p><strong>ID Number:</strong> ${contractData.promoter.id?.en || 'N/A'}</p>
+            <p><strong>From:</strong> ${contractData.startDate?.en || 'N/A'}</p>
+            <p><strong>To:</strong> ${contractData.endDate?.en || 'N/A'}</p>
+          </div>
+          <div style="width: 48%; text-align: right; direction: rtl;">
+            <p><strong>اسم المروج:</strong> ${contractData.promoter.name?.ar || 'N/A'}</p>
+            <p><strong>رقم الهوية:</strong> ${contractData.promoter.id?.ar || 'N/A'}</p>
+            <p><strong>من:</strong> ${contractData.startDate?.ar || 'N/A'}</p>
+            <p><strong>إلى:</strong> ${contractData.endDate?.ar || 'N/A'}</p>
+          </div>
+        </div>
+      `;
+      
+      detailsContainer.innerHTML = infoHTML;
+      contentContainer.appendChild(detailsContainer);
+    }
+    
+    passportPageContainer.appendChild(contentContainer);
+    
+    // Temporarily add to document but hide it
+    passportPageContainer.style.position = 'absolute';
+    passportPageContainer.style.left = '-9999px';
+    document.body.appendChild(passportPageContainer);
+    
+    // Add a new page for the passport
+    pdf.addPage([210, 297], 'portrait');
+    
+    // Convert the passport page to canvas
+    const canvas = await html2canvas(passportPageContainer, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      allowTaint: true,
+      backgroundColor: '#ffffff'
+    });
+    
+    // Add canvas to PDF - full page size
+    const imgData = canvas.toDataURL('image/png');
+    pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+    
+    // Clean up - remove temporary elements
+    document.body.removeChild(passportPageContainer);
+    
+    return true;
+  } catch (error) {
+    console.error('Error creating passport page:', error);
+    return false;
+  }
 };
 
 /**
@@ -153,6 +248,7 @@ export const exportToPDF = async (options: {
   filename?: string;
   pageFormat?: 'a4' | 'letter';
   language?: 'en' | 'ar';
+  contractData?: any;
   onSuccess?: () => void;
   onError?: (error: Error) => void;
   includePassport?: boolean;
@@ -162,6 +258,7 @@ export const exportToPDF = async (options: {
     filename = 'contract.pdf',
     pageFormat = 'a4',
     language = 'en',
+    contractData,
     onSuccess,
     onError,
     includePassport = true
@@ -200,19 +297,12 @@ export const exportToPDF = async (options: {
     // Add canvas image to PDF - using exact A4 dimensions with no margins
     const imgData = canvas.toDataURL('image/png');
     
-    // Get PDF dimensions in mm (A4 is 210x297mm)
-    const pdfWidth = 210; // A4 width in mm
-    const pdfHeight = 297; // A4 height in mm
+    // Add the image to fill the entire page without margins - exact A4 size
+    pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
     
-    // Add the image to fill the entire page without margins
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-    
-    // Look for a passport/ID document element to add as second page
+    // Add passport document as a second page if requested
     if (includePassport) {
-      const passportElement = document.querySelector('.id-photo-container') as HTMLElement;
-      if (passportElement) {
-        await createSecondPage(pdf, passportElement);
-      }
+      await createPassportPage(pdf, contractData);
     }
     
     // Save PDF

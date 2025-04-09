@@ -26,6 +26,38 @@
     visibility: visible !important;
     width: 100% !important;
     height: auto !important;
+    object-fit: contain !important;
+  }
+  
+  /* Passport page specific styles */
+  .passport-page {
+    page-break-before: always !important;
+    break-before: always !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .passport-content {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 20mm !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    z-index: 10 !important;
+  }
+  
+  .passport-image {
+    max-width: 80% !important;
+    max-height: 60% !important;
+    object-fit: contain !important;
+    margin-bottom: 20mm !important;
+    border: 1px solid #ddd !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
   }
 }
 
@@ -33,6 +65,14 @@
 body.printing .id-photo-container,
 body.printing .id-photo-wrapper,
 body.printing .id-photo {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+body.printing .passport-page,
+body.printing .passport-content,
+body.printing .passport-image {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
