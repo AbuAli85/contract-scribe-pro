@@ -12,7 +12,7 @@ import html2canvas from 'html2canvas';
  */
 export const convertElementToCanvas = async (element: HTMLElement): Promise<HTMLCanvasElement> => {
   return html2canvas(element, {
-    scale: 2, // Higher scale for better quality
+    scale: 3, // Increased scale for better quality (previously 2)
     useCORS: true, // Allow images from other domains
     logging: false,
     allowTaint: true,
@@ -35,6 +35,41 @@ export const convertElementToCanvas = async (element: HTMLElement): Promise<HTML
             el.style.visibility = 'visible';
             el.style.display = el.tagName.toLowerCase() === 'div' ? 'block' : '';
             el.style.opacity = '1';
+          }
+        });
+        
+        // Fix image scaling specifically
+        const images = clonedElement.querySelectorAll('img');
+        images.forEach(img => {
+          img.style.maxWidth = '100%';
+          img.style.height = 'auto';
+          img.style.objectFit = 'contain';
+          
+          // Add specific classes to help identify images
+          img.classList.add('pdf-rendered-image');
+          
+          // Special handling for ID photos
+          if (img.classList.contains('id-photo')) {
+            const container = img.closest('.id-photo-container');
+            if (container instanceof HTMLElement) {
+              container.style.display = 'flex';
+              container.style.justifyContent = 'center';
+              container.style.margin = '15mm 0';
+              container.style.width = '100%';
+            }
+            
+            const wrapper = img.closest('.id-photo-wrapper');
+            if (wrapper instanceof HTMLElement) {
+              wrapper.style.width = '400px';
+              wrapper.style.maxWidth = '100%';
+              wrapper.style.margin = '0 auto';
+              wrapper.style.border = '1px solid #ddd';
+              wrapper.style.overflow = 'hidden';
+            }
+            
+            img.style.width = '100%';
+            img.style.height = 'auto';
+            img.style.objectFit = 'contain';
           }
         });
         

@@ -36,16 +36,29 @@ export const createPassportContentContainer = (contractData: any): HTMLElement =
   passportImageContainer.style.display = 'flex';
   passportImageContainer.style.justifyContent = 'center';
   passportImageContainer.style.marginBottom = '20mm';
+  passportImageContainer.style.maxHeight = '50%'; // Limit height to prevent overflow
   
-  // Clone the passport photo for better quality
-  const originalPhoto = document.querySelector('.id-photo') as HTMLImageElement;
-  if (originalPhoto && originalPhoto.src) {
+  // Get photo content either from promoterPhoto directly or from ID photo in DOM
+  let photoSrc = '';
+  if (contractData.promoterPhoto) {
+    // Use direct photo URL if available
+    photoSrc = contractData.promoterPhoto;
+  } else {
+    // Clone the passport photo from the DOM as fallback
+    const originalPhoto = document.querySelector('.id-photo') as HTMLImageElement;
+    if (originalPhoto && originalPhoto.src) {
+      photoSrc = originalPhoto.src;
+    }
+  }
+  
+  if (photoSrc) {
     const passportImage = document.createElement('img');
-    passportImage.src = originalPhoto.src;
+    passportImage.src = photoSrc;
     passportImage.alt = 'Passport';
-    passportImage.style.maxWidth = '80%';
-    passportImage.style.maxHeight = '60%';
-    passportImage.style.objectFit = 'contain';
+    passportImage.className = 'passport-image';
+    passportImage.style.maxWidth = '70%'; // Reduced from 80% to ensure better fit
+    passportImage.style.maxHeight = '50%'; // Limit height
+    passportImage.style.objectFit = 'contain'; // Ensure image is fully visible
     passportImage.style.border = '1px solid #ddd';
     passportImage.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
     passportImageContainer.appendChild(passportImage);

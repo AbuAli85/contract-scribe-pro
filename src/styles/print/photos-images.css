@@ -9,6 +9,7 @@
     margin: 15mm 0 !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    width: 100% !important;
   }
   
   .id-photo-wrapper {
@@ -27,6 +28,7 @@
     width: 100% !important;
     height: auto !important;
     object-fit: contain !important;
+    max-height: none !important; /* Remove any height restrictions */
   }
   
   /* Passport page specific styles */
@@ -55,8 +57,8 @@
   }
   
   .passport-image {
-    max-width: 80% !important;
-    max-height: 60% !important;
+    max-width: 70% !important; /* Reduced from 80% */
+    max-height: 50% !important; /* Reduced from 60% */
     object-fit: contain !important;
     margin-bottom: 20mm !important;
     border: 1px solid #ddd !important;
@@ -75,6 +77,13 @@
     display: block !important;
     visibility: visible !important;
   }
+  
+  /* Fix for image scaling in PDF */
+  img.pdf-rendered-image {
+    max-width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
 }
 
 /* When printing class is active - images and photos */
@@ -84,6 +93,13 @@ body.printing .id-photo {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
+}
+
+body.printing .id-photo {
+  width: 100% !important;
+  height: auto !important;
+  object-fit: contain !important;
+  max-height: none !important;
 }
 
 body.printing .passport-page {
@@ -115,4 +131,10 @@ body.printing .passport-details {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
+}
+
+body.printing .passport-image {
+  max-width: 70% !important;
+  max-height: 50% !important;
+  object-fit: contain !important;
 }

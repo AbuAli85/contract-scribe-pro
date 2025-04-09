@@ -13,6 +13,8 @@ const PromoterPhoto = ({ photoUrl }: PromoterPhotoProps) => {
           src={photoUrl}
           alt="Promoter ID"
           className="id-photo"
+          loading="eager" // Force eager loading for better PDF generation
+          crossOrigin="anonymous" // Help with CORS issues
         />
       </div>
     </div>
