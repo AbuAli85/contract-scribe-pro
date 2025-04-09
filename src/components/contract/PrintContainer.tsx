@@ -58,119 +58,14 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
     };
   }, [onReady]);
   
-  // Critical print styles - improved with A4 exact measurements
-  const printStyles = `
-    @media print {
-      /* Core settings and page format */
-      @page {
-        size: A4 portrait;
-        margin: 0mm;
-      }
-      
-      html, body, #root {
-        height: 100% !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow: visible !important;
-        background-color: white !important;
-      }
-      
-      /* A4 page container */
-      .a4-page {
-        width: 210mm !important;
-        height: 297mm !important;
-        margin: 0 auto !important;
-        padding: 0 !important;
-        position: relative !important;
-        overflow: hidden !important;
-      }
-      
-      /* Critical element visibility */
-      .print-container, 
-      .contract-preview, 
-      .a4-page,
-      .contract-content, 
-      .letterhead-background,
-      .contract-title-area,
-      .reference-section,
-      .id-photo-container,
-      .two-column-layout, 
-      .contract-column, 
-      .signature-area,
-      .signature-block,
-      .bottom-info {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-      }
-      
-      /* Fix for flex containers */
-      .two-column-layout {
-        display: flex !important;
-      }
-      
-      /* Exact positioning for key elements */
-      .reference-section {
-        position: absolute !important;
-        top: 25mm !important;
-        left: 10mm !important;
-      }
-      
-      .contract-title-area {
-        position: absolute !important;
-        top: 28mm !important;
-      }
-      
-      .id-photo-container {
-        position: absolute !important;
-        top: 32mm !important;
-        width: 100% !important;
-        display: flex !important;
-        justify-content: center !important;
-      }
-      
-      .two-column-layout {
-        position: absolute !important;
-        top: 35mm !important;
-        left: 10mm !important;
-        width: calc(100% - 20mm) !important;
-      }
-      
-      .signature-area {
-        position: absolute !important;
-        top: 75mm !important;
-        left: 10mm !important;
-        width: calc(100% - 20mm) !important;
-      }
-      
-      .bottom-info {
-        position: absolute !important;
-        bottom: 20mm !important;
-        left: 10mm !important;
-        right: 10mm !important;
-      }
-      
-      /* Specific image sizing */
-      .id-photo-wrapper {
-        width: 400px !important;
-        max-width: 100% !important;
-        margin: 0 auto !important;
-      }
-    }
-  `;
-  
   return (
-    <>
-      <style>{printStyles}</style>
-      <div 
-        ref={containerRef} 
-        className={`print-container ${className}`}
-        data-testid="print-container"
-      >
-        {children}
-      </div>
-    </>
+    <div 
+      ref={containerRef} 
+      className={`print-container ${className}`}
+      data-testid="print-container"
+    >
+      {children}
+    </div>
   );
 };
 

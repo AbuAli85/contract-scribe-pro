@@ -85,6 +85,14 @@
     padding-top: 5mm !important;
     z-index: 10 !important;
   }
+  
+  /* Prevent nested duplicates */
+  .print-container .print-container,
+  .a4-page .a4-page,
+  .contract-content .contract-content {
+    display: none !important;
+    visibility: hidden !important;
+  }
 }
 
 /* Fix for flex containers when printing class is active */
@@ -158,4 +166,12 @@ body.printing .bottom-info {
   right: 10mm !important;
   border-top: 1px solid #eaeaea !important;
   padding-top: 5mm !important;
+}
+
+/* Prevent nested duplicates when printing class is active */
+body.printing .print-container .print-container,
+body.printing .a4-page .a4-page,
+body.printing .contract-content .contract-content {
+  display: none !important;
+  visibility: hidden !important;
 }
