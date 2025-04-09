@@ -1,8 +1,7 @@
 
 import React from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { DocumentUploader } from "@/components/documents";
-import { DocumentsPanel } from "@/components/DocumentsPanel";
+import { DocumentUploader, DocumentsPanel } from "@/components/documents";
 
 interface DocumentsSectionProps {
   contractId: string;
