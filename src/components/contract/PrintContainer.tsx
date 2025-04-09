@@ -80,6 +80,30 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
         size: A4 portrait;
         margin: 0;
       }
+      
+      /* Reference section */
+      .reference-section {
+        margin-bottom: 8mm !important;
+        padding: 2mm 3mm !important;
+        background-color: #f9f9f9 !important;
+        border-radius: 4px !important;
+        border-left: 3px solid #1a73e8 !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+      }
+      
+      /* ID Photo centering */
+      .id-photo-container {
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+        margin: 0 auto 10mm auto !important;
+      }
+      
+      .id-photo-wrapper {
+        width: 120mm !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+      }
     }
   `;
   

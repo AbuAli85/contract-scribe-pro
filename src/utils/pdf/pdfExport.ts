@@ -76,6 +76,9 @@ export const exportToPDF = async (options: PDFExportOptions) => {
     if (includePassport && contractData && contractData.promoterPhoto) {
       pdf.addPage();
       await createPassportPage(pdf, contractData);
+      
+      // Log passport page creation
+      console.log('Passport page created for PDF export');
     }
     
     // Save PDF

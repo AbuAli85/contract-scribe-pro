@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 interface ReferenceNumberProps {
   refNumber?: string;
 }
@@ -22,7 +24,7 @@ const ReferenceNumber = ({ refNumber }: ReferenceNumberProps) => {
   return (
     <div className="reference-section">
       <div className="reference-number">
-        Reference Number: {formattedRefNumber()}
+        Reference Number: <span className="font-bold">{formattedRefNumber()}</span>
       </div>
     </div>
   );

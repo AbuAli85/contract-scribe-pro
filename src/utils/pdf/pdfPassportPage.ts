@@ -1,90 +1,93 @@
 
 /**
  * PDF Passport Page Creator
- * Creates the passport page in PDF format
+ * Creates the passport document page in PDF format
  */
 import jsPDF from 'jspdf';
-import { convertElementToCanvas } from './pdfPageUtils';
-import { createPassportContentContainer } from './pdfPassportContent';
+import html2canvas from 'html2canvas';
 
 /**
- * Creates a second page with passport document
+ * Creates a passport page in the PDF
  * @param pdf jsPDF instance
- * @param contractData Contract data containing passport image and details
- * @returns Boolean indicating success
+ * @param contractData Contract data containing passport information
  */
-export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise<boolean> => {
+export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise<void> => {
+  // Create a temporary div for the passport page
+  const tempDiv = document.createElement('div');
+  tempDiv.className = 'passport-page';
+  tempDiv.style.width = '210mm';
+  tempDiv.style.height = '297mm';
+  tempDiv.style.margin = '0';
+  tempDiv.style.padding = '0';
+  tempDiv.style.overflow = 'hidden';
+  tempDiv.style.position = 'absolute';
+  tempDiv.style.top = '-9999px';
+  tempDiv.style.left = '-9999px';
+  tempDiv.style.backgroundColor = 'white';
+  
+  // Add passport content
+  tempDiv.innerHTML = `
+    <div class="passport-content">
+      <div class="passport-header">
+        <h2 style="
+          font-size: 24px;
+          font-weight: bold;
+          color: #1a73e8;
+          text-align: center;
+          margin-bottom: 15mm;
+        ">Identification Document</h2>
+      </div>
+      <div class="passport-image-container">
+        <img 
+          src="${contractData.promoterPhoto}" 
+          alt="Identification Document" 
+          class="passport-image"
+          style="
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+          "
+        />
+      </div>
+      <div style="
+        margin-top: 15mm;
+        text-align: center;
+        font-size: 14px;
+        color: #555;
+      ">
+        <p><strong>Name:</strong> ${contractData.promoterName || 'N/A'}</p>
+        <p><strong>Reference Number:</strong> ${contractData.refNumber || 'N/A'}</p>
+        <p><strong>Document Type:</strong> Identification</p>
+        <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+      </div>
+    </div>
+  `;
+  
+  // Add to DOM temporarily
+  document.body.appendChild(tempDiv);
+  
   try {
-    // Create a temporary container for the passport page
-    const passportPageContainer = createPassportPageContainer(contractData);
+    // Convert to canvas
+    const canvas = await html2canvas(tempDiv, {
+      scale: 2, // Higher scale for better quality
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: 'white',
+      logging: false,
+      width: 796, // A4 width at 96 DPI
+      height: 1123 // A4 height at 96 DPI
+    });
     
-    // Convert the passport page to canvas
-    const canvas = await convertElementToCanvas(passportPageContainer);
-    
-    // Add canvas to PDF - full page size
+    // Add to PDF
     const imgData = canvas.toDataURL('image/png');
-    pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+    pdf.addImage(imgData, 'PNG', 0, 0, 210, 297); // A4 dimensions in mm
     
-    // Clean up - remove temporary elements
-    document.body.removeChild(passportPageContainer);
-    
-    return true;
+    console.log('Passport page added to PDF successfully');
   } catch (error) {
     console.error('Error creating passport page:', error);
-    return false;
+    throw error;
+  } finally {
+    // Remove temp element
+    document.body.removeChild(tempDiv);
   }
-};
-
-/**
- * Creates the temporary container for the passport page
- * @param contractData Contract data containing passport image and details
- * @returns HTML element containing the passport page
- */
-const createPassportPageContainer = (contractData: any): HTMLElement => {
-  // Create a temporary container for the passport page
-  const passportPageContainer = document.createElement('div');
-  passportPageContainer.className = 'a4-page passport-page';
-  passportPageContainer.style.width = '210mm';
-  passportPageContainer.style.height = '297mm';
-  passportPageContainer.style.position = 'relative';
-  passportPageContainer.style.overflow = 'hidden';
-  passportPageContainer.style.backgroundColor = 'white';
-  
-  // Add letterhead background if available
-  if (contractData && contractData.letterhead) {
-    const letterheadBg = createLetterheadBackground(contractData.letterhead);
-    passportPageContainer.appendChild(letterheadBg);
-  }
-  
-  // Create content container
-  const contentContainer = createPassportContentContainer(contractData);
-  passportPageContainer.appendChild(contentContainer);
-  
-  // Temporarily add to document but hide it
-  passportPageContainer.style.position = 'absolute';
-  passportPageContainer.style.left = '-9999px';
-  document.body.appendChild(passportPageContainer);
-  
-  return passportPageContainer;
-};
-
-/**
- * Creates letterhead background element with full coverage
- * @param letterheadSrc Source URL of the letterhead image
- * @returns HTML element for the letterhead background
- */
-const createLetterheadBackground = (letterheadSrc: string): HTMLElement => {
-  const letterheadBg = document.createElement('div');
-  letterheadBg.className = 'letterhead-background';
-  letterheadBg.style.position = 'absolute';
-  letterheadBg.style.top = '0';
-  letterheadBg.style.left = '0';
-  letterheadBg.style.width = '100%';
-  letterheadBg.style.height = '100%';
-  letterheadBg.style.backgroundImage = `url('${letterheadSrc}')`;
-  letterheadBg.style.backgroundSize = 'cover';
-  letterheadBg.style.backgroundPosition = 'center';
-  letterheadBg.style.opacity = '0.05';
-  letterheadBg.style.zIndex = '1';
-  return letterheadBg;
 };

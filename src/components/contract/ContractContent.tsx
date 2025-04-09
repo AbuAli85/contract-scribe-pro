@@ -28,9 +28,11 @@ const ContractContent: React.FC<ContractContentProps> = ({
         {language === "en" ? "Promoter Assignment Contract" : "عقد تعيين مروّج"}
       </h1>
 
-      {/* ID Photo - If provided, centered on page */}
+      {/* ID Photo - Centered on page */}
       {contractData.promoterPhoto && (
-        <PromoterPhoto photoUrl={contractData.promoterPhoto} />
+        <div className="flex justify-center mb-6">
+          <PromoterPhoto photoUrl={contractData.promoterPhoto} />
+        </div>
       )}
 
       {/* Two Column Layout - English and Arabic sides */}
