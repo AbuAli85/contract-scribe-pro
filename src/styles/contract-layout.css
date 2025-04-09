@@ -42,12 +42,12 @@
   border: none;
 }
 
-/* Reference Section */
+/* Reference Section - Positioned exactly 2.5cm from top */
 .reference-section {
   position: absolute;
-  top: 2.5cm;
-  left: 1cm;
-  width: calc(100% - 2cm);
+  top: 25mm; /* 2.5cm from top */
+  left: 10mm; /* 1cm from left */
+  width: calc(100% - 20mm);
   text-align: left;
   padding: 2mm 3mm;
   background-color: #f9f9f9;
@@ -58,10 +58,10 @@
   margin: 0;
 }
 
-/* Contract Title */
+/* Contract Title - Positioned exactly 2.8cm from top */
 .contract-title-area {
   position: absolute;
-  top: 2.8cm;
+  top: 28mm; /* 2.8cm from top */
   left: 0;
   width: 100%;
   text-align: center;
@@ -76,10 +76,10 @@
   width: 100%;
 }
 
-/* ID Photo Styles - Centered with proper positioning */
+/* ID Photo Styles - Positioned exactly 3.2cm from top */
 .id-photo-container {
   position: absolute;
-  top: 3.2cm;
+  top: 32mm; /* 3.2cm from top */
   left: 0;
   display: flex;
   flex-direction: column;
@@ -106,12 +106,12 @@
   object-fit: contain;
 }
 
-/* Two Column Layout for Contract Text */
+/* Two Column Layout for Contract Text - Positioned exactly 3.5cm from top */
 .two-column-layout {
   position: absolute;
-  top: 3.5cm;
-  left: 1cm;
-  width: calc(100% - 2cm);
+  top: 85mm; /* 3.5cm from top + space for the ID photo */
+  left: 10mm; /* 1cm from left */
+  width: calc(100% - 20mm);
   display: flex;
   justify-content: space-between;
   gap: 6mm;
@@ -195,23 +195,25 @@
   
   .reference-section {
     position: absolute !important;
-    top: 2.5cm !important;
-    left: 1cm !important;
+    top: 25mm !important; /* 2.5cm from top */
+    left: 10mm !important; /* 1cm from left */
   }
   
   .contract-title-area {
     position: absolute !important;
-    top: 2.8cm !important;
+    top: 28mm !important; /* 2.8cm from top */
   }
   
   .id-photo-container {
     position: absolute !important;
-    top: 3.2cm !important;
+    top: 32mm !important; /* 3.2cm from top */
   }
   
   .two-column-layout {
     position: absolute !important;
-    top: 3.5cm !important;
+    top: 85mm !important; /* Position after photo with some spacing */
+    left: 10mm !important;
+    width: calc(100% - 20mm) !important;
   }
   
   .passport-page {

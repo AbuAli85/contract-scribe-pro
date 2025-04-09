@@ -90,6 +90,35 @@ export const makePrintable = (element: HTMLElement): void => {
       el.style.display = el.classList.contains('two-column-layout') ? 'flex' : 'block';
       el.style.visibility = 'visible';
       el.style.opacity = '1';
+      
+      // Apply exact positioning for key elements
+      if (el.classList.contains('reference-section')) {
+        el.style.position = 'absolute';
+        el.style.top = '25mm'; // 2.5cm from top
+        el.style.left = '10mm';
+      }
+      
+      if (el.classList.contains('contract-title-area')) {
+        el.style.position = 'absolute';
+        el.style.top = '28mm'; // 2.8cm from top
+        el.style.width = '100%';
+        el.style.textAlign = 'center';
+      }
+      
+      if (el.classList.contains('id-photo-container')) {
+        el.style.position = 'absolute';
+        el.style.top = '32mm'; // 3.2cm from top
+        el.style.width = '100%';
+        el.style.display = 'flex';
+        el.style.justifyContent = 'center';
+      }
+      
+      if (el.classList.contains('two-column-layout')) {
+        el.style.position = 'absolute';
+        el.style.top = '85mm'; // Adjusted for photo
+        el.style.left = '10mm';
+        el.style.width = 'calc(100% - 20mm)';
+      }
     }
   });
 };

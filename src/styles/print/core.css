@@ -63,8 +63,12 @@
     left: 0 !important;
   }
   
-  /* Reference number */
+  /* Reference number - exactly 2.5cm from top */
   .reference-section {
+    position: absolute !important;
+    top: 25mm !important; /* 2.5cm from top */
+    left: 10mm !important; /* 1cm from left */
+    width: calc(100% - 20mm) !important;
     margin-bottom: 8mm !important;
     padding: 2mm 3mm !important;
     background-color: #f9f9f9 !important;
@@ -73,6 +77,41 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    z-index: 10 !important;
+  }
+  
+  /* Contract title - exactly 2.8cm from top */
+  .contract-title-area {
+    position: absolute !important;
+    top: 28mm !important; /* 2.8cm from top */
+    left: 0 !important;
+    width: 100% !important;
+    text-align: center !important;
+    z-index: 10 !important;
+  }
+  
+  /* ID photo - exactly 3.2cm from top */
+  .id-photo-container {
+    position: absolute !important;
+    top: 32mm !important; /* 3.2cm from top */
+    left: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    z-index: 10 !important;
+  }
+  
+  /* Contract content - positioned at 3.5cm from top + space for photo */
+  .two-column-layout {
+    position: absolute !important;
+    top: 85mm !important; /* Adjusted to account for photo height */
+    left: 10mm !important;
+    width: calc(100% - 20mm) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    gap: 6mm !important;
+    z-index: 10 !important;
   }
   
   .reference-number {
@@ -109,12 +148,26 @@ body.printing .a4-page {
   left: 0 !important;
 }
 
-/* Reference number styling when printing class is active */
+/* Fixed positions for printing */
 body.printing .reference-section {
-  margin-bottom: 8mm !important;
-  padding: 2mm 3mm !important;
-  background-color: #f9f9f9 !important;
-  border-radius: 4px !important;
-  border-left: 3px solid #1a73e8 !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  position: absolute !important;
+  top: 25mm !important; /* 2.5cm from top */
+  left: 10mm !important;
+}
+
+body.printing .contract-title-area {
+  position: absolute !important;
+  top: 28mm !important; /* 2.8cm from top */
+}
+
+body.printing .id-photo-container {
+  position: absolute !important;
+  top: 32mm !important; /* 3.2cm from top */
+}
+
+body.printing .two-column-layout {
+  position: absolute !important;
+  top: 85mm !important;
+  left: 10mm !important;
+  width: calc(100% - 20mm) !important;
 }
