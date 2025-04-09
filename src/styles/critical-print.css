@@ -95,4 +95,14 @@
     left: 10mm !important;
     width: calc(100% - 20mm) !important;
   }
+  
+  /* Bottom info positioning */
+  .bottom-info {
+    position: absolute !important;
+    bottom: 20mm !important; 
+    left: 10mm !important;
+    right: 10mm !important;
+    border-top: 1px solid #eaeaea !important;
+    padding-top: 5mm !important;
+  }
 }
