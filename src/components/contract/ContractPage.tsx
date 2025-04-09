@@ -28,7 +28,7 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children, pag
         breakAfter: 'always'
       }}
     >
-      {/* Letterhead background that spans full width */}
+      {/* Letterhead background that spans full width and height */}
       {contractData.letterhead && (
         <div
           className="letterhead-background"
@@ -37,10 +37,10 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children, pag
             top: 0,
             left: 0,
             width: '100%',
-            height: '40mm',
+            height: '100%',
             backgroundImage: `url('${contractData.letterhead}')`,
             backgroundSize: 'cover',
-            backgroundPosition: 'top center',
+            backgroundPosition: 'center',
             opacity: 0.1,
             zIndex: 1
           }}
@@ -74,7 +74,7 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children, pag
         style={{ 
           position: 'relative',
           zIndex: 10,
-          padding: pageType === 'passport' ? '30mm 20mm 20mm' : '30mm 20mm 20mm', /* Adjusted padding to fit content */
+          padding: '10mm 20mm 20mm',
           width: '100%',
           height: '100%',
           boxSizing: 'border-box'

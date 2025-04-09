@@ -24,15 +24,13 @@ const ContractContent: React.FC<ContractContentProps> = ({
 
   return (
     <>
-      {/* Reference number with updated margin */}
+      {/* Reference number at top with specified margin */}
       <ReferenceNumber refNumber={contractData.refNumber} />
 
       {/* Contract Title - Main title of document */}
-      <h1 className="contract-main-title text-xl font-bold text-center text-blue-700 mb-2">
-        {language === "en" ? "Promoter Assignment Contract" : "عقد تعيين مروّج"}
-      </h1>
+      <ContractTitle language={language} />
 
-      {/* ID Photo with reduced spacing */}
+      {/* ID Photo centered with specified width */}
       {contractData.promoterPhoto && (
         <PromoterPhoto 
           photoUrl={contractData.promoterPhoto} 
@@ -41,8 +39,8 @@ const ContractContent: React.FC<ContractContentProps> = ({
         />
       )}
 
-      {/* Two Column Layout - properly aligned columns */}
-      <div className="two-column-layout flex justify-between gap-6 mb-2">
+      {/* Two Column Layout - contract content with specified margin */}
+      <div className="two-column-layout flex justify-between gap-6 mb-2" style={{ marginTop: '3.5cm' }}>
         {/* Columns order based on language */}
         {language === "en" ? (
           <>
@@ -57,7 +55,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
         )}
       </div>
 
-      {/* Signature Area with reduced spacing */}
+      {/* Signature Area below content */}
       <SignatureArea signatures={signatures} />
       
       {/* Footer information with reduced top margin */}

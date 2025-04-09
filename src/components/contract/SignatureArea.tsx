@@ -5,7 +5,7 @@ interface SignatureProps {
 
 const SignatureArea = ({ signatures = [] }: SignatureProps) => {
   return (
-    <div className="signature-area flex justify-between mt-5 pt-2 border-t border-gray-200">
+    <div className="signature-area flex justify-between mt-4 pt-2 border-t border-gray-200">
       <div className="signature-block flex-1 mr-8 text-center">
         <div className="signature-line h-12 mb-2 flex items-center justify-center">
           {signatures && signatures[0] ? (

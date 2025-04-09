@@ -19,7 +19,7 @@
   z-index: 10;
   width: 100%;
   height: 100%;
-  padding: 35mm 20mm 20mm; /* Reduced top padding to fit content better */
+  padding: 0 20mm 20mm;
   box-sizing: border-box;
   margin: 0;
   left: 0;
@@ -30,13 +30,13 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 40mm; /* Standardized height for letterhead */
-  opacity: 0.1; /* Standardized opacity for better readability */
+  height: 100%;
+  opacity: 0.1;
   z-index: 1;
   pointer-events: none;
   object-fit: cover;
   background-size: cover;
-  background-position: top center;
+  background-position: center;
   margin: 0;
   padding: 0;
   border: none;
@@ -47,7 +47,7 @@
   display: flex;
   justify-content: space-between;
   gap: 6mm;
-  margin-bottom: 6mm; /* Reduced from 8mm to 6mm */
+  margin-bottom: 6mm;
   position: relative;
   z-index: 10;
   width: 100%;
@@ -59,7 +59,7 @@
 .contract-column {
   flex: 1;
   font-size: 11px;
-  line-height: 1.5; /* Improved line spacing for better fit */
+  line-height: 1.5;
   margin: 0;
   padding: 0;
 }
@@ -80,14 +80,14 @@
   justify-content: space-between;
   font-size: 8px;
   color: #666;
-  margin-top: 4mm; /* Reduced from 6mm to 4mm */
+  margin-top: 4mm;
 }
 
 /* Reference Section */
 .reference-section {
   text-align: left;
   margin-top: 0;
-  margin-bottom: 3.2mm; /* Updated from 2.8mm to 3.2mm as requested */
+  margin-bottom: 3.2mm;
   padding: 2mm 3mm;
   background-color: #f9f9f9;
   border-radius: 3px;
@@ -103,15 +103,15 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  margin: 3mm 0 5mm 0; /* Reduced margins to fit better */
+  margin: 0 0 5mm 0;
   position: relative;
   z-index: 10;
 }
 
 .id-photo-wrapper {
-  width: 100%;
-  max-width: 100mm; /* Adjusted size for better fit */
-  margin: 0 auto; /* Center horizontally */
+  width: 400px;
+  max-width: 100%;
+  margin: 0 auto;
   border: 1px solid #ddd;
   border-radius: 4px;
   overflow: hidden;
@@ -129,10 +129,10 @@
 .signature-area {
   display: flex;
   justify-content: space-between;
-  margin-top: 6mm; /* Reduced from 8mm to 6mm */
-  margin-bottom: 3mm; /* Reduced from 4mm to 3mm */
+  margin-top: 5mm;
+  margin-bottom: 3mm;
   border-top: 1px solid #eaeaea;
-  padding-top: 3mm;
+  padding-top: 2mm;
 }
 
 .signature-block {
@@ -142,7 +142,7 @@
 }
 
 .signature-line {
-  min-height: 14mm; /* Reduced from 15mm to 14mm */
+  min-height: 12mm;
   border-bottom: 1px solid #ddd;
   margin-bottom: 2mm;
   display: flex;
@@ -153,4 +153,54 @@
 .signature-name {
   margin-top: 2mm;
   font-weight: 500;
+}
+
+/* Contract Title */
+.contract-main-title {
+  text-align: center;
+  font-weight: bold;
+  color: #1a73e8;
+  margin-bottom: 5mm;
+}
+
+/* Special handling for print */
+@media print {
+  .a4-page {
+    margin: 0;
+    box-shadow: none;
+  }
+  
+  .letterhead-background {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .two-column-layout {
+    display: flex !important;
+  }
+  
+  .id-photo-wrapper {
+    width: 400px !important;
+  }
+  
+  .reference-section {
+    margin-top: 2.5cm !important;
+  }
+  
+  .contract-main-title {
+    margin-top: 2.8cm !important;
+  }
+  
+  .id-photo-container {
+    margin-top: 3.2cm !important;
+  }
+  
+  .two-column-layout {
+    margin-top: 3.5cm !important;
+  }
+  
+  .passport-page {
+    page-break-before: always !important;
+    break-before: always !important;
+  }
 }
