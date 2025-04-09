@@ -19,7 +19,7 @@
   z-index: 10;
   width: 100%;
   height: 100%;
-  padding: 15mm;
+  padding: 20mm;
   box-sizing: border-box;
   margin: 0;
   left: 0;
@@ -31,7 +31,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.07; /* Reduced opacity for better readability */
+  opacity: 0.05; /* Reduced opacity for better readability */
   z-index: 1;
   pointer-events: none;
   object-fit: cover;
@@ -46,7 +46,7 @@
 .two-column-layout {
   display: flex;
   justify-content: space-between;
-  gap: 15mm; /* Increased spacing between columns */
+  gap: 10mm;
   margin-bottom: 15mm;
   position: relative;
   z-index: 10;
@@ -85,8 +85,8 @@
 /* Reference Section */
 .reference-section {
   text-align: left;
-  margin-top: 1cm;
-  margin-bottom: 15mm;
+  margin-top: 0;
+  margin-bottom: 5mm;
   padding-left: 0; /* Remove left padding */
   position: relative;
   z-index: 10;
@@ -96,14 +96,14 @@
 .id-photo-container {
   display: flex;
   justify-content: center;
-  margin: 10mm 0; /* Reduced margin */
+  margin: 10mm 0 15mm 0; /* Adjusted margins */
   position: relative;
   z-index: 10;
   width: 100%;
 }
 
 .id-photo-wrapper {
-  width: 350px; /* Slightly smaller photo */
+  width: 400px; /* Make photo larger */
   max-width: 100%;
   border: 1px solid #ddd;
   border-radius: 4px; /* Added rounded corners */

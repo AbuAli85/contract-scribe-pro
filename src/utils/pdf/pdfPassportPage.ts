@@ -84,7 +84,7 @@ const createLetterheadBackground = (letterheadSrc: string): HTMLElement => {
   letterheadBg.style.backgroundImage = `url('${letterheadSrc}')`;
   letterheadBg.style.backgroundSize = 'cover';
   letterheadBg.style.backgroundPosition = 'center';
-  letterheadBg.style.opacity = '0.8';
+  letterheadBg.style.opacity = '0.05';
   letterheadBg.style.zIndex = '1';
   return letterheadBg;
 };

@@ -18,7 +18,15 @@ export const createContractPage = async (pdf: jsPDF, element: HTMLElement): Prom
     // Store original opacity to restore later
     const originalOpacity = letterhead.style.opacity;
     // Set better opacity for PDF
-    letterhead.style.opacity = '0.07';
+    letterhead.style.opacity = '0.05';
+    
+    // Ensure ID photo is centered
+    const idPhotoContainer = element.querySelector('.id-photo-container') as HTMLElement;
+    if (idPhotoContainer) {
+      idPhotoContainer.style.display = 'flex';
+      idPhotoContainer.style.justifyContent = 'center';
+      idPhotoContainer.style.width = '100%';
+    }
     
     // Convert HTML to canvas
     const canvas = await convertElementToCanvas(element);
