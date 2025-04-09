@@ -74,9 +74,19 @@
   font-size: 12px;
 }
 
+/* Nested content notice - to help users understand why they see duplicate content */
+.nested-content-notice {
+  margin-bottom: 16px;
+  background-color: #f9f9fa;
+  border: 1px dashed #d1d5db;
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
 @media print {
   /* Hide debug info when printing */
-  .print-debug-info {
+  .print-debug-info, 
+  .nested-content-notice {
     display: none !important;
     visibility: hidden !important;
   }
@@ -93,12 +103,25 @@
   .print-nested-container {
     display: none !important;
     visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    pointer-events: none !important;
   }
   
   /* Core print container */
   .print-container {
     display: block !important;
     visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* Fix for Safari and Firefox rendering issues */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
 }
 
@@ -107,4 +130,33 @@ html.print-ready .print-container {
   background-color: white;
   visibility: visible;
   display: block;
+}
+
+/* Visibility fix classes - added by JS at runtime to fix elements */
+.print-visibility-fixed {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Special handling for flex containers that need to stay as flex in print */
+@media print {
+  .print-flex {
+    display: flex !important;
+  }
+  
+  .print-grid {
+    display: grid !important;
+  }
+}
+
+/* Focus outline for debugging print containers in development */
+.dev-mode .print-container {
+  outline: 2px dashed rgba(59, 130, 246, 0.3);
+  outline-offset: -2px;
+}
+
+.dev-mode .print-nested-container {
+  outline: 2px dashed rgba(239, 68, 68, 0.3);
+  outline-offset: -2px;
 }

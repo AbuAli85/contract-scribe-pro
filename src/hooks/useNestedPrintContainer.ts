@@ -11,7 +11,7 @@ export function useNestedPrintContainer() {
   
   // Check if this element is nested inside another print container
   const isNested = useMemo(() => {
-    if (typeof document === 'undefined' || !containerRef.current) return false;
+    if (typeof window === 'undefined' || !containerRef.current) return false;
     
     // Check if this container is inside another print container
     // We look for any parent with print-container class that is NOT this element
@@ -19,8 +19,8 @@ export function useNestedPrintContainer() {
     const isInsideContainer = parent !== null && parent !== containerRef.current;
     
     // Log warning if nested container is detected
-    if (isInsideContainer) {
-      console.warn('Warning: Nested print container detected. Preventing duplicate content for printing.');
+    if (isInsideContainer && process.env.NODE_ENV === 'development') {
+      console.log('Nested print container detected:', containerRef.current);
     }
     
     return isInsideContainer;
@@ -48,6 +48,11 @@ export function useNestedPrintContainer() {
       // Add print-nested-container class to help with CSS targeting
       containerRef.current.classList.add('print-nested-container');
       containerRef.current.setAttribute('data-testid', 'nested-print-container');
+      
+      // Remove print-container class if it exists to prevent duplication
+      if (containerRef.current.classList.contains('print-container')) {
+        containerRef.current.classList.remove('print-container');
+      }
     }
   }, [isNested]);
   

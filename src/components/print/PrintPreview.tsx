@@ -28,7 +28,13 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
   
   // Prepare content for printing and check for issues
   useEffect(() => {
-    if (isNested || !containerRef.current) return;
+    // If nested, no need to set up printing environment
+    if (isNested) {
+      onReady?.(true);
+      return;
+    }
+    
+    if (!containerRef.current) return;
     
     // Log container existence for debugging
     console.log('PrintPreview: Container initialized');
@@ -63,6 +69,12 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
         
         .two-column-layout {
           display: flex !important;
+        }
+        
+        /* Hide nested containers when printing to prevent duplication */
+        .print-nested-container {
+          display: none !important;
+          visibility: hidden !important;
         }
         
         @page {

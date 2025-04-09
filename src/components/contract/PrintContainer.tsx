@@ -28,7 +28,13 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
   
   // Initialize and validate print container
   useEffect(() => {
-    if (isNested || !containerRef.current) return;
+    if (isNested) {
+      // For nested containers, just notify the parent that we're ready
+      onReady?.(true);
+      return;
+    }
+    
+    if (!containerRef.current) return;
     
     // Set up print container and critical styles
     const timer = setTimeout(() => {
@@ -97,7 +103,7 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
       
       <div 
         ref={containerRef} 
-        className={`print-container print-section print-container-wrapper ${className}`}
+        className={`print-container print-section ${className}`}
         data-testid="print-container"
       >
         {showDebugInfo && process.env.NODE_ENV === 'development' && (

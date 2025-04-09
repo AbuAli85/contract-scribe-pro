@@ -25,7 +25,13 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
   
   // Ensure visibility for printing when component mounts
   useEffect(() => {
-    if (isNested || !containerRef.current) return;
+    // If nested, no need to set up printing environment
+    if (isNested) {
+      onReady?.(true);
+      return;
+    }
+    
+    if (!containerRef.current) return;
     
     // Short delay to allow content to render fully
     const timer = setTimeout(() => {
@@ -80,6 +86,13 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
         overflow: visible !important;
       }
       
+      /* Hide nested containers to prevent duplicate printing */
+      .print-nested-container {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+      
       .a4-page {
         padding: 0 !important;
         margin: 0 !important;
@@ -122,7 +135,20 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
 
   // If nested, render without print container to avoid duplicates
   if (isNested) {
-    return <div className={className}>{children}</div>;
+    return (
+      <div 
+        ref={containerRef} 
+        className="print-nested-container"
+        data-testid="nested-print-preview" 
+      >
+        <div className="nested-content-notice p-4 bg-gray-50 rounded border border-gray-200 mb-4 print:hidden">
+          <p className="text-sm text-gray-500">
+            Nested print preview - This content will only be shown in the UI, not when printing
+          </p>
+        </div>
+        {children}
+      </div>
+    );
   }
 
   return (

@@ -34,7 +34,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
         className="print-nested-container" 
         data-testid="nested-contract-content"
       >
-        {/* Limited content for nested containers */}
+        {/* Simplified content for UI display only */}
         <div className="nested-content-notice p-4 bg-gray-50 rounded border border-gray-200 mb-4 print:hidden">
           <p className="text-sm text-gray-600">
             {language === "ar" 
@@ -43,20 +43,33 @@ const ContractContent: React.FC<ContractContentProps> = ({
           </p>
         </div>
         
-        {/* Minimal UI content */}
-        <div className="contract-title-area">
+        {/* Minimal content for UI only */}
+        <div className="contract-title-area mb-4">
           <ContractTitle language={language} />
         </div>
         
-        {/* Basic information for UI only */}
-        <div className="print:hidden">
-          <div className="p-4">
-            <h3 className="text-lg font-medium">{language === "ar" ? "محتوى العقد" : "Contract Content"}</h3>
-            <p className="text-sm text-gray-500">
+        {/* Show a simplified reference number */}
+        <div className="p-2 bg-gray-50 rounded mb-4">
+          <ReferenceNumber refNumber={contractData.refNumber} />
+        </div>
+        
+        {/* Show contract data for UI purposes */}
+        <div className="grid grid-cols-2 gap-4 print:hidden">
+          <div>
+            <h3 className="text-sm font-medium mb-2">{language === "ar" ? "المحتوى العربي" : "English Content"}</h3>
+            <div className="p-2 bg-gray-50 rounded text-xs text-gray-500">
               {language === "ar" 
-                ? "هذا المحتوى مضمن في حاوية أخرى وسيتم طباعة النسخة الأصلية فقط."
-                : "This content is embedded in another container and only the original will be printed."}
-            </p>
+                ? "المحتوى العربي سيظهر في النسخة المطبوعة الأصلية فقط"
+                : "English content will appear in the original printed version only"}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium mb-2">{language === "ar" ? "المحتوى الإنجليزي" : "Arabic Content"}</h3>
+            <div className="p-2 bg-gray-50 rounded text-xs text-gray-500">
+              {language === "ar" 
+                ? "المحتوى الإنجليزي سيظهر في النسخة المطبوعة الأصلية فقط"
+                : "Arabic content will appear in the original printed version only"}
+            </div>
           </div>
         </div>
       </div>
