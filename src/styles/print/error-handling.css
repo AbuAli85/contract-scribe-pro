@@ -1,0 +1,16 @@
+
+/* Error Handling Print Styles */
+@media print {
+  /* Error message */
+  .error-message {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+/* Error element - Hide during printing */
+body.printing .error-message,
+.error-message.print\:hidden {
+  display: none !important;
+  visibility: hidden !important;
+}

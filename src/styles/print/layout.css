@@ -1,0 +1,41 @@
+
+/* Layout Print Styles */
+@media print {
+  /* Special handling for layout elements */
+  .two-column-layout {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    justify-content: space-between !important;
+    gap: 10mm !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .contract-column {
+    flex: 1 !important;
+    font-size: 11px !important;
+    line-height: 1.5 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* Fix for flex containers when printing class is active */
+body.printing .two-column-layout {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 10mm !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body.printing .contract-column {
+  flex: 1 !important;
+  font-size: 11px !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
