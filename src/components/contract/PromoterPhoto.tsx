@@ -7,8 +7,8 @@ const PromoterPhoto = ({ photoUrl }: PromoterPhotoProps) => {
   if (!photoUrl) return null;
   
   return (
-    <div className="id-photo-container w-full flex justify-center items-center mb-10">
-      <div className="id-photo-wrapper w-full max-w-md mx-auto border border-gray-200 rounded-md overflow-hidden shadow-sm">
+    <div className="id-photo-container w-full flex justify-center items-center my-8">
+      <div className="id-photo-wrapper w-full max-w-lg mx-auto border border-gray-200 rounded-md overflow-hidden shadow-sm bg-white">
         <img
           src={photoUrl}
           alt="Promoter ID"

@@ -38,7 +38,7 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
             height: '100%',
             backgroundImage: `url('${contractData.letterhead}')`,
             backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundPosition: 'top center',
             opacity: 0.07, // Reduced opacity for better readability
             zIndex: 1,
             margin: 0,
@@ -75,7 +75,7 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
         style={{ 
           position: 'relative',
           zIndex: 10,
-          padding: '20mm',
+          padding: '25mm 20mm 20mm',
           width: '100%',
           height: '100%',
           boxSizing: 'border-box',

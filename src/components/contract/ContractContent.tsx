@@ -20,21 +20,21 @@ const ContractContent: React.FC<ContractContentProps> = ({
 }) => {
   return (
     <>
-      {/* Reference number - with improved styling */}
+      {/* Reference number - positioned at the top */}
       <ReferenceNumber refNumber={contractData.refNumber} />
 
       {/* Contract Title - Main title of document */}
-      <h1 className="contract-main-title text-2xl font-bold text-center text-blue-600 mb-10">
+      <h1 className="contract-main-title text-2xl font-bold text-center text-blue-600 mb-8">
         {language === "en" ? "Promoter Assignment Contract" : "عقد تعيين مروّج"}
       </h1>
 
-      {/* ID Photo - Properly centered on page */}
+      {/* ID Photo - Properly centered on page with improved sizing */}
       {contractData.promoterPhoto && (
         <PromoterPhoto photoUrl={contractData.promoterPhoto} />
       )}
 
       {/* Two Column Layout - English and Arabic sides with proper spacing */}
-      <div className="two-column-layout flex justify-between gap-10 mb-12">
+      <div className="two-column-layout flex justify-between gap-10 mb-10">
         {/* Columns order based on language */}
         {language === "en" ? (
           <>
@@ -49,8 +49,20 @@ const ContractContent: React.FC<ContractContentProps> = ({
         )}
       </div>
 
-      {/* Signature Area */}
+      {/* Signature Area with better positioning */}
       <SignatureArea signatures={signatures} />
+      
+      {/* Footer information */}
+      <div className="bottom-info mt-auto pt-4">
+        <div className="company-info text-xs text-gray-600">
+          <div className="cr-number mb-1">CR Number: {contractData?.firstParty?.crn?.en || "1410869"}</div>
+          <div>PO Box 762, PC-122 Al Khuwair, Bousher, Sultanate of Oman</div>
+        </div>
+        <div className="contact-info text-xs text-gray-600 text-right">
+          <div>+968 9194 3449 / +968 9933 6958</div>
+          <div>www.falconeyegroup.net</div>
+        </div>
+      </div>
     </>
   );
 };

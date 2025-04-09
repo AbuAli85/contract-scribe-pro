@@ -25,17 +25,46 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
   tempDiv.style.left = '-9999px';
   tempDiv.style.backgroundColor = 'white';
   
+  // Generate reference number for second page
+  const refNumber = contractData.refNumber || 'PAC-20250409-6996';
+  
   // Add passport content with improved layout
   tempDiv.innerHTML = `
-    <div class="passport-content" style="
+    <div style="
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('${contractData.letterhead}');
+      background-size: cover;
+      background-position: top center;
+      opacity: 0.07;
+      z-index: 1;
+    "></div>
+    
+    <div style="
+      position: absolute;
+      top: 15mm;
+      left: 20mm;
+      font-family: monospace;
+      font-size: 12px;
+      font-weight: bold;
+      color: #444;
+      z-index: 10;
+    ">
+      Ref: ${refNumber}
+    </div>
+    
+    <div style="
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      padding: 30mm 20mm;
+      padding: 30mm 20mm 20mm;
       height: 100%;
       box-sizing: border-box;
       position: relative;
+      z-index: 5;
     ">
       <div style="text-align: center; width: 100%; margin-bottom: 20mm;">
         <h2 style="
@@ -43,10 +72,12 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
           font-weight: bold;
           color: #1a73e8;
           margin-bottom: 5mm;
+          margin-top: 10mm;
         ">Identification Document</h2>
         <p style="
-          font-size: 14px;
+          font-size: 18px;
           color: #555;
+          text-align: center;
         ">وثيقة الهوية</p>
       </div>
       
@@ -54,7 +85,7 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
         width: 100%;
         display: flex;
         justify-content: center;
-        margin-bottom: 20mm;
+        margin-bottom: 30mm;
       ">
         <div style="
           width: 80%;
@@ -63,6 +94,7 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
           border-radius: 4px;
           overflow: hidden;
           box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          background: white;
         ">
           <img 
             src="${contractData.promoterPhoto}" 
@@ -80,8 +112,11 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
       <div style="
         width: 80%;
         margin: 0 auto;
-        border-top: 1px solid #eee;
-        padding-top: 15mm;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 15px 20px;
+        background-color: #fafafa;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       ">
         <table style="
           width: 100%;
@@ -89,38 +124,26 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
           font-size: 14px;
         ">
           <tr>
-            <td style="padding: 6px 12px; font-weight: bold; text-align: right; width: 40%;">Name:</td>
-            <td style="padding: 6px 12px;">${contractData.promoter?.name?.en || 'N/A'}</td>
+            <td style="padding: 8px 12px; font-weight: bold; width: 40%;">Name:</td>
+            <td style="padding: 8px 12px;">${contractData.promoter?.name?.en || 'N/A'}</td>
           </tr>
           <tr>
-            <td style="padding: 6px 12px; font-weight: bold; text-align: right;">ID Number:</td>
-            <td style="padding: 6px 12px;">${contractData.promoter?.id?.en || 'N/A'}</td>
+            <td style="padding: 8px 12px; font-weight: bold;">ID Number:</td>
+            <td style="padding: 8px 12px;">${contractData.promoter?.id?.en || 'N/A'}</td>
           </tr>
           <tr>
-            <td style="padding: 6px 12px; font-weight: bold; text-align: right;">Reference Number:</td>
-            <td style="padding: 6px 12px;">${contractData.refNumber || 'PAC-20250409-9597'}</td>
+            <td style="padding: 8px 12px; font-weight: bold;">Reference Number:</td>
+            <td style="padding: 8px 12px;">${refNumber}</td>
           </tr>
           <tr>
-            <td style="padding: 6px 12px; font-weight: bold; text-align: right;">Document Type:</td>
-            <td style="padding: 6px 12px;">Identification</td>
+            <td style="padding: 8px 12px; font-weight: bold;">Document Type:</td>
+            <td style="padding: 8px 12px;">Identification</td>
           </tr>
           <tr>
-            <td style="padding: 6px 12px; font-weight: bold; text-align: right;">Date:</td>
-            <td style="padding: 6px 12px;">${new Date().toLocaleDateString()}</td>
+            <td style="padding: 8px 12px; font-weight: bold;">Date:</td>
+            <td style="padding: 8px 12px;">${new Date().toLocaleDateString()}</td>
           </tr>
         </table>
-      </div>
-      
-      <!-- Reference number on the top corner -->
-      <div style="
-        position: absolute;
-        top: 15mm;
-        left: 15mm;
-        font-size: 12px;
-        font-family: monospace;
-        color: #555;
-      ">
-        Ref: ${contractData.refNumber || 'PAC-20250409-9597'}
       </div>
     </div>
   `;
@@ -142,6 +165,7 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
     
     // Add to PDF
     const imgData = canvas.toDataURL('image/png');
+    pdf.addPage();
     pdf.addImage(imgData, 'PNG', 0, 0, 210, 297); // A4 dimensions in mm
     
     console.log('Passport page added to PDF successfully');
