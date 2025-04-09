@@ -11,7 +11,6 @@
   padding: 0;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
   overflow: hidden;
-  left: 0;
 }
 
 .contract-content {
@@ -22,7 +21,6 @@
   padding: 0 20mm;
   box-sizing: border-box;
   margin: 0;
-  left: 0;
 }
 
 .letterhead-background {
@@ -106,10 +104,10 @@
   object-fit: contain;
 }
 
-/* Two Column Layout for Contract Text - Positioned exactly 3.5cm from top */
+/* Two Column Layout for Contract Text - Positioned exactly 8.5cm from top */
 .two-column-layout {
   position: absolute;
-  top: 85mm; /* 3.5cm from top + space for the ID photo */
+  top: 85mm; /* 8.5cm from top - adjusted to account for photo space */
   left: 10mm; /* 1cm from left */
   width: calc(100% - 20mm);
   display: flex;

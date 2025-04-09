@@ -102,7 +102,7 @@
     z-index: 10 !important;
   }
   
-  /* Contract content - positioned at 3.5cm from top + space for photo */
+  /* Contract content - positioned at 8.5cm from top */
   .two-column-layout {
     position: absolute !important;
     top: 85mm !important; /* Adjusted to account for photo height */
