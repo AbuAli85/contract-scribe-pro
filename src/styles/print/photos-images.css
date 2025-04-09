@@ -37,6 +37,8 @@
     height: 297mm !important;
     margin: 0 !important;
     padding: 0 !important;
+    overflow: hidden !important;
+    position: relative !important;
   }
   
   .passport-content {
@@ -46,6 +48,7 @@
     justify-content: center !important;
     padding: 20mm !important;
     height: 100% !important;
+    width: 100% !important;
     box-sizing: border-box !important;
     position: relative !important;
     z-index: 10 !important;
@@ -59,6 +62,19 @@
     border: 1px solid #ddd !important;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
   }
+  
+  /* Passport details styling */
+  .passport-details {
+    width: 80% !important;
+    margin-top: auto !important;
+    margin-bottom: 20mm !important;
+    padding: 15px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 5px !important;
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    display: block !important;
+    visibility: visible !important;
+  }
 }
 
 /* When printing class is active - images and photos */
@@ -70,9 +86,32 @@ body.printing .id-photo {
   opacity: 1 !important;
 }
 
-body.printing .passport-page,
-body.printing .passport-content,
-body.printing .passport-image {
+body.printing .passport-page {
+  page-break-before: always !important;
+  break-before: always !important;
+  width: 210mm !important;
+  height: 297mm !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+body.printing .passport-content {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  padding: 20mm !important;
+  height: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  z-index: 10 !important;
+  visibility: visible !important;
+}
+
+body.printing .passport-image,
+body.printing .passport-details {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;

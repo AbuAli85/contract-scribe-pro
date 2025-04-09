@@ -9,6 +9,8 @@ import { generateUniqueId } from '@/lib/utils';
 
 /**
  * Convert an HTML element to a canvas for PDF generation
+ * @param element HTML element to convert
+ * @returns Promise resolving to an HTMLCanvasElement
  */
 const convertElementToCanvas = async (element: HTMLElement): Promise<HTMLCanvasElement> => {
   return html2canvas(element, {
@@ -22,6 +24,8 @@ const convertElementToCanvas = async (element: HTMLElement): Promise<HTMLCanvasE
 
 /**
  * Creates the contract page in the PDF
+ * @param pdf jsPDF instance
+ * @param element HTML element to convert to PDF
  */
 export const createContractPage = async (pdf: jsPDF, element: HTMLElement): Promise<void> => {
   // Convert HTML to canvas
@@ -36,21 +40,14 @@ export const createContractPage = async (pdf: jsPDF, element: HTMLElement): Prom
 
 /**
  * Creates a second page with passport document
+ * @param pdf jsPDF instance
+ * @param contractData Contract data containing passport image and details
+ * @returns Boolean indicating success
  */
 export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise<boolean> => {
   try {
-    // Find passport/ID photo container
-    const passportElement = document.querySelector('.id-photo-container') as HTMLElement;
-    if (!passportElement) {
-      console.warn('No passport element found for second page');
-      return false;
-    }
-
     // Create a temporary container for the passport page
     const passportPageContainer = createPassportPageContainer(contractData);
-    
-    // Add a new page for the passport
-    pdf.addPage([210, 297], 'portrait');
     
     // Convert the passport page to canvas
     const canvas = await convertElementToCanvas(passportPageContainer);
@@ -71,6 +68,8 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
 
 /**
  * Creates the temporary container for the passport page
+ * @param contractData Contract data containing passport image and details
+ * @returns HTML element containing the passport page
  */
 const createPassportPageContainer = (contractData: any): HTMLElement => {
   // Create a temporary container for the passport page
@@ -84,7 +83,8 @@ const createPassportPageContainer = (contractData: any): HTMLElement => {
   
   // Add letterhead background if available
   if (contractData && contractData.letterhead) {
-    passportPageContainer.appendChild(createLetterheadBackground(contractData.letterhead));
+    const letterheadBg = createLetterheadBackground(contractData.letterhead);
+    passportPageContainer.appendChild(letterheadBg);
   }
   
   // Create content container
@@ -100,7 +100,9 @@ const createPassportPageContainer = (contractData: any): HTMLElement => {
 };
 
 /**
- * Creates letterhead background element
+ * Creates letterhead background element with full coverage
+ * @param letterheadSrc Source URL of the letterhead image
+ * @returns HTML element for the letterhead background
  */
 const createLetterheadBackground = (letterheadSrc: string): HTMLElement => {
   const letterheadBg = document.createElement('div');
@@ -120,6 +122,8 @@ const createLetterheadBackground = (letterheadSrc: string): HTMLElement => {
 
 /**
  * Creates content container for passport page
+ * @param contractData Contract data containing passport image and details
+ * @returns HTML element for the passport page content
  */
 const createPassportContentContainer = (contractData: any): HTMLElement => {
   const contentContainer = document.createElement('div');
@@ -134,44 +138,15 @@ const createPassportContentContainer = (contractData: any): HTMLElement => {
   contentContainer.style.alignItems = 'center';
   
   // Add title
-  const title = createPassportTitle();
-  contentContainer.appendChild(title);
-  
-  // Add passport image
-  const passportImageContainer = createPassportImageContainer();
-  contentContainer.appendChild(passportImageContainer);
-  
-  // Add reference number if available
-  if (contractData && contractData.refNumber) {
-    contentContainer.appendChild(createReferenceNumber(contractData.refNumber));
-  }
-  
-  // Add promoter details if available
-  if (contractData && contractData.promoter) {
-    contentContainer.appendChild(createPromoterDetails(contractData));
-  }
-  
-  return contentContainer;
-};
-
-/**
- * Creates passport title element
- */
-const createPassportTitle = (): HTMLElement => {
   const title = document.createElement('h1');
   title.textContent = 'Passport / جواز السفر';
   title.style.fontSize = '24px';
   title.style.marginBottom = '20mm';
   title.style.textAlign = 'center';
   title.style.width = '100%';
-  return title;
-};
-
-/**
- * Creates passport image container with image
- */
-const createPassportImageContainer = (): HTMLElement => {
-  // Create a container for the passport image
+  contentContainer.appendChild(title);
+  
+  // Add passport image
   const passportImageContainer = document.createElement('div');
   passportImageContainer.style.width = '100%';
   passportImageContainer.style.display = 'flex';
@@ -192,28 +167,36 @@ const createPassportImageContainer = (): HTMLElement => {
     passportImageContainer.appendChild(passportImage);
   }
   
-  return passportImageContainer;
-};
-
-/**
- * Creates reference number element
- */
-const createReferenceNumber = (refNumber: string): HTMLElement => {
-  const refNumberElement = document.createElement('div');
-  refNumberElement.className = 'reference-number';
-  refNumberElement.textContent = `Ref: ${refNumber}`;
-  refNumberElement.style.fontSize = '14px';
-  refNumberElement.style.marginBottom = '10mm';
-  refNumberElement.style.position = 'absolute';
-  refNumberElement.style.top = '10mm';
-  refNumberElement.style.left = '20mm';
-  return refNumberElement;
+  contentContainer.appendChild(passportImageContainer);
+  
+  // Add reference number if available
+  if (contractData && contractData.refNumber) {
+    const refNumberElement = document.createElement('div');
+    refNumberElement.className = 'reference-number';
+    refNumberElement.textContent = `Ref: ${contractData.refNumber}`;
+    refNumberElement.style.fontSize = '14px';
+    refNumberElement.style.marginBottom = '10mm';
+    refNumberElement.style.position = 'absolute';
+    refNumberElement.style.top = '10mm';
+    refNumberElement.style.left = '20mm';
+    contentContainer.appendChild(refNumberElement);
+  }
+  
+  // Add promoter details if available
+  if (contractData && contractData.promoter) {
+    const detailsContainer = createPromoterDetailsBlock(contractData);
+    contentContainer.appendChild(detailsContainer);
+  }
+  
+  return contentContainer;
 };
 
 /**
  * Creates promoter details container
+ * @param contractData Contract data containing promoter details
+ * @returns HTML element for the promoter details
  */
-const createPromoterDetails = (contractData: any): HTMLElement => {
+const createPromoterDetailsBlock = (contractData: any): HTMLElement => {
   const detailsContainer = document.createElement('div');
   detailsContainer.className = 'passport-details';
   detailsContainer.style.width = '80%';
@@ -224,24 +207,33 @@ const createPromoterDetails = (contractData: any): HTMLElement => {
   detailsContainer.style.borderRadius = '5px';
   detailsContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
   
+  // Format dates
+  const startDate = contractData.startDate?.en || contractData.startDate || '';
+  const endDate = contractData.endDate?.en || contractData.endDate || '';
+  
+  // Extract promoter name and ID
+  const promoterName = contractData.promoter?.name?.en || contractData.promoter?.name || 'N/A';
+  const promoterNameAr = contractData.promoter?.name?.ar || '';
+  const promoterId = contractData.promoter?.id?.en || contractData.promoter?.id || 'N/A';
+  const promoterIdAr = contractData.promoter?.id?.ar || '';
+  
   // Create promoter info in English and Arabic
-  const infoHTML = `
+  detailsContainer.innerHTML = `
     <div style="display: flex; justify-content: space-between;">
       <div style="width: 48%;">
-        <p><strong>Promoter Name:</strong> ${contractData.promoter.name?.en || 'N/A'}</p>
-        <p><strong>ID Number:</strong> ${contractData.promoter.id?.en || 'N/A'}</p>
-        <p><strong>From:</strong> ${contractData.startDate?.en || 'N/A'}</p>
-        <p><strong>To:</strong> ${contractData.endDate?.en || 'N/A'}</p>
+        <p><strong>Promoter Name:</strong> ${promoterName}</p>
+        <p><strong>ID Number:</strong> ${promoterId}</p>
+        <p><strong>From:</strong> ${startDate}</p>
+        <p><strong>To:</strong> ${endDate}</p>
       </div>
       <div style="width: 48%; text-align: right; direction: rtl;">
-        <p><strong>اسم المروج:</strong> ${contractData.promoter.name?.ar || 'N/A'}</p>
-        <p><strong>رقم الهوية:</strong> ${contractData.promoter.id?.ar || 'N/A'}</p>
-        <p><strong>من:</strong> ${contractData.startDate?.ar || 'N/A'}</p>
-        <p><strong>إلى:</strong> ${contractData.endDate?.ar || 'N/A'}</p>
+        <p><strong>اسم المروج:</strong> ${promoterNameAr || promoterName}</p>
+        <p><strong>رقم الهوية:</strong> ${promoterIdAr || promoterId}</p>
+        <p><strong>من:</strong> ${contractData.startDate?.ar || startDate}</p>
+        <p><strong>إلى:</strong> ${contractData.endDate?.ar || endDate}</p>
       </div>
     </div>
   `;
   
-  detailsContainer.innerHTML = infoHTML;
   return detailsContainer;
 };

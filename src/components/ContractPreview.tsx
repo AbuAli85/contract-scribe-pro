@@ -75,7 +75,7 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
       </div>
 
       <div className="a4-page" style={{ width: '210mm', height: '297mm', margin: '0', padding: '0', overflow: 'hidden', position: 'relative' }}>
-        {/* Letterhead background - Set to full page with proper positioning */}
+        {/* Letterhead background - Full page coverage with proper positioning */}
         {contractData.letterhead && (
           <img
             src={contractData.letterhead}
@@ -88,6 +88,8 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
               zIndex: 1,
               opacity: 0.8,
               margin: 0,
@@ -97,7 +99,7 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
           />
         )}
         
-        <div className="contract-content" style={{ position: 'relative', zIndex: 10, padding: '10mm', boxSizing: 'border-box' }}>
+        <div className="contract-content" style={{ position: 'relative', zIndex: 10, padding: '10mm', width: '100%', height: '100%', boxSizing: 'border-box' }}>
           {/* Reference number */}
           <ReferenceNumber refNumber={contractData.refNumber} />
 

@@ -91,39 +91,6 @@ const restoreAfterExport = (hiddenElements: NodeListOf<Element>) => {
 };
 
 /**
- * Convert an HTML element to a canvas for PDF generation
- */
-const convertElementToCanvas = async (element: HTMLElement): Promise<HTMLCanvasElement> => {
-  return html2canvas(element, {
-    scale: 2, // Higher scale for better quality
-    useCORS: true, // Allow images from other domains
-    logging: false,
-    allowTaint: true,
-    backgroundColor: '#ffffff'
-  });
-};
-
-/**
- * Create a new PDF document with proper settings
- */
-const createPDFDocument = (pageFormat: 'a4' | 'letter'): jsPDF => {
-  return new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: pageFormat,
-    compress: true
-  });
-};
-
-/**
- * Add an image to a PDF document with proper A4 sizing
- */
-const addImageToPDF = (pdf: jsPDF, imgData: string): void => {
-  // Add the image to fill the entire page without margins - exact A4 size
-  pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
-};
-
-/**
  * Show a success toast message
  */
 const showSuccessToast = (language: 'en' | 'ar'): void => {
@@ -174,13 +141,19 @@ export const exportToPDF = async (options: PDFExportOptions) => {
     const hiddenElements = prepareForExport(element as HTMLElement);
     
     // Create PDF with appropriate dimensions
-    const pdf = createPDFDocument(pageFormat);
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: pageFormat,
+      compress: true
+    });
     
     // Add the contract page
     await createContractPage(pdf, element as HTMLElement);
     
     // Add passport document as a second page if requested
-    if (includePassport) {
+    if (includePassport && contractData && contractData.promoterPhoto) {
+      pdf.addPage([210, 297], 'portrait');
       await createPassportPage(pdf, contractData);
     }
     

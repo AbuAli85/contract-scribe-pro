@@ -89,12 +89,38 @@
     opacity: 0.8 !important;
     margin: 0 !important;
     padding: 0 !important;
+    border: none !important;
   }
   
   /* Error message */
   .error-message {
     display: none !important;
     visibility: hidden !important;
+  }
+  
+  /* Passport page */
+  .passport-page {
+    page-break-before: always !important;
+    break-before: always !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    position: relative !important;
+  }
+  
+  /* Passport content */
+  .passport-content {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: 20mm !important;
+    height: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    z-index: 10 !important;
   }
 }
 
@@ -115,6 +141,7 @@ body.printing .a4-page {
   height: 297mm !important;
   margin: 0 !important;
   padding: 0 !important;
+  overflow: hidden !important;
 }
 
 /* Content positioning when printing class is active */
@@ -122,6 +149,9 @@ body.printing .contract-content {
   padding: 10mm !important;
   position: relative !important;
   z-index: 10 !important;
+  width: 100% !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
 }
 
 /* Letterhead background when printing class is active */
@@ -133,6 +163,12 @@ body.printing .letterhead-background {
   height: 100% !important;
   z-index: 1 !important;
   opacity: 0.8 !important;
+  object-fit: cover !important;
+  background-size: cover !important;
+  background-position: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
 }
 
 /* Error element - Hide during printing */
@@ -143,8 +179,26 @@ body.printing .error-message,
 }
 
 /* Passport page styles */
-body.printing .passport-page,
+body.printing .passport-page {
+  page-break-before: always !important;
+  break-before: always !important;
+  width: 210mm !important;
+  height: 297mm !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
 body.printing .passport-content {
-  display: block !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  padding: 20mm !important;
+  height: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  z-index: 10 !important;
   visibility: visible !important;
 }
