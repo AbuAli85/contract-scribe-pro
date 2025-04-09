@@ -24,17 +24,21 @@ const ContractContent: React.FC<ContractContentProps> = ({
       <ReferenceNumber refNumber={contractData.refNumber} />
 
       {/* Contract Title - Main title of document */}
-      <h1 className="contract-main-title text-2xl font-bold text-center text-blue-600 mb-8">
+      <h1 className="contract-main-title text-2xl font-bold text-center text-blue-700 mb-6">
         {language === "en" ? "Promoter Assignment Contract" : "عقد تعيين مروّج"}
       </h1>
 
       {/* ID Photo - Properly centered on page with improved sizing */}
       {contractData.promoterPhoto && (
-        <PromoterPhoto photoUrl={contractData.promoterPhoto} />
+        <PromoterPhoto 
+          photoUrl={contractData.promoterPhoto} 
+          type={contractData.documentType || 'id'} 
+          label={contractData.documentType === 'passport' ? 'Passport / جواز السفر' : 'ID Card / بطاقة الهوية'}
+        />
       )}
 
       {/* Two Column Layout - English and Arabic sides with proper spacing */}
-      <div className="two-column-layout flex justify-between gap-10 mb-10">
+      <div className="two-column-layout flex justify-between gap-8 mb-8">
         {/* Columns order based on language */}
         {language === "en" ? (
           <>
@@ -53,7 +57,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
       <SignatureArea signatures={signatures} />
       
       {/* Footer information with company details */}
-      <div className="bottom-info mt-10 pt-6 border-t border-gray-200 flex justify-between">
+      <div className="bottom-info mt-8 pt-4 border-t border-gray-200 flex justify-between">
         <div className="company-info text-xs text-gray-600">
           <div className="cr-info">
             <div className="cr-number mb-1 font-mono">CR: {contractData?.firstParty?.crn?.en || "1410869"}</div>

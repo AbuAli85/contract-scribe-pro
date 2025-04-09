@@ -35,11 +35,11 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
             top: 0,
             left: 0,
             width: '100%',
-            height: '30mm', // Specific height for the letterhead area
+            height: '40mm', // Increased height for better visibility
             backgroundImage: `url('${contractData.letterhead}')`,
             backgroundSize: 'cover',
             backgroundPosition: 'top center',
-            opacity: 0.07, // Reduced opacity for better readability
+            opacity: 0.08, // Reduced opacity for better readability
             zIndex: 1,
             margin: 0,
             padding: 0,
@@ -75,7 +75,7 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
         style={{ 
           position: 'relative',
           zIndex: 10,
-          padding: '35mm 20mm 20mm', // Increased top padding to accommodate letterhead
+          padding: '45mm 20mm 20mm', // Increased top padding to accommodate letterhead
           width: '100%',
           height: '100%',
           boxSizing: 'border-box',

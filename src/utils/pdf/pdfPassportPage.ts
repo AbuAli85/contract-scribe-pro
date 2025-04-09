@@ -28,155 +28,160 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
   // Generate reference number for second page
   const refNumber = contractData.refNumber || 'PAC-20250409-6996';
   
-  // Add passport content with improved layout
+  // Add passport content with improved layout and letterhead
   tempDiv.innerHTML = `
     <div style="
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
-      height: 30mm;
+      height: 40mm;
       background-image: url('${contractData.letterhead}');
       background-size: cover;
       background-position: top center;
-      opacity: 0.07;
+      opacity: 0.08;
       z-index: 1;
     "></div>
     
     <div style="
-      position: absolute;
-      top: 35mm;
-      left: 20mm;
-      font-family: monospace;
-      font-size: 12px;
-      font-weight: bold;
-      color: #444;
-      z-index: 10;
-      background-color: #f9f9f9;
-      border-radius: 4px;
-      padding: 6px 10px;
-      border-left: 3px solid #1a73e8;
-    ">
-      Reference Number: ${refNumber}
-    </div>
-    
-    <div style="
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      position: relative;
       padding: 45mm 20mm 20mm;
       height: 100%;
       box-sizing: border-box;
-      position: relative;
-      z-index: 5;
+      z-index: 10;
     ">
-      <div style="text-align: center; width: 100%; margin-bottom: 15mm;">
-        <h2 style="
-          font-size: 28px;
-          font-weight: bold;
-          color: #1a73e8;
-          margin-bottom: 5mm;
-          margin-top: 5mm;
-        ">Passport Document</h2>
-        <p style="
-          font-size: 18px;
-          color: #555;
-          text-align: center;
-        ">وثيقة جواز السفر</p>
+      <div style="
+        margin-bottom: 5mm;
+        padding: 2mm 4mm;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        border-left: 3px solid #1a73e8;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        position: relative;
+        z-index: 10;
+        font-family: monospace;
+        font-size: 12px;
+        font-weight: bold;
+        color: #444;
+      ">
+        <span style="font-weight: bold;">Reference Number:</span> ${refNumber}
       </div>
       
       <div style="
-        width: 100%;
         display: flex;
-        justify-content: center;
-        margin-bottom: 20mm;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
       ">
-        <div style="
-          width: 80%;
-          max-width: 140mm;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-          background: white;
-        ">
-          <img 
-            src="${contractData.promoterPhoto}" 
-            alt="Passport Document" 
-            style="
-              width: 100%;
-              height: auto;
-              object-fit: contain;
-              display: block;
-            "
-          />
-          <div style="
-            text-align: center;
-            padding: 8px;
-            background-color: #f9f9f9;
+        <div style="text-align: center; width: 100%; margin-bottom: 10mm;">
+          <h2 style="
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a73e8;
+            margin-bottom: 4mm;
+            margin-top: 2mm;
+          ">Passport Document</h2>
+          <p style="
+            font-size: 18px;
             color: #555;
-            font-size: 12px;
-            border-top: 1px solid #eee;
-          ">
-            Passport / جواز السفر
-          </div>
+            text-align: center;
+            margin-top: 0;
+          ">وثيقة جواز السفر</p>
         </div>
-      </div>
-      
-      <div style="
-        width: 80%;
-        margin: 0 auto;
-        border: 1px solid #eee;
-        border-radius: 8px;
-        padding: 15px 20px;
-        background-color: #fafafa;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      ">
-        <table style="
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 14px;
-        ">
-          <tr>
-            <td style="padding: 8px 12px; font-weight: bold; width: 40%;">Name:</td>
-            <td style="padding: 8px 12px;">${contractData.promoter?.name?.en || 'N/A'}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px 12px; font-weight: bold;">ID Number:</td>
-            <td style="padding: 8px 12px;">${contractData.promoter?.id?.en || 'N/A'}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px 12px; font-weight: bold;">Reference Number:</td>
-            <td style="padding: 8px 12px;">${refNumber}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px 12px; font-weight: bold;">Document Type:</td>
-            <td style="padding: 8px 12px;">Passport</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px 12px; font-weight: bold;">Date:</td>
-            <td style="padding: 8px 12px;">${new Date().toLocaleDateString()}</td>
-          </tr>
-        </table>
         
         <div style="
-          margin-top: 15px;
-          padding-top: 15px;
-          border-top: 1px dashed #ddd;
+          width: 100%;
           display: flex;
-          justify-content: space-between;
-          font-size: 12px;
-          color: #666;
+          justify-content: center;
+          margin-bottom: 15mm;
         ">
-          <div>
-            <div style="font-weight: bold; margin-bottom: 5px;">Company Information:</div>
-            <div>CR: ${contractData.firstParty?.crn?.en || "1410869"}</div>
-            <div>PO Box 762, PC-122 Al Khuwair, Bousher, Oman</div>
+          <div style="
+            width: 80%;
+            max-width: 130mm;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: white;
+          ">
+            <img 
+              src="${contractData.promoterPhoto}" 
+              alt="Passport Document" 
+              style="
+                width: 100%;
+                height: auto;
+                object-fit: contain;
+                display: block;
+              "
+            />
+            <div style="
+              text-align: center;
+              padding: 8px;
+              background-color: #f9f9f9;
+              color: #555;
+              font-size: 12px;
+              border-top: 1px solid #eee;
+            ">
+              Passport / جواز السفر
+            </div>
           </div>
-          <div style="text-align: right;">
-            <div style="font-weight: bold; margin-bottom: 5px;">Contact:</div>
-            <div>+968 9194 3449 / +968 9933 6958</div>
-            <div>www.falconeyegroup.net</div>
+        </div>
+        
+        <div style="
+          width: 80%;
+          margin: 0 auto;
+          border: 1px solid #eee;
+          border-radius: 8px;
+          padding: 15px 20px;
+          background-color: #fafafa;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        ">
+          <table style="
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+          ">
+            <tr>
+              <td style="padding: 8px 12px; font-weight: bold; width: 40%;">Name:</td>
+              <td style="padding: 8px 12px;">${contractData.promoter?.name?.en || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 12px; font-weight: bold;">ID Number:</td>
+              <td style="padding: 8px 12px;">${contractData.promoter?.id?.en || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 12px; font-weight: bold;">Reference Number:</td>
+              <td style="padding: 8px 12px;">${refNumber}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 12px; font-weight: bold;">Document Type:</td>
+              <td style="padding: 8px 12px;">Passport</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 12px; font-weight: bold;">Date:</td>
+              <td style="padding: 8px 12px;">${new Date().toLocaleDateString()}</td>
+            </tr>
+          </table>
+          
+          <div style="
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #ddd;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+          ">
+            <div>
+              <div style="font-weight: bold; margin-bottom: 5px;">Company Information:</div>
+              <div>CR: ${contractData.firstParty?.crn?.en || "1410869"}</div>
+              <div>PO Box 762, PC-122 Al Khuwair, Bousher, Oman</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: bold; margin-bottom: 5px;">Contact:</div>
+              <div>+968 9194 3449 / +968 9933 6958</div>
+              <div>www.falconeyegroup.net</div>
+            </div>
           </div>
         </div>
       </div>

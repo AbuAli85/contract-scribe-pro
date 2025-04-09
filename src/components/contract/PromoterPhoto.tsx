@@ -12,7 +12,7 @@ const PromoterPhoto = ({ photoUrl, type = 'id', label }: PromoterPhotoProps) => 
   const photoLabel = label || (type === 'passport' ? 'Passport / جواز السفر' : 'ID Card / بطاقة الهوية');
   
   return (
-    <div className="id-photo-container w-full flex flex-col items-center my-8">
+    <div className="id-photo-container w-full flex flex-col items-center my-6">
       <div className="id-photo-wrapper w-full max-w-md mx-auto border border-gray-200 rounded-md overflow-hidden shadow-md bg-white">
         <img
           src={photoUrl}
