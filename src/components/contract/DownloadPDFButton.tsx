@@ -47,12 +47,12 @@ const DownloadPDFButton = ({
       // Generate filename based on contract data
       const filename = `contract-${contractId}-${new Date().toISOString().slice(0, 10)}.pdf`;
       
-      // Export to PDF with enhanced settings
+      // Export to PDF with enhanced settings for full-page display
       await exportToPDF({
         selector: '.print-container',
         filename,
         language,
-        pageFormat: 'a4',
+        pageFormat: 'a4', // Use A4 format
         includePassport,
         onSuccess: () => {
           setIsExporting(false);

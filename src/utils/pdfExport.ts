@@ -42,7 +42,7 @@ const prepareForExport = (element: HTMLElement) => {
   if (content) {
     content.style.position = 'relative';
     content.style.zIndex = '10';
-    content.style.padding = '20mm';
+    content.style.padding = '15mm';
   }
 
   // Ensure the reference number is visible
@@ -71,11 +71,11 @@ const prepareForExport = (element: HTMLElement) => {
     signatureArea.style.marginTop = '25mm';
   }
 
-  // Set A4 page dimensions explicitly
+  // Set A4 page dimensions explicitly without margins
   const a4Page = element.querySelector('.a4-page') as HTMLElement;
   if (a4Page) {
     a4Page.style.width = '210mm';
-    a4Page.style.minHeight = '297mm';
+    a4Page.style.height = '297mm';
     a4Page.style.margin = '0';
     a4Page.style.padding = '0';
     a4Page.style.boxShadow = 'none';
@@ -180,11 +180,12 @@ export const exportToPDF = async (options: {
     // Hide UI elements and prepare for export
     const hiddenElements = prepareForExport(element as HTMLElement);
     
-    // Create PDF with appropriate dimensions
+    // Create PDF with appropriate dimensions (no margins)
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: pageFormat
+      format: pageFormat,
+      compress: true
     });
     
     // Convert HTML to canvas
@@ -196,12 +197,14 @@ export const exportToPDF = async (options: {
       backgroundColor: '#ffffff'
     });
     
-    // Add canvas image to PDF - using exact A4 dimensions
+    // Add canvas image to PDF - using exact A4 dimensions with no margins
     const imgData = canvas.toDataURL('image/png');
+    
+    // Get PDF dimensions in mm (A4 is 210x297mm)
     const pdfWidth = 210; // A4 width in mm
     const pdfHeight = 297; // A4 height in mm
     
-    // Add the image to fit perfectly on A4 page
+    // Add the image to fill the entire page without margins
     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
     
     // Look for a passport/ID document element to add as second page

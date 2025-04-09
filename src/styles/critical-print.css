@@ -48,14 +48,14 @@
   .contract-content {
     position: relative !important;
     z-index: 10 !important;
-    padding: 20mm !important;
+    padding: 15mm !important;
     margin: 0 !important;
   }
   
-  /* Page settings */
+  /* Page settings - ZERO margins for print */
   @page {
     size: A4 portrait;
-    margin: 0;
+    margin: 0mm;
   }
   
   /* Core body/html settings */
@@ -180,7 +180,7 @@ body.printing .letterhead-background {
 body.printing .contract-content {
   position: relative !important;
   z-index: 10 !important;
-  padding: 20mm !important;
+  padding: 15mm !important;
 }
 
 body.printing .two-column-layout {
