@@ -1,151 +1,120 @@
 
-/* Contract Content Visibility Styles */
+/* Content visibility for print */
 @media print {
-  /* Force visibility for all contract elements when printing */
-  .print-container *,
-  .contract-preview *,
-  .a4-page *,
-  .contract-content * {
-    visibility: visible !important;
-    display: inherit !important;
-    opacity: 1 !important;
-    color: black !important;
-    overflow: visible !important;
-  }
-  
-  /* Contract content positioning */
-  .contract-content {
-    width: 100% !important;
-    height: 100% !important;
-    padding: 42mm 20mm 20mm !important; /* Standardized top padding for letterhead */
-    box-sizing: border-box !important;
-    position: relative !important;
-    z-index: 10 !important;
-    display: block !important;
-    visibility: visible !important;
-    margin: 0 !important;
-    left: 0 !important;
-  }
-  
-  /* Letterhead background - full page coverage */
-  .letterhead-background {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 40mm !important;
-    object-fit: cover !important;
-    background-size: cover !important;
-    background-position: center top !important;
-    z-index: 1 !important;
-    opacity: 0.1 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    display: block !important;
-    visibility: visible !important;
-  }
-  
-  /* Critical elements that must display correctly */
-  .contract-main-title,
-  .contract-text,
+  /* Critical elements visibility */
+  .print-container,
+  .contract-preview,
+  .a4-page,
+  .contract-content,
+  .contract-title-area,
   .contract-title,
   .reference-section,
-  .id-photo-container,
-  .promoter-details,
-  .signature-area,
-  .responsibilities,
-  .info-row,
-  .best-regards,
-  .responsibilities-title,
   .reference-number,
+  .contract-main-title,
+  .id-photo-container,
+  .id-photo-wrapper,
+  .id-photo,
+  .two-column-layout,
   .contract-column,
-  .contract-title-area,
+  .contract-text,
+  .promoter-details,
+  .promoter-info,
+  .info-row,
+  .responsibilities,
+  .responsibilities-title,
+  .best-regards,
+  .signature-area,
   .signature-block,
   .signature-line,
   .signature-name,
-  .signature-image,
-  .promoter-info {
+  .bottom-info,
+  .company-info,
+  .contact-info,
+  .letterhead-background {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
+    left: 0 !important;
+    position: relative !important;
+  }
+  
+  /* Special handling for flex containers */
+  .two-column-layout,
+  .signature-area,
+  .bottom-info,
+  .info-row {
+    display: flex !important;
+  }
+  
+  /* Ensure second page break for passport */
+  .passport-page {
+    page-break-before: always !important;
+    break-before: always !important;
+  }
+  
+  /* Ensure columns maintain proper width */
+  .contract-column {
+    width: 48% !important;
+    max-width: 48% !important;
+    flex: 0 0 48% !important;
+  }
+  
+  /* Prevent content overflow */
+  .contract-content {
+    padding: 35mm 20mm 20mm !important; /* Adjusted padding to fit all content */
     overflow: visible !important;
+    height: auto !important;
   }
   
-  /* Fix for two-column layout in print view */
-  .two-column-layout {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    justify-content: space-between !important;
-    gap: 6mm !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    page-break-inside: avoid !important;
-  }
-  
-  /* Reference number visibility */
+  /* Ensure proper reference number positioning */
   .reference-section {
-    display: block !important;
-    visibility: visible !important;
-    margin-bottom: 4mm !important;
-    margin-top: 0 !important;
-    page-break-inside: avoid !important;
-    border-left: 4px solid #1a73e8 !important;
-    background-color: #f9f9f9 !important;
-    print-color-adjust: exact !important;
-    -webkit-print-color-adjust: exact !important;
+    margin-bottom: 2.8mm !important; /* Reduced margin as requested */
   }
   
-  /* Main title font */
-  .contract-main-title {
-    font-size: 24px !important;
-    font-weight: bold !important;
-    color: #1a73e8 !important;
-    text-align: center !important;
-    margin-bottom: 10mm !important;
-    page-break-after: avoid !important;
-    break-after: avoid !important;
-    display: block !important;
-  }
-  
-  /* ID Photo Container */
+  /* Ensure proper photo container spacing */
   .id-photo-container {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    width: 100% !important;
-    margin: 5mm 0 8mm 0 !important;
-    page-break-inside: avoid !important;
+    margin: 4mm 0 6mm 0 !important;
+  }
+
+  /* Ensure signature area fits on first page */
+  .signature-area {
+    margin-top: 8mm !important;
+    margin-bottom: 4mm !important;
+  }
+  
+  /* Ensure bottom info fits on first page */
+  .bottom-info {
+    margin-top: 6mm !important;
   }
 }
 
-/* Content positioning when printing class is active */
-body.printing .contract-content {
-  padding: 42mm 20mm 20mm !important;
-  position: relative !important;
-  z-index: 10 !important;
-  width: 100% !important;
-  height: 100% !important;
-  box-sizing: border-box !important;
-  margin: 0 !important;
-  left: 0 !important;
+/* Print class styles for immediate application */
+body.printing .print-container,
+body.printing .contract-preview,
+body.printing .a4-page,
+body.printing .contract-content,
+body.printing .reference-section,
+body.printing .contract-main-title,
+body.printing .id-photo-container,
+body.printing .two-column-layout,
+body.printing .signature-area,
+body.printing .bottom-info {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  overflow: visible !important;
 }
 
-/* Letterhead background when printing class is active */
-body.printing .letterhead-background {
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100% !important;
-  height: 40mm !important;
-  z-index: 1 !important;
-  opacity: 0.1 !important;
-  object-fit: cover !important;
-  background-size: cover !important;
-  background-position: center top !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
+/* Special handling for flex containers when printing class is active */
+body.printing .two-column-layout,
+body.printing .signature-area,
+body.printing .bottom-info,
+body.printing .info-row {
+  display: flex !important;
+}
+
+/* Fix for second page break */
+body.printing .passport-page {
+  page-break-before: always !important;
+  break-before: always !important;
 }

@@ -5,9 +5,9 @@ interface SignatureProps {
 
 const SignatureArea = ({ signatures = [] }: SignatureProps) => {
   return (
-    <div className="signature-area flex justify-between mt-6 pt-4 border-t border-gray-300">
+    <div className="signature-area flex justify-between mt-5 pt-3 border-t border-gray-300">
       <div className="signature-block flex-1 mr-8 text-center">
-        <div className="signature-line h-14 mb-3 flex items-center justify-center">
+        <div className="signature-line h-12 mb-2 flex items-center justify-center">
           {signatures && signatures[0] ? (
             <img 
               src={signatures[0].imageUrl} 
@@ -20,7 +20,7 @@ const SignatureArea = ({ signatures = [] }: SignatureProps) => {
       </div>
       
       <div className="signature-block flex-1 ml-8 text-center">
-        <div className="signature-line h-14 mb-3 flex items-center justify-center">
+        <div className="signature-line h-12 mb-2 flex items-center justify-center">
           {signatures && signatures[1] ? (
             <img 
               src={signatures[1].imageUrl} 

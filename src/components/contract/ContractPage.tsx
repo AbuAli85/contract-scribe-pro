@@ -74,7 +74,7 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children, pag
         style={{ 
           position: 'relative',
           zIndex: 10,
-          padding: pageType === 'passport' ? '35mm 20mm 20mm' : '35mm 20mm 20mm',
+          padding: pageType === 'passport' ? '30mm 20mm 20mm' : '30mm 20mm 20mm', /* Adjusted padding to fit content */
           width: '100%',
           height: '100%',
           boxSizing: 'border-box'

@@ -1,12 +1,11 @@
-
 /* Typography Styles */
 .contract-main-title {
   font-size: 24px;
   font-weight: bold;
   color: #1a73e8;
   text-align: center;
-  margin-bottom: 10mm;
-  margin-top: 5mm;
+  margin-bottom: 8mm;
+  margin-top: 4mm;
 }
 
 .contract-title {
@@ -80,8 +79,8 @@
 .promoter-details {
   background-color: #f9f9f9;
   border-radius: 4px;
-  padding: 8mm;
-  margin-bottom: 8mm;
+  padding: 6mm;
+  margin-bottom: 6mm;
   border-left: 3px solid #1a73e8;
 }
 
@@ -93,13 +92,13 @@
 .promoter-info {
   display: flex;
   flex-direction: column;
-  gap: 3mm;
+  gap: 2mm;
 }
 
 .info-row {
   display: flex;
-  gap: 5mm;
-  margin-bottom: 2mm;
+  gap: 4mm;
+  margin-bottom: 1.5mm;
 }
 
 .info-row strong {
@@ -111,8 +110,8 @@
 .signature-area {
   display: flex;
   justify-content: space-between;
-  margin-top: 15mm;
-  padding-top: 5mm;
+  margin-top: 12mm;
+  padding-top: 4mm;
 }
 
 .signature-block {
@@ -122,7 +121,7 @@
 }
 
 .signature-line {
-  height: 16mm;
+  height: 14mm;
   margin-bottom: 3mm;
   display: flex;
   justify-content: center;
@@ -139,8 +138,8 @@
 .bottom-info {
   display: flex;
   justify-content: space-between;
-  margin-top: 15mm;
-  padding-top: 4mm;
+  margin-top: 12mm;
+  padding-top: 3mm;
   border-top: 1px solid #eaeaea;
   font-size: 9px;
   color: #666;

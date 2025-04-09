@@ -19,7 +19,7 @@
   z-index: 10;
   width: 100%;
   height: 100%;
-  padding: 42mm 20mm 20mm; /* Adjusted top padding to accommodate letterhead */
+  padding: 38mm 20mm 20mm; /* Adjusted top padding to fit all content */
   box-sizing: border-box;
   margin: 0;
   left: 0;
@@ -47,7 +47,7 @@
   display: flex;
   justify-content: space-between;
   gap: 6mm;
-  margin-bottom: 10mm;
+  margin-bottom: 8mm;
   position: relative;
   z-index: 10;
   width: 100%;
@@ -59,7 +59,7 @@
 .contract-column {
   flex: 1;
   font-size: 11px;
-  line-height: 1.7; /* Improved line spacing */
+  line-height: 1.5; /* Improved line spacing for better fit */
   margin: 0;
   padding: 0;
 }
@@ -80,14 +80,14 @@
   justify-content: space-between;
   font-size: 8px;
   color: #666;
-  margin-top: 8mm;
+  margin-top: 6mm;
 }
 
 /* Reference Section */
 .reference-section {
   text-align: left;
   margin-top: 0;
-  margin-bottom: 4mm;
+  margin-bottom: 2.8mm; /* Reduced from 4mm to 2.8mm as requested */
   padding: 2mm 3mm;
   background-color: #f9f9f9;
   border-radius: 3px;
@@ -103,7 +103,7 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  margin: 5mm 0 8mm 0;
+  margin: 4mm 0 6mm 0; /* Reduced margins to fit better */
   position: relative;
   z-index: 10;
 }
@@ -129,8 +129,8 @@
 .signature-area {
   display: flex;
   justify-content: space-between;
-  margin-top: 10mm;
-  margin-bottom: 5mm;
+  margin-top: 8mm;
+  margin-bottom: 4mm;
   border-top: 1px solid #eaeaea;
   padding-top: 3mm;
 }
