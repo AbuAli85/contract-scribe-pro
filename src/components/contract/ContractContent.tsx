@@ -56,11 +56,13 @@ const ContractContent: React.FC<ContractContentProps> = ({
       {/* ID Photo (positioned at 3.2cm from top) */}
       {contractData.promoterPhoto && (
         <div className="id-photo-container">
-          <PromoterPhoto 
-            photoUrl={contractData.promoterPhoto} 
-            type={documentType}
-            label={documentLabel}
-          />
+          <div className="id-photo-wrapper">
+            <PromoterPhoto 
+              photoUrl={contractData.promoterPhoto} 
+              type={documentType}
+              label={documentLabel}
+            />
+          </div>
         </div>
       )}
 

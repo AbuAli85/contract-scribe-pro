@@ -86,12 +86,17 @@
     z-index: 10 !important;
   }
   
-  /* Prevent nested duplicates */
+  /* CRITICAL: Prevent nested duplicates */
   .print-container .print-container,
   .a4-page .a4-page,
-  .contract-content .contract-content {
+  .contract-content .contract-content,
+  .contract-preview .contract-preview,
+  .print-container-wrapper .print-container-wrapper {
     display: none !important;
     visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
   }
 }
 
@@ -168,10 +173,15 @@ body.printing .bottom-info {
   padding-top: 5mm !important;
 }
 
-/* Prevent nested duplicates when printing class is active */
+/* CRITICAL: Prevent nested duplicates when printing class is active */
 body.printing .print-container .print-container,
 body.printing .a4-page .a4-page,
-body.printing .contract-content .contract-content {
+body.printing .contract-content .contract-content,
+body.printing .contract-preview .contract-preview,
+body.printing .print-container-wrapper .print-container-wrapper {
   display: none !important;
   visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
 }

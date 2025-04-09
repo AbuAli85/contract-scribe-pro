@@ -138,12 +138,17 @@
     z-index: 10 !important;
   }
   
-  /* Prevent duplicated content */
+  /* CRITICAL: Prevent duplicated content */
   .print-container .print-container,
   .a4-page .a4-page,
-  .contract-content .contract-content {
+  .contract-content .contract-content,
+  .print-container-wrapper .print-container-wrapper,
+  .contract-preview .contract-preview {
     display: none !important;
     visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
   }
 }
 
@@ -161,12 +166,17 @@ body.printing .contract-content {
   margin: 0 !important;
 }
 
-/* Prevent duplicated content when printing class is active */
+/* CRITICAL: Prevent duplicated content when printing class is active */
 body.printing .print-container .print-container,
 body.printing .a4-page .a4-page,
-body.printing .contract-content .contract-content {
+body.printing .contract-content .contract-content,
+body.printing .print-container-wrapper .print-container-wrapper,
+body.printing .contract-preview .contract-preview {
   display: none !important;
   visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
 }
 
 /* A4 page specific settings when printing class is active */

@@ -24,7 +24,9 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
     if (!containerRef.current) return;
     
     // Add print-container class and data-testid
-    containerRef.current.classList.add('print-container');
+    if (!containerRef.current.classList.contains('print-container')) {
+      containerRef.current.classList.add('print-container');
+    }
     containerRef.current.setAttribute('data-testid', 'print-container');
     
     // Set up print container and critical styles
@@ -61,7 +63,7 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
   return (
     <div 
       ref={containerRef} 
-      className={`print-container ${className}`}
+      className={`print-container-wrapper ${className}`}
       data-testid="print-container"
     >
       {children}
