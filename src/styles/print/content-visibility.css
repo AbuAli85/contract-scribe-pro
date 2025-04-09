@@ -63,19 +63,30 @@
   
   /* Prevent content overflow */
   .contract-content {
-    padding: 30mm 20mm 20mm !important; /* Reduced top padding to fit all content */
+    padding: 15mm 20mm 20mm !important;
     overflow: visible !important;
     height: auto !important;
   }
   
   /* Ensure proper reference number positioning */
   .reference-section {
-    margin-bottom: 3.2mm !important; /* Updated margin as requested */
+    margin-top: 2.5cm !important;
+    margin-bottom: 3.2mm !important;
+  }
+  
+  /* Ensure proper title positioning */
+  .contract-main-title {
+    margin-top: 2.8cm !important;
   }
   
   /* Ensure proper photo container spacing */
   .id-photo-container {
-    margin: 3mm 0 5mm 0 !important; /* Reduced margins */
+    margin-top: 3.2cm !important;
+  }
+  
+  /* Ensure proper content positioning */
+  .two-column-layout {
+    margin-top: 3.5cm !important;
   }
 
   /* Ensure signature area fits on first page */
@@ -119,4 +130,20 @@ body.printing .info-row {
 body.printing .passport-page {
   page-break-before: always !important;
   break-before: always !important;
+}
+
+body.printing .reference-section {
+  margin-top: 2.5cm !important;
+}
+
+body.printing .contract-main-title {
+  margin-top: 2.8cm !important;
+}
+
+body.printing .id-photo-container {
+  margin-top: 3.2cm !important;
+}
+
+body.printing .two-column-layout {
+  margin-top: 3.5cm !important;
 }
