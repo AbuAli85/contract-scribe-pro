@@ -24,13 +24,13 @@ const ContractContent: React.FC<ContractContentProps> = ({
 
   return (
     <>
-      {/* Reference number at top with specified margin */}
+      {/* Reference number at top with specified positioning (2.5cm from top, left side) */}
       <ReferenceNumber refNumber={contractData.refNumber} />
 
-      {/* Contract Title - Main title of document */}
+      {/* Contract Title (2.8cm from top, centered) */}
       <ContractTitle language={language} />
 
-      {/* ID Photo centered with specified width */}
+      {/* ID Photo centered (3.2cm from top, width 400px) */}
       {contractData.promoterPhoto && (
         <PromoterPhoto 
           photoUrl={contractData.promoterPhoto} 
@@ -39,8 +39,8 @@ const ContractContent: React.FC<ContractContentProps> = ({
         />
       )}
 
-      {/* Two Column Layout - contract content with specified margin */}
-      <div className="two-column-layout flex justify-between gap-6 mb-2" style={{ marginTop: '3.5cm' }}>
+      {/* Two Column Layout - contract content (3.5cm from top) */}
+      <div className="two-column-layout flex justify-between gap-6 mb-2">
         {/* Columns order based on language */}
         {language === "en" ? (
           <>

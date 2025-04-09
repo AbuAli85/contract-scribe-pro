@@ -12,13 +12,13 @@ const PromoterPhoto = ({ photoUrl, type = 'id', label }: PromoterPhotoProps) => 
   const photoLabel = label || (type === 'passport' ? 'Passport / جواز السفر' : 'ID Card / بطاقة الهوية');
   
   return (
-    <div className="id-photo-container w-full flex flex-col items-center" style={{ marginTop: '3.2cm' }}>
+    <div className="id-photo-container w-full flex flex-col items-center">
       <div className="id-photo-wrapper mx-auto border border-gray-300 rounded-md overflow-hidden shadow-sm bg-white" style={{ width: '400px' }}>
         <div className="aspect-w-16 aspect-h-9 flex items-center justify-center">
           <img
             src={photoUrl}
             alt={type === 'passport' ? "Passport" : "Promoter ID"}
-            className="max-w-full max-h-full object-contain"
+            className="id-photo max-w-full max-h-full object-contain"
             loading="eager"
             crossOrigin="anonymous"
           />

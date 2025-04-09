@@ -19,7 +19,7 @@
   z-index: 10;
   width: 100%;
   height: 100%;
-  padding: 0 20mm 20mm;
+  padding: 0 20mm;
   box-sizing: border-box;
   margin: 0;
   left: 0;
@@ -42,69 +42,50 @@
   border: none;
 }
 
-/* Two Column Layout for Contract Text */
-.two-column-layout {
-  display: flex;
-  justify-content: space-between;
-  gap: 6mm;
-  margin-bottom: 6mm;
-  position: relative;
-  z-index: 10;
-  width: 100%;
-  margin-left: 0;
-  margin-right: 0;
-  padding: 0;
-}
-
-.contract-column {
-  flex: 1;
-  font-size: 11px;
-  line-height: 1.5;
-  margin: 0;
-  padding: 0;
-}
-
-.rtl {
-  direction: rtl;
-  text-align: right;
-  font-family: var(--font-cairo);
-}
-
-/* Bottom Information */
-.bottom-info {
-  position: relative;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  font-size: 8px;
-  color: #666;
-  margin-top: 4mm;
-}
-
 /* Reference Section */
 .reference-section {
+  position: absolute;
+  top: 2.5cm;
+  left: 1cm;
+  width: calc(100% - 2cm);
   text-align: left;
-  margin-top: 0;
-  margin-bottom: 3.2mm;
   padding: 2mm 3mm;
   background-color: #f9f9f9;
   border-radius: 3px;
   border-left: 2px solid #1a73e8;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  position: relative;
+  z-index: 10;
+  margin: 0;
+}
+
+/* Contract Title */
+.contract-title-area {
+  position: absolute;
+  top: 2.8cm;
+  left: 0;
+  width: 100%;
+  text-align: center;
   z-index: 10;
 }
 
-/* ID Photo Styles - Centered with proper margins */
+.contract-main-title {
+  text-align: center;
+  font-weight: bold;
+  color: #1a73e8;
+  margin: 0;
+  width: 100%;
+}
+
+/* ID Photo Styles - Centered with proper positioning */
 .id-photo-container {
+  position: absolute;
+  top: 3.2cm;
+  left: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  margin: 0 0 5mm 0;
-  position: relative;
+  margin: 0;
   z-index: 10;
 }
 
@@ -123,6 +104,33 @@
   width: 100%;
   height: auto;
   object-fit: contain;
+}
+
+/* Two Column Layout for Contract Text */
+.two-column-layout {
+  position: absolute;
+  top: 3.5cm;
+  left: 1cm;
+  width: calc(100% - 2cm);
+  display: flex;
+  justify-content: space-between;
+  gap: 6mm;
+  z-index: 10;
+  margin: 0;
+}
+
+.contract-column {
+  flex: 1;
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+}
+
+.rtl {
+  direction: rtl;
+  text-align: right;
+  font-family: var(--font-cairo);
 }
 
 /* Signature Area */
@@ -155,12 +163,14 @@
   font-weight: 500;
 }
 
-/* Contract Title */
-.contract-main-title {
-  text-align: center;
-  font-weight: bold;
-  color: #1a73e8;
-  margin-bottom: 5mm;
+/* Bottom Information */
+.bottom-info {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: #666;
+  margin-top: 4mm;
 }
 
 /* Special handling for print */
@@ -184,19 +194,24 @@
   }
   
   .reference-section {
-    margin-top: 2.5cm !important;
+    position: absolute !important;
+    top: 2.5cm !important;
+    left: 1cm !important;
   }
   
-  .contract-main-title {
-    margin-top: 2.8cm !important;
+  .contract-title-area {
+    position: absolute !important;
+    top: 2.8cm !important;
   }
   
   .id-photo-container {
-    margin-top: 3.2cm !important;
+    position: absolute !important;
+    top: 3.2cm !important;
   }
   
   .two-column-layout {
-    margin-top: 3.5cm !important;
+    position: absolute !important;
+    top: 3.5cm !important;
   }
   
   .passport-page {

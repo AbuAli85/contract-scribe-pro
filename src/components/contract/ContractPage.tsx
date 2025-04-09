@@ -74,7 +74,7 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children, pag
         style={{ 
           position: 'relative',
           zIndex: 10,
-          padding: '10mm 20mm 20mm',
+          padding: '0 20mm',
           width: '100%',
           height: '100%',
           boxSizing: 'border-box'

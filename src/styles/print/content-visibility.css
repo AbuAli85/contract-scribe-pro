@@ -63,30 +63,56 @@
   
   /* Prevent content overflow */
   .contract-content {
-    padding: 15mm 20mm 20mm !important;
+    padding: 0 20mm !important; /* Remove top padding as we're positioning elements absolutely */
     overflow: visible !important;
     height: auto !important;
+    position: relative !important;
   }
   
-  /* Ensure proper reference number positioning */
+  /* Ensure proper reference number positioning - exactly 2.5cm from top */
   .reference-section {
-    margin-top: 2.5cm !important;
-    margin-bottom: 3.2mm !important;
+    position: absolute !important;
+    top: 2.5cm !important;
+    left: 1cm !important;
+    margin: 0 !important;
+    width: calc(100% - 2cm) !important;
+    z-index: 10 !important;
   }
   
-  /* Ensure proper title positioning */
+  /* Ensure proper title positioning - exactly 2.8cm from top */
+  .contract-title-area {
+    position: absolute !important;
+    top: 2.8cm !important;
+    left: 0 !important;
+    width: 100% !important;
+    text-align: center !important;
+    z-index: 10 !important;
+  }
+  
   .contract-main-title {
-    margin-top: 2.8cm !important;
+    margin: 0 !important;
+    width: 100% !important;
+    text-align: center !important;
   }
   
-  /* Ensure proper photo container spacing */
+  /* Ensure proper photo container spacing - exactly 3.2cm from top */
   .id-photo-container {
-    margin-top: 3.2cm !important;
+    position: absolute !important;
+    top: 3.2cm !important;
+    left: 0 !important;
+    width: 100% !important;
+    z-index: 10 !important;
+    margin: 0 !important;
   }
   
-  /* Ensure proper content positioning */
+  /* Ensure proper content positioning - exactly 3.5cm from top */
   .two-column-layout {
-    margin-top: 3.5cm !important;
+    position: absolute !important;
+    top: 3.5cm !important;
+    width: calc(100% - 2cm) !important;
+    left: 1cm !important;
+    margin: 0 !important;
+    z-index: 10 !important;
   }
 
   /* Ensure signature area fits on first page */
@@ -98,6 +124,21 @@
   /* Ensure bottom info fits on first page */
   .bottom-info {
     margin-top: 4mm !important;
+  }
+  
+  /* Letterhead background covers entire page */
+  .letterhead-background {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 210mm !important; /* Full A4 width */
+    height: 297mm !important; /* Full A4 height */
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 1 !important;
+    object-fit: cover !important;
+    background-size: cover !important;
+    background-position: center !important;
   }
 }
 
@@ -132,18 +173,48 @@ body.printing .passport-page {
   break-before: always !important;
 }
 
+/* Apply absolute positioning when printing class is active too */
 body.printing .reference-section {
-  margin-top: 2.5cm !important;
+  position: absolute !important;
+  top: 2.5cm !important;
+  left: 1cm !important;
+  margin: 0 !important;
+  width: calc(100% - 2cm) !important;
+}
+
+body.printing .contract-title-area {
+  position: absolute !important;
+  top: 2.8cm !important;
+  left: 0 !important;
+  width: 100% !important;
+  text-align: center !important;
 }
 
 body.printing .contract-main-title {
-  margin-top: 2.8cm !important;
+  margin: 0 !important;
 }
 
 body.printing .id-photo-container {
-  margin-top: 3.2cm !important;
+  position: absolute !important;
+  top: 3.2cm !important;
+  left: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
 }
 
 body.printing .two-column-layout {
-  margin-top: 3.5cm !important;
+  position: absolute !important;
+  top: 3.5cm !important;
+  width: calc(100% - 2cm) !important;
+  left: 1cm !important;
+  margin: 0 !important;
+}
+
+body.printing .letterhead-background {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 210mm !important;
+  height: 297mm !important;
+  z-index: 1 !important;
 }
