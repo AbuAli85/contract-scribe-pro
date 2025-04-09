@@ -28,9 +28,7 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
     >
       {/* Letterhead background */}
       {contractData.letterhead && (
-        <img
-          src={contractData.letterhead}
-          alt="Letterhead"
+        <div
           className="letterhead-background"
           style={{
             position: 'absolute',
@@ -38,11 +36,11 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
             left: 0,
             width: '100%',
             height: '100%',
-            objectFit: 'cover',
+            backgroundImage: `url('${contractData.letterhead}')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            zIndex: 1,
             opacity: 0.07, // Reduced opacity for better readability
+            zIndex: 1,
             margin: 0,
             padding: 0,
             border: 'none'
@@ -77,7 +75,7 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
         style={{ 
           position: 'relative',
           zIndex: 10,
-          padding: '15mm',
+          padding: '20mm',
           width: '100%',
           height: '100%',
           boxSizing: 'border-box',

@@ -20,23 +20,21 @@ const ContractContent: React.FC<ContractContentProps> = ({
 }) => {
   return (
     <>
-      {/* Reference number */}
+      {/* Reference number - with improved styling */}
       <ReferenceNumber refNumber={contractData.refNumber} />
 
       {/* Contract Title - Main title of document */}
-      <h1 className="contract-main-title">
+      <h1 className="contract-main-title text-2xl font-bold text-center text-blue-600 mb-10">
         {language === "en" ? "Promoter Assignment Contract" : "عقد تعيين مروّج"}
       </h1>
 
-      {/* ID Photo - Centered on page */}
+      {/* ID Photo - Properly centered on page */}
       {contractData.promoterPhoto && (
-        <div className="flex justify-center mb-6">
-          <PromoterPhoto photoUrl={contractData.promoterPhoto} />
-        </div>
+        <PromoterPhoto photoUrl={contractData.promoterPhoto} />
       )}
 
-      {/* Two Column Layout - English and Arabic sides */}
-      <div className="two-column-layout">
+      {/* Two Column Layout - English and Arabic sides with proper spacing */}
+      <div className="two-column-layout flex justify-between gap-10 mb-12">
         {/* Columns order based on language */}
         {language === "en" ? (
           <>

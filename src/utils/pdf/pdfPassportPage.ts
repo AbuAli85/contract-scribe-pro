@@ -25,40 +25,102 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
   tempDiv.style.left = '-9999px';
   tempDiv.style.backgroundColor = 'white';
   
-  // Add passport content
+  // Add passport content with improved layout
   tempDiv.innerHTML = `
-    <div class="passport-content">
-      <div class="passport-header">
+    <div class="passport-content" style="
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 30mm 20mm;
+      height: 100%;
+      box-sizing: border-box;
+      position: relative;
+    ">
+      <div style="text-align: center; width: 100%; margin-bottom: 20mm;">
         <h2 style="
-          font-size: 24px;
+          font-size: 28px;
           font-weight: bold;
           color: #1a73e8;
-          text-align: center;
-          margin-bottom: 15mm;
+          margin-bottom: 5mm;
         ">Identification Document</h2>
+        <p style="
+          font-size: 14px;
+          color: #555;
+        ">وثيقة الهوية</p>
       </div>
-      <div class="passport-image-container">
-        <img 
-          src="${contractData.promoterPhoto}" 
-          alt="Identification Document" 
-          class="passport-image"
-          style="
-            width: 100%;
-            height: auto;
-            object-fit: contain;
-          "
-        />
-      </div>
+      
       <div style="
-        margin-top: 15mm;
-        text-align: center;
-        font-size: 14px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20mm;
+      ">
+        <div style="
+          width: 80%;
+          max-width: 500px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        ">
+          <img 
+            src="${contractData.promoterPhoto}" 
+            alt="Identification Document" 
+            style="
+              width: 100%;
+              height: auto;
+              object-fit: contain;
+              display: block;
+            "
+          />
+        </div>
+      </div>
+      
+      <div style="
+        width: 80%;
+        margin: 0 auto;
+        border-top: 1px solid #eee;
+        padding-top: 15mm;
+      ">
+        <table style="
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 14px;
+        ">
+          <tr>
+            <td style="padding: 6px 12px; font-weight: bold; text-align: right; width: 40%;">Name:</td>
+            <td style="padding: 6px 12px;">${contractData.promoter?.name?.en || 'N/A'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 12px; font-weight: bold; text-align: right;">ID Number:</td>
+            <td style="padding: 6px 12px;">${contractData.promoter?.id?.en || 'N/A'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 12px; font-weight: bold; text-align: right;">Reference Number:</td>
+            <td style="padding: 6px 12px;">${contractData.refNumber || 'PAC-20250409-9597'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 12px; font-weight: bold; text-align: right;">Document Type:</td>
+            <td style="padding: 6px 12px;">Identification</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 12px; font-weight: bold; text-align: right;">Date:</td>
+            <td style="padding: 6px 12px;">${new Date().toLocaleDateString()}</td>
+          </tr>
+        </table>
+      </div>
+      
+      <!-- Reference number on the top corner -->
+      <div style="
+        position: absolute;
+        top: 15mm;
+        left: 15mm;
+        font-size: 12px;
+        font-family: monospace;
         color: #555;
       ">
-        <p><strong>Name:</strong> ${contractData.promoterName || 'N/A'}</p>
-        <p><strong>Reference Number:</strong> ${contractData.refNumber || 'N/A'}</p>
-        <p><strong>Document Type:</strong> Identification</p>
-        <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+        Ref: ${contractData.refNumber || 'PAC-20250409-9597'}
       </div>
     </div>
   `;
