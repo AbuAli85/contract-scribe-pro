@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { FileDown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { exportToPDF } from '@/utils/pdfExport';
+import { exportToPDF } from '@/utils/pdf'; // Updated import path
 import { setupPrintContainer } from '@/utils/print-container';
 
 interface DownloadPDFButtonProps {
