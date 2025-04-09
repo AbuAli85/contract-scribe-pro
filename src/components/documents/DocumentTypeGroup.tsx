@@ -1,4 +1,3 @@
-
 import { FileBadge, FileImage, FileText, File } from "lucide-react";
 import { type AttachedDocument, type DocumentType } from "@/lib/documents";
 import { DocumentItem } from "./DocumentItem";
@@ -6,8 +5,8 @@ import { DocumentItem } from "./DocumentItem";
 interface DocumentTypeGroupProps {
   type: DocumentType;
   documents: AttachedDocument[];
-  onDocumentDeleted: () => Promise<void>;
-  onDocumentUpdated: () => Promise<void>;
+  onDocumentDeleted: (id: string) => Promise<void>;
+  onDocumentUpdated: (id: string) => Promise<void>;
 }
 
 export function DocumentTypeGroup({ type, documents, onDocumentDeleted, onDocumentUpdated }: DocumentTypeGroupProps) {
@@ -23,8 +22,8 @@ export function DocumentTypeGroup({ type, documents, onDocumentDeleted, onDocume
           <DocumentItem 
             key={doc.id} 
             document={doc} 
-            onDelete={onDocumentDeleted} 
-            onUpdate={onDocumentUpdated} 
+            onDelete={() => onDocumentDeleted(doc.id)} 
+            onUpdate={() => onDocumentUpdated(doc.id)} 
           />
         ))}
       </div>
