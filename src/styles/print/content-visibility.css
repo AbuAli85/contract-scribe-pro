@@ -52,39 +52,41 @@
     break-before: always !important;
   }
   
-  /* Ensure columns maintain proper width */
+  /* Ensure columns maintain proper width and spacing */
   .contract-column {
     width: 48% !important;
     max-width: 48% !important;
     flex: 0 0 48% !important;
+    font-size: 10.5px !important; /* Slightly reduced font size */
+    line-height: 1.4 !important; /* Tighter line height */
   }
   
   /* Prevent content overflow */
   .contract-content {
-    padding: 35mm 20mm 20mm !important; /* Adjusted padding to fit all content */
+    padding: 30mm 20mm 20mm !important; /* Reduced top padding to fit all content */
     overflow: visible !important;
     height: auto !important;
   }
   
   /* Ensure proper reference number positioning */
   .reference-section {
-    margin-bottom: 2.8mm !important; /* Reduced margin as requested */
+    margin-bottom: 3.2mm !important; /* Updated margin as requested */
   }
   
   /* Ensure proper photo container spacing */
   .id-photo-container {
-    margin: 4mm 0 6mm 0 !important;
+    margin: 3mm 0 5mm 0 !important; /* Reduced margins */
   }
 
   /* Ensure signature area fits on first page */
   .signature-area {
-    margin-top: 8mm !important;
-    margin-bottom: 4mm !important;
+    margin-top: 6mm !important;
+    margin-bottom: 3mm !important;
   }
   
   /* Ensure bottom info fits on first page */
   .bottom-info {
-    margin-top: 6mm !important;
+    margin-top: 4mm !important;
   }
 }
 

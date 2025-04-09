@@ -19,7 +19,7 @@
   z-index: 10;
   width: 100%;
   height: 100%;
-  padding: 38mm 20mm 20mm; /* Adjusted top padding to fit all content */
+  padding: 35mm 20mm 20mm; /* Reduced top padding to fit content better */
   box-sizing: border-box;
   margin: 0;
   left: 0;
@@ -47,7 +47,7 @@
   display: flex;
   justify-content: space-between;
   gap: 6mm;
-  margin-bottom: 8mm;
+  margin-bottom: 6mm; /* Reduced from 8mm to 6mm */
   position: relative;
   z-index: 10;
   width: 100%;
@@ -80,14 +80,14 @@
   justify-content: space-between;
   font-size: 8px;
   color: #666;
-  margin-top: 6mm;
+  margin-top: 4mm; /* Reduced from 6mm to 4mm */
 }
 
 /* Reference Section */
 .reference-section {
   text-align: left;
   margin-top: 0;
-  margin-bottom: 2.8mm; /* Reduced from 4mm to 2.8mm as requested */
+  margin-bottom: 3.2mm; /* Updated from 2.8mm to 3.2mm as requested */
   padding: 2mm 3mm;
   background-color: #f9f9f9;
   border-radius: 3px;
@@ -103,7 +103,7 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  margin: 4mm 0 6mm 0; /* Reduced margins to fit better */
+  margin: 3mm 0 5mm 0; /* Reduced margins to fit better */
   position: relative;
   z-index: 10;
 }
@@ -129,8 +129,8 @@
 .signature-area {
   display: flex;
   justify-content: space-between;
-  margin-top: 8mm;
-  margin-bottom: 4mm;
+  margin-top: 6mm; /* Reduced from 8mm to 6mm */
+  margin-bottom: 3mm; /* Reduced from 4mm to 3mm */
   border-top: 1px solid #eaeaea;
   padding-top: 3mm;
 }
@@ -142,7 +142,7 @@
 }
 
 .signature-line {
-  min-height: 15mm;
+  min-height: 14mm; /* Reduced from 15mm to 14mm */
   border-bottom: 1px solid #ddd;
   margin-bottom: 2mm;
   display: flex;

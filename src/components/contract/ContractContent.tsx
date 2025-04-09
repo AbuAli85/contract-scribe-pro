@@ -24,15 +24,15 @@ const ContractContent: React.FC<ContractContentProps> = ({
 
   return (
     <>
-      {/* Reference number - positioned higher on the page */}
+      {/* Reference number with updated margin */}
       <ReferenceNumber refNumber={contractData.refNumber} />
 
       {/* Contract Title - Main title of document */}
-      <h1 className="contract-main-title text-xl font-bold text-center text-blue-700 mb-3">
+      <h1 className="contract-main-title text-xl font-bold text-center text-blue-700 mb-2">
         {language === "en" ? "Promoter Assignment Contract" : "عقد تعيين مروّج"}
       </h1>
 
-      {/* ID Photo - with reduced spacing */}
+      {/* ID Photo with reduced spacing */}
       {contractData.promoterPhoto && (
         <PromoterPhoto 
           photoUrl={contractData.promoterPhoto} 
@@ -42,7 +42,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
       )}
 
       {/* Two Column Layout - properly aligned columns */}
-      <div className="two-column-layout flex justify-between gap-6 mb-3">
+      <div className="two-column-layout flex justify-between gap-6 mb-2">
         {/* Columns order based on language */}
         {language === "en" ? (
           <>
@@ -60,8 +60,8 @@ const ContractContent: React.FC<ContractContentProps> = ({
       {/* Signature Area with reduced spacing */}
       <SignatureArea signatures={signatures} />
       
-      {/* Footer information with company details - reduced top margin */}
-      <div className="bottom-info mt-4 pt-3 border-t border-gray-200 flex justify-between">
+      {/* Footer information with reduced top margin */}
+      <div className="bottom-info mt-3 pt-2 border-t border-gray-200 flex justify-between text-xs">
         <div className="company-info text-xs text-gray-600">
           <div className="cr-info">
             <div className="cr-number mb-1 font-mono">CR: {contractData?.firstParty?.crn?.en || "1410869"}</div>
