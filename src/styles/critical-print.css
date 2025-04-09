@@ -14,7 +14,8 @@
   .signature-block,
   .id-photo-container,
   .reference-section,
-  .contract-title {
+  .contract-title,
+  .contract-main-title {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
@@ -26,10 +27,10 @@
   .two-column-layout {
     display: flex !important;
     justify-content: space-between !important;
-    gap: 10mm !important;
+    gap: 15mm !important;
   }
   
-  /* Letterhead background - Ensure it covers full page */
+  /* Letterhead background - Ensure it covers full page with reduced opacity */
   .letterhead-background {
     position: absolute !important;
     top: 0 !important;
@@ -38,7 +39,7 @@
     height: 100% !important;
     object-fit: cover !important;
     z-index: 1 !important;
-    opacity: 0.8 !important;
+    opacity: 0.05 !important;
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
@@ -72,7 +73,7 @@
   .a4-page {
     width: 210mm !important;
     height: 297mm !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     box-shadow: none !important;
     position: relative !important;
@@ -96,21 +97,32 @@
     display: flex !important;
     justify-content: center !important;
     width: 100% !important;
-    margin-bottom: 20px !important;
+    margin-bottom: 15px !important;
   }
   
   .id-photo-wrapper {
-    width: 400px !important;
+    width: 350px !important;
     max-width: 100% !important;
     margin: 0 auto !important;
     border: 1px solid #ddd !important;
+    border-radius: 4px !important;
     overflow: hidden !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
   }
   
   .id-photo {
     width: 100% !important;
     height: auto !important;
     object-fit: contain !important;
+  }
+  
+  /* Main title */
+  .contract-main-title {
+    font-size: 20px !important;
+    margin-bottom: 10mm !important;
+    text-align: center !important;
+    font-weight: bold !important;
+    color: black !important;
   }
   
   /* Ensure signature area displays properly */
@@ -124,14 +136,14 @@
   .reference-number {
     display: block !important;
     visibility: visible !important;
-    margin-bottom: 15mm !important;
+    margin-bottom: 10mm !important;
   }
   
   /* Contract columns */
   .contract-column {
     flex: 1 !important;
     font-size: 11px !important;
-    line-height: 1.5 !important;
+    line-height: 1.6 !important;
   }
   
   /* Contract text and related elements */
@@ -160,7 +172,8 @@ body.printing .a4-page,
 body.printing .contract-content,
 body.printing .letterhead-background,
 body.printing .two-column-layout,
-body.printing .contract-column {
+body.printing .contract-column,
+body.printing .contract-main-title {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -174,7 +187,7 @@ body.printing .letterhead-background {
   height: 100% !important;
   object-fit: cover !important;
   z-index: 1 !important;
-  opacity: 0.8 !important;
+  opacity: 0.05 !important; /* Reduced opacity for better readability */
 }
 
 body.printing .contract-content {
@@ -186,5 +199,5 @@ body.printing .contract-content {
 body.printing .two-column-layout {
   display: flex !important;
   justify-content: space-between !important;
-  gap: 10mm !important;
+  gap: 15mm !important;
 }

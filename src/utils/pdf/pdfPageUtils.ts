@@ -29,6 +29,12 @@ export const convertElementToCanvas = async (element: HTMLElement): Promise<HTML
         clonedElement.style.position = 'relative';
         clonedElement.style.left = '0'; // Ensure no left offset
         
+        // Ensure letterhead has proper opacity for PDF
+        const letterhead = clonedElement.querySelector('.letterhead-background');
+        if (letterhead instanceof HTMLElement) {
+          letterhead.style.opacity = '0.07'; // Adjust opacity for PDF
+        }
+        
         // Make sure all child elements are visible
         const allElements = clonedElement.querySelectorAll('*');
         allElements.forEach(el => {
@@ -36,6 +42,14 @@ export const convertElementToCanvas = async (element: HTMLElement): Promise<HTML
             el.style.visibility = 'visible';
             el.style.display = el.tagName.toLowerCase() === 'div' ? 'block' : '';
             el.style.opacity = '1';
+            
+            // Ensure text is black for better readability in PDF
+            if (el.classList.contains('contract-text') || 
+                el.classList.contains('contract-title') ||
+                el.classList.contains('info-row') ||
+                el.classList.contains('contract-main-title')) {
+              el.style.color = '#000000';
+            }
             
             // Remove any left margin or padding that might cause spacing
             if (el.classList.contains('contract-content')) {
@@ -63,17 +77,19 @@ export const convertElementToCanvas = async (element: HTMLElement): Promise<HTML
             if (container instanceof HTMLElement) {
               container.style.display = 'flex';
               container.style.justifyContent = 'center';
-              container.style.margin = '15mm 0';
+              container.style.margin = '10mm 0';
               container.style.width = '100%';
             }
             
             const wrapper = img.closest('.id-photo-wrapper');
             if (wrapper instanceof HTMLElement) {
-              wrapper.style.width = '400px';
+              wrapper.style.width = '350px';
               wrapper.style.maxWidth = '100%';
               wrapper.style.margin = '0 auto';
               wrapper.style.border = '1px solid #ddd';
+              wrapper.style.borderRadius = '4px';
               wrapper.style.overflow = 'hidden';
+              wrapper.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
             }
             
             img.style.width = '100%';
@@ -81,28 +97,6 @@ export const convertElementToCanvas = async (element: HTMLElement): Promise<HTML
             img.style.objectFit = 'contain';
           }
         });
-        
-        // Make sure the letterhead is positioned correctly
-        const letterhead = clonedElement.querySelector('.letterhead-background');
-        if (letterhead instanceof HTMLElement) {
-          letterhead.style.position = 'absolute';
-          letterhead.style.top = '0';
-          letterhead.style.left = '0';
-          letterhead.style.width = '100%';
-          letterhead.style.height = '100%';
-          letterhead.style.zIndex = '1';
-        }
-        
-        // Make sure content is positioned on top
-        const content = clonedElement.querySelector('.contract-content');
-        if (content instanceof HTMLElement) {
-          content.style.position = 'relative';
-          content.style.zIndex = '10';
-          content.style.padding = '10mm'; // Adjusted for consistent padding on all sides
-          content.style.width = '100%';
-          content.style.margin = '0';
-          content.style.boxSizing = 'border-box';
-        }
       }
     }
   });

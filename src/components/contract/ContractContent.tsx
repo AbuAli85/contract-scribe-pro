@@ -23,21 +23,18 @@ const ContractContent: React.FC<ContractContentProps> = ({
       {/* Reference number */}
       <ReferenceNumber refNumber={contractData.refNumber} />
 
-      {/* ID Photo */}
-      <PromoterPhoto photoUrl={contractData.promoterPhoto} />
+      {/* Contract Title - Main title of document */}
+      <h1 className="contract-main-title">
+        {language === "en" ? "Promoter Assignment Contract" : "عقد تعيين مروّج"}
+      </h1>
 
-      {/* Contract Title */}
-      <ContractTitle language={language} />
+      {/* ID Photo - If provided */}
+      {contractData.promoterPhoto && (
+        <PromoterPhoto photoUrl={contractData.promoterPhoto} />
+      )}
 
       {/* Two Column Layout - English and Arabic sides */}
-      <div 
-        className="two-column-layout"
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          gap: '10mm'
-        }}
-      >
+      <div className="two-column-layout">
         {/* Columns order based on language */}
         {language === "en" ? (
           <>

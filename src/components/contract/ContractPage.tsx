@@ -7,18 +7,21 @@ interface ContractPageProps {
 }
 
 const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) => {
+  // Generate a watermark if the contract is in draft status
+  const isDraft = contractData.status === 'draft';
+  
   return (
     <div 
-      className="a4-page" 
+      className="a4-page"
       style={{ 
-        width: '210mm', 
-        height: '297mm', 
-        margin: '0', 
-        padding: '0', 
-        overflow: 'hidden', 
+        width: '210mm',
+        height: '297mm',
+        margin: '0 auto',
+        padding: '0',
+        overflow: 'hidden',
         position: 'relative',
         boxSizing: 'border-box',
-        boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 0 15px rgba(0, 0, 0, 0.15)',
         background: 'white',
         left: '0'
       }}
@@ -39,7 +42,7 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             zIndex: 1,
-            opacity: 0.8,
+            opacity: 0.07, // Reduced opacity for better readability
             margin: 0,
             padding: 0,
             border: 'none'
@@ -47,14 +50,36 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
         />
       )}
       
+      {/* Draft watermark if applicable */}
+      {isDraft && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%) rotate(-45deg)',
+            fontSize: '80px',
+            fontWeight: 'bold',
+            color: 'rgba(220, 53, 69, 0.1)',
+            zIndex: 5,
+            pointerEvents: 'none',
+            userSelect: 'none',
+            textTransform: 'uppercase',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          {contractData.language === 'ar' ? 'مسودة' : 'DRAFT'}
+        </div>
+      )}
+      
       <div 
-        className="contract-content" 
+        className="contract-content"
         style={{ 
-          position: 'relative', 
-          zIndex: 10, 
-          padding: '10mm', 
-          width: '100%', 
-          height: '100%', 
+          position: 'relative',
+          zIndex: 10,
+          padding: '15mm',
+          width: '100%',
+          height: '100%',
           boxSizing: 'border-box',
           margin: '0'
         }}

@@ -10,6 +10,7 @@ interface ContractFormSectionProps {
   optional?: boolean;
   badge?: string;
   className?: string;
+  badgeVariant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info";
 }
 
 const ContractFormSection = ({
@@ -19,6 +20,7 @@ const ContractFormSection = ({
   optional = false,
   badge,
   className,
+  badgeVariant = "outline"
 }: ContractFormSectionProps) => {
   return (
     <Card className={className}>
@@ -33,7 +35,7 @@ const ContractFormSection = ({
             )}
           </CardTitle>
           {badge && (
-            <Badge variant="outline" className="font-normal">
+            <Badge variant={badgeVariant} className="font-normal">
               {badge}
             </Badge>
           )}

@@ -3,7 +3,7 @@ import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Control } from "react-hook-form";
-import { Building, User } from "lucide-react";
+import { Building, Briefcase, User, UserCheck } from "lucide-react";
 
 interface ContractPartySelectorProps {
   control: Control<any>;
@@ -13,7 +13,7 @@ interface ContractPartySelectorProps {
   options: string[];
   required?: boolean;
   disabled?: boolean;
-  icon?: "client" | "employer" | "promoter";
+  icon?: "client" | "employer" | "promoter" | "company";
 }
 
 const ContractPartySelector = ({
@@ -31,9 +31,11 @@ const ContractPartySelector = ({
       case "client":
         return <Building className="h-4 w-4 mr-2 text-primary" />;
       case "employer":
-        return <Building className="h-4 w-4 mr-2 text-blue-500" />;
+        return <Briefcase className="h-4 w-4 mr-2 text-blue-500" />;
       case "promoter":
-        return <User className="h-4 w-4 mr-2 text-green-500" />;
+        return <UserCheck className="h-4 w-4 mr-2 text-green-500" />;
+      case "company":
+        return <Building className="h-4 w-4 mr-2 text-amber-500" />;
       default:
         return null;
     }

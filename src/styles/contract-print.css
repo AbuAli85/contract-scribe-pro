@@ -28,7 +28,7 @@
   /* A4 page container */
   .a4-page {
     margin: 0 auto !important;
-    padding: 10mm !important;
+    padding: 0 !important;
     box-shadow: none !important;
     width: 210mm !important;
     min-height: 297mm !important;
@@ -38,6 +38,15 @@
     position: relative !important;
     background: white !important;
     overflow: visible !important;
+  }
+
+  /* Contract main title */
+  .contract-main-title {
+    font-size: 20px !important;
+    margin-bottom: 10mm !important;
+    color: #000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* Critical: Force all content to be visible */
@@ -73,24 +82,24 @@
     display: flex !important;
     flex-direction: row !important;
     justify-content: space-between !important;
-    gap: 10mm !important;
+    gap: 15mm !important;
     visibility: visible !important;
   }
   
   .contract-column {
     flex: 1 !important;
     font-size: 11px !important;
-    line-height: 1.5 !important;
+    line-height: 1.6 !important;
   }
   
   /* Contract content positioning */
   .contract-content {
     position: relative !important;
     z-index: 10 !important;
-    padding: 20mm !important;
+    padding: 15mm !important;
   }
 
-  /* Letterhead background */
+  /* Letterhead background - reduced opacity for better contrast */
   .letterhead-background {
     position: absolute !important;
     top: 0 !important;
@@ -98,8 +107,21 @@
     width: 100% !important;
     height: 100% !important;
     z-index: 1 !important;
-    opacity: 0.8 !important;
+    opacity: 0.05 !important;
     object-fit: cover !important;
+  }
+
+  /* Make sure promoter details print properly */
+  .promoter-details {
+    background-color: rgba(249, 249, 249, 0.2) !important;
+    border-left-color: #888 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .rtl .promoter-details {
+    border-right-color: #888 !important;
+    border-left: none !important;
   }
 
   /* Fix for Safari and Firefox rendering issues */

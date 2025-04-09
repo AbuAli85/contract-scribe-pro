@@ -27,32 +27,63 @@
 .signature-line {
   border-bottom: 1px solid #000;
   margin-bottom: 5mm;
-  height: 15mm;
+  height: 20mm;
+  position: relative;
+}
+
+.signature-line::before {
+  content: 'Sign here';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ccc;
+  font-style: italic;
+  font-size: 10px;
+}
+
+.rtl .signature-line::before {
+  content: 'وقع هنا';
 }
 
 /* Promoter Details */
 .promoter-details {
-  margin: 5mm 0;
-  padding: 3mm;
-  background-color: rgba(249, 249, 249, 0.7);
-  border-radius: 3px;
-  border-left: 2px solid #1a73e8;
+  margin: 6mm 0;
+  padding: 4mm;
+  background-color: rgba(249, 249, 249, 0.8);
+  border-radius: 4px;
+  border-left: 3px solid #1a73e8;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.rtl .promoter-details {
+  border-left: none;
+  border-right: 3px solid #1a73e8;
 }
 
 .promoter-info {
   display: flex;
   flex-direction: column;
-  gap: 2mm;
+  gap: 3mm;
 }
 
 .info-row {
   display: flex;
-  gap: 5px;
+  gap: 6px;
+  align-items: center;
+}
+
+.info-row strong {
+  color: #555;
+  min-width: 60px;
 }
 
 /* Responsibilities Section */
 .responsibilities {
-  margin: 5mm 0;
+  margin: 6mm 0;
+  background-color: rgba(245, 247, 250, 0.8);
+  padding: 4mm;
+  border-radius: 4px;
 }
 
 /* Photo Styles */
@@ -66,7 +97,7 @@
 .contact-info {
   display: flex;
   gap: 10px;
-  margin-top: 1mm;
+  margin-top: 2mm;
 }
 
 .address-info {
