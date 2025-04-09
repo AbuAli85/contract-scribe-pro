@@ -2,12 +2,9 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileText } from "lucide-react";
 import { generateUniqueId } from "@/lib/utils";
-import { BilingualText } from "@/lib/types";
+import { FirstPartySection, SecondPartySection, ContractDetailsSection } from "@/components/contract";
 
 interface ContractFormProps {
   language: "ar" | "en";
@@ -159,151 +156,26 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
     <Card>
       <CardContent className="pt-6">
         <div className="grid gap-6">
-          <div className="grid gap-4">
-            <h3 className="text-lg font-medium">
-              {language === "ar" ? "الطرف الأول (الشركة)" : "First Party (Company)"}
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {language === "ar" ? "اسم الشركة (بالإنجليزية)" : "Company Name (English)"}
-                </label>
-                <Input
-                  value={formData.firstParty.name.en}
-                  onChange={(e) => handleInputChange("firstParty.name.en", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {language === "ar" ? "اسم الشركة (بالعربية)" : "Company Name (Arabic)"}
-                </label>
-                <Input
-                  value={formData.firstParty.name.ar}
-                  onChange={(e) => handleInputChange("firstParty.name.ar", e.target.value)}
-                  className="text-right"
-                  dir="rtl"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {language === "ar" ? "رقم السجل التجاري (بالإنجليزية)" : "Commercial Registration (English)"}
-                </label>
-                <Input
-                  value={formData.firstParty.crn.en}
-                  onChange={(e) => handleInputChange("firstParty.crn.en", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {language === "ar" ? "رقم السجل التجاري (بالعربية)" : "Commercial Registration (Arabic)"}
-                </label>
-                <Input
-                  value={formData.firstParty.crn.ar}
-                  onChange={(e) => handleInputChange("firstParty.crn.ar", e.target.value)}
-                  className="text-right"
-                  dir="rtl"
-                />
-              </div>
-            </div>
-          </div>
+          <FirstPartySection
+            firstParty={formData.firstParty}
+            language={language}
+            onChange={handleInputChange}
+          />
           
-          <div className="grid gap-4">
-            <h3 className="text-lg font-medium">
-              {language === "ar" ? "الطرف الثاني (المروج)" : "Second Party (Promoter)"}
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {language === "ar" ? "الاسم (بالإنجليزية)" : "Name (English)"}
-                </label>
-                <Input
-                  value={formData.secondParty.name.en}
-                  onChange={(e) => handleInputChange("secondParty.name.en", e.target.value)}
-                  placeholder={language === "ar" ? "أدخل الاسم بالإنجليزية" : "Enter name in English"}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {language === "ar" ? "الاسم (بالعربية)" : "Name (Arabic)"}
-                </label>
-                <Input
-                  value={formData.secondParty.name.ar}
-                  onChange={(e) => handleInputChange("secondParty.name.ar", e.target.value)}
-                  placeholder={language === "ar" ? "أدخل الاسم بالعربية" : "Enter name in Arabic"}
-                  className="text-right"
-                  dir="rtl"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {language === "ar" ? "رقم الهوية" : "ID Number"}
-                </label>
-                <Input
-                  value={formData.secondParty.idNumber}
-                  onChange={(e) => handleInputChange("secondParty.idNumber", e.target.value)}
-                  placeholder={language === "ar" ? "أدخل رقم الهوية" : "Enter ID number"}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {language === "ar" ? "نوع الوثيقة" : "Document Type"}
-                </label>
-                <Select
-                  value={formData.documentType}
-                  onValueChange={(value) => handleInputChange("documentType", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={language === "ar" ? "اختر نوع الوثيقة" : "Select document type"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="id">{language === "ar" ? "بطاقة هوية" : "ID Card"}</SelectItem>
-                    <SelectItem value="passport">{language === "ar" ? "جواز سفر" : "Passport"}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
+          <SecondPartySection
+            secondParty={formData.secondParty}
+            documentType={formData.documentType}
+            language={language}
+            onChange={handleInputChange}
+          />
           
-          <div className="grid gap-4">
-            <h3 className="text-lg font-medium">
-              {language === "ar" ? "تفاصيل العقد" : "Contract Details"}
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {language === "ar" ? "رقم المرجع" : "Reference Number"}
-                </label>
-                <Input
-                  value={formData.refNumber}
-                  onChange={(e) => handleInputChange("refNumber", e.target.value)}
-                  placeholder={language === "ar" ? "مثال: REF-12345" : "e.g. REF-12345"}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {language === "ar" ? "تاريخ البدء" : "Start Date"}
-                </label>
-                <Input
-                  type="date"
-                  value={formData.startDate}
-                  onChange={(e) => handleInputChange("startDate", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {language === "ar" ? "تاريخ الانتهاء" : "End Date"}
-                </label>
-                <Input
-                  type="date"
-                  value={formData.endDate}
-                  onChange={(e) => handleInputChange("endDate", e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
+          <ContractDetailsSection
+            refNumber={formData.refNumber}
+            startDate={formData.startDate}
+            endDate={formData.endDate}
+            language={language}
+            onChange={handleInputChange}
+          />
           
           <Button 
             onClick={handleGenerateContract}
