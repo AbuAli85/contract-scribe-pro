@@ -8,7 +8,7 @@ import EnglishContractColumn from "./contract/EnglishContractColumn";
 import ArabicContractColumn from "./contract/ArabicContractColumn";
 import SignatureArea from "./contract/SignatureArea";
 import { contractService } from "@/services/contract.service";
-import PrintPreview from "./print/PrintPreview";
+import { setupPrintContainer } from "@/utils/print-container";
 
 interface ContractPreviewProps {
   language: "ar" | "en";
@@ -20,30 +20,59 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
   const [contentReady, setContentReady] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Initialize print container and validate printability on load and when data changes
+  // Force add print-container class on mount and when data changes
   useEffect(() => {
-    if (contractData) {
-      // Force add print-container class to the main element
-      if (containerRef.current) {
-        containerRef.current.classList.add('print-container');
-        console.log('Added print-container class to contract preview element');
-      }
+    if (contractData && containerRef.current) {
+      // Explicitly add the print-container class
+      containerRef.current.classList.add('print-container');
       
-      // Short timeout to allow DOM to update
-      setTimeout(() => {
-        // Double-check print container exists
-        const printContainer = document.querySelector('.print-container');
-        if (!printContainer && containerRef.current) {
-          containerRef.current.classList.add('print-container');
-          console.log('Re-added print-container class');
+      // Add data-testid for easier targeting
+      containerRef.current.setAttribute('data-testid', 'print-container');
+      
+      // Add inline critical print styles
+      const style = document.createElement('style');
+      style.setAttribute('media', 'print');
+      style.textContent = `
+        @media print {
+          .print-container, .contract-preview, .a4-page, .contract-content {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+          }
+          .two-column-layout {
+            display: flex !important;
+          }
+          @page { size: A4 portrait; margin: 0; }
         }
+      `;
+      document.head.appendChild(style);
+      
+      // Log for debug purposes
+      console.log('Print container setup in ContractPreview:', !!containerRef.current);
+      
+      // Validate printability after a short delay to allow rendering
+      setTimeout(() => {
+        // Force setup print container
+        setupPrintContainer();
         
+        // Check if contract is printable
         const isPrintable = contractService.validatePrintability();
-        console.log("Contract printability check:", isPrintable, "Print container exists:", !!document.querySelector('.print-container'));
+        console.log('Contract printability check:', isPrintable);
         
-        // Set content ready regardless to allow printing to proceed
+        // Set content ready to allow printing
         setContentReady(true);
+        
+        // Cleanup style after initialization
+        document.head.removeChild(style);
       }, 500);
+      
+      return () => {
+        try {
+          document.head.removeChild(style);
+        } catch (e) {
+          // Style might already be removed
+        }
+      };
     }
   }, [contractData]);
 
@@ -55,11 +84,6 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
       </div>
     );
   }
-
-  const handleContentReady = (isReady: boolean) => {
-    setContentReady(isReady);
-    console.log("Contract preview content ready:", isReady);
-  };
 
   return (
     <div ref={containerRef} className="contract-preview print-container" data-testid="print-container">

@@ -20,3 +20,21 @@ body {
 .rtl {
   font-family: var(--font-cairo);
 }
+
+/* Critical print styling for immediate effect */
+@media print {
+  .print-container, .contract-preview, .a4-page, .contract-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .two-column-layout {
+    display: flex !important;
+  }
+  
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+}

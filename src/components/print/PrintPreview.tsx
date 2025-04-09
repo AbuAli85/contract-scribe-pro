@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { printService } from '@/services/print.service';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import { setupPrintContainer, cleanupPrinting } from '@/utils/print-container';
 
 interface PrintPreviewProps {
   children: React.ReactNode;
@@ -31,6 +32,12 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
     // Immediately mark as print container
     previewRef.current.classList.add('print-container');
     previewRef.current.setAttribute('data-testid', 'print-container');
+    
+    // Log container existence for debugging
+    console.log('PrintPreview: Added print-container class to element');
+    
+    // Setup print container
+    setupPrintContainer();
     
     // Add critical inline print styles
     const style = document.createElement('style');
@@ -89,6 +96,9 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
         setWarnings(['Error preparing content for printing']);
         onReady?.(false);
       }
+      
+      // Cleanup
+      cleanupPrinting();
     }, 500);
     
     return () => {
@@ -98,6 +108,7 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
       } catch (err) {
         // Style might have been removed already
       }
+      cleanupPrinting();
     };
   }, [onReady, children]);
 

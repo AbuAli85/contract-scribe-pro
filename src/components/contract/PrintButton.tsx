@@ -1,21 +1,20 @@
 
-import { useEffect, useState } from "react"
-import { Printer, Loader2, AlertTriangle, FileText } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useToast } from "@/hooks/use-toast"
-import { documentSystem, type AttachedDocument } from "@/lib/documents"
-import { useNavigate } from "react-router-dom"
-import { contractService } from "@/services/contract.service"
-import { printService } from "@/services/print.service"
-import { usePrint } from "@/hooks/usePrint"
-import { directPrint } from "@/utils/direct-print"
+import { useEffect, useState } from "react";
+import { Printer, Loader2, AlertTriangle, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { documentSystem, type AttachedDocument } from "@/lib/documents";
+import { useNavigate } from "react-router-dom";
+import { contractService } from "@/services/contract.service";
+import { printService } from "@/services/print.service";
+import { setupPrintContainer, cleanupPrinting } from "@/utils/print-container";
 
 interface PrintButtonProps {
-  language: "ar" | "en"
-  contractData?: any
-  selectedDocuments?: string[]
-  contractId?: string
-  forceDirectPrint?: boolean
+  language: "ar" | "en";
+  contractData?: any;
+  selectedDocuments?: string[];
+  contractId?: string;
+  forceDirectPrint?: boolean;
 }
 
 const PrintButton = ({ 
@@ -23,113 +22,52 @@ const PrintButton = ({
   contractData,
   selectedDocuments = ["contract"],
   contractId = "default",
-  forceDirectPrint = true // Force direct print for better compatibility
+  forceDirectPrint = true
 }: PrintButtonProps) => {
-  const { toast } = useToast()
-  const [documents, setDocuments] = useState<AttachedDocument[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [contentReady, setContentReady] = useState(false)
-  const navigate = useNavigate()
-  
-  // Use the centralized print hook with direct print option
-  const { isPrinting, handlePrint } = usePrint({
-    language,
-    forceDirectPrint,
-    onError: (error) => {
-      console.error("Print error in PrintButton:", error);
-      
-      // Navigate to error page for cross-origin errors
-      if (error.message.includes('cross-origin') || 
-          error.message.includes('Permission denied') ||
-          error.message.includes('SecurityError')) {
-        navigate('/print-error?error=' + encodeURIComponent(error.message));
-      }
-    }
-  });
+  const { toast } = useToast();
+  const [documents, setDocuments] = useState<AttachedDocument[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [contentReady, setContentReady] = useState(false);
+  const navigate = useNavigate();
   
   // Load documents that should be included in printing
   useEffect(() => {
     async function loadPrintDocuments() {
-      if (!contractId || contractId === "default") return
+      if (!contractId || contractId === "default") return;
       
-      setIsLoading(true)
+      setIsLoading(true);
       try {
-        const docs = await documentSystem.getDocumentsForPrinting(contractId)
-        setDocuments(docs)
+        const docs = await documentSystem.getDocumentsForPrinting(contractId);
+        setDocuments(docs);
       } catch (error) {
-        console.error("Error loading documents for printing:", error)
+        console.error("Error loading documents for printing:", error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
 
-    loadPrintDocuments()
-  }, [contractId])
+    loadPrintDocuments();
+  }, [contractId]);
   
   // Check content visibility and prepare for printing
   useEffect(() => {
-    if (!contractData) return
-    
-    // Ensure print container exists
-    const ensurePrintContainer = () => {
-      // Check for print container
-      let printContainer = document.querySelector('.print-container');
-      
-      if (!printContainer) {
-        console.log('Print container not found, searching for alternative elements');
-        
-        // Try to add print-container class to various potential elements
-        const potentialContainers = [
-          '.contract-preview',
-          '.contract-container',
-          '.a4-page',
-          '[data-testid="print-container"]',
-          '.contract-content'
-        ];
-        
-        for (const selector of potentialContainers) {
-          const element = document.querySelector(selector);
-          if (element) {
-            element.classList.add('print-container');
-            console.log(`Added print-container class to ${selector}`);
-            printContainer = element;
-            break;
-          }
-        }
-        
-        // If still no container, create one and wrap closest relevant content
-        if (!printContainer) {
-          const contractElement = document.querySelector('.contract-preview, .contract-container, .a4-page');
-          if (contractElement) {
-            // If we found a contract element, add the class directly
-            contractElement.classList.add('print-container');
-            console.log('Created print container from existing element');
-            printContainer = contractElement;
-          } else {
-            // Last resort - create a container and append to body
-            const newContainer = document.createElement('div');
-            newContainer.className = 'print-container';
-            document.body.appendChild(newContainer);
-            console.log('Created new print container element in body');
-          }
-        }
-      }
-      
-      return !!printContainer;
-    };
+    if (!contractData) return;
     
     // Check visibility of contract elements after render
     const checkVisibility = setTimeout(() => {
       try {
-        // Ensure print container exists
-        const containerExists = ensurePrintContainer();
-        console.log('Print container exists:', containerExists);
+        // Setup print container
+        setupPrintContainer();
         
-        // Always pre-fix visibility issues that might exist
+        // Pre-fix visibility issues
         printService.fixVisibility('.print-container');
         
         // Set content as ready to allow printing
         setContentReady(true);
+        
+        // Cleanup
+        cleanupPrinting();
       } catch (error) {
         console.error("Error checking print content visibility:", error);
         // Set to true to allow printing even if validation errors occur
@@ -151,25 +89,12 @@ const PrintButton = ({
     }
 
     try {
-      // Ensure print container exists before printing
-      const printContainer = document.querySelector('.print-container');
-      if (!printContainer) {
-        console.error("Print container not found, searching for alternative elements");
-        
-        // Try to find any printable content
-        const contractPreview = document.querySelector('.contract-preview');
-        if (!contractPreview) {
-          throw new Error(language === "ar" 
-            ? "لم يتم العثور على محتوى قابل للطباعة" 
-            : "No printable content found");
-        }
-        
-        // Add print-container class to the contract preview
-        contractPreview.classList.add('print-container');
-        console.log("Added print-container class to contract-preview element");
-      }
+      setIsPrinting(true);
       
-      // Add inline print styles directly to head
+      // Force setup the print container before printing
+      setupPrintContainer();
+      
+      // Add inline print styles for maximum compatibility
       const style = document.createElement('style');
       style.setAttribute('media', 'print');
       style.textContent = `
@@ -178,43 +103,64 @@ const PrintButton = ({
             display: block !important;
             visibility: visible !important;
           }
+          .two-column-layout {
+            display: flex !important;
+          }
+          .letterhead-background, .contract-title, .id-photo-container, 
+          .reference-section, .signature-area, .contract-column {
+            display: block !important;
+            visibility: visible !important;
+          }
           @page { size: A4 portrait; margin: 0; }
         }
       `;
       document.head.appendChild(style);
       
-      // Force immediate visibility fixes before printing
-      document.documentElement.classList.add('is-printing');
-      document.body.classList.add('printing');
-      printService.fixVisibility('.print-container');
-      
       // Use direct print method for maximum compatibility
-      directPrint('.print-container');
-      
-      // Cleanup
       setTimeout(() => {
         try {
-          document.head.removeChild(style);
-        } catch (e) {
-          // Style might have been removed already
+          // Call print
+          window.print();
+          
+          // Show success toast after a short delay
+          setTimeout(() => {
+            // Cleanup
+            try {
+              document.head.removeChild(style);
+            } catch (e) {
+              // Style might have been removed already
+            }
+            cleanupPrinting();
+            setIsPrinting(false);
+            
+            toast({
+              title: language === "ar" ? "تم إرسال الطباعة" : "Print Sent",
+              description: language === "ar" ? "تم إرسال المستند إلى الطابعة" : "Document was sent to printer",
+            });
+          }, 1000);
+        } catch (error) {
+          console.error("Error in print operation:", error);
+          
+          try {
+            document.head.removeChild(style);
+          } catch (e) {
+            // Style might have been removed already
+          }
+          cleanupPrinting();
+          setIsPrinting(false);
+          
+          toast({
+            title: language === "ar" ? "خطأ في الطباعة" : "Print Error",
+            description: error instanceof Error ? error.message : "Unknown error occurred",
+            variant: "destructive",
+          });
         }
-        document.documentElement.classList.remove('is-printing');
-        document.body.classList.remove('printing');
-      }, 2000);
-      
-      // Show success toast
-      setTimeout(() => {
-        toast({
-          title: language === "ar" ? "تم إرسال الطباعة" : "Print Sent",
-          description: language === "ar" ? "تم إرسال المستند إلى الطابعة" : "Document was sent to printer",
-        });
-      }, 1000);
+      }, 200);
     } catch (error) {
       console.error("Error in print button handler:", error);
-      document.documentElement.classList.remove('is-printing');
-      document.body.classList.remove('printing');
+      cleanupPrinting();
+      setIsPrinting(false);
       
-      // Show error toast
       toast({
         title: language === "ar" ? "خطأ في الطباعة" : "Print Error",
         description: error instanceof Error ? error.message : "Unknown error occurred",
