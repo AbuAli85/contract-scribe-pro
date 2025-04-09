@@ -24,7 +24,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
 
   return (
     <>
-      {/* Reference number at top with specified positioning (2.5cm from top, left side) */}
+      {/* Reference number at top-left (2.5cm from top) */}
       <ReferenceNumber refNumber={contractData.refNumber} />
 
       {/* Contract Title (2.8cm from top, centered) */}
@@ -39,7 +39,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
         />
       )}
 
-      {/* Two Column Layout - contract content (positioned at 3.5cm from top) */}
+      {/* Two Column Layout - contract content (positioned at 8.5cm from top) */}
       <div className="two-column-layout">
         {/* Columns order based on language */}
         {language === "en" ? (

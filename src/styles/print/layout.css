@@ -56,6 +56,13 @@
     align-items: center !important;
     z-index: 10 !important;
   }
+  
+  /* ID photo wrapper exact width */
+  .id-photo-wrapper {
+    width: 400px !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+  }
 }
 
 /* Fix for flex containers when printing class is active */
@@ -107,4 +114,10 @@ body.printing .id-photo-container {
   flex-direction: column !important;
   align-items: center !important;
   z-index: 10 !important;
+}
+
+body.printing .id-photo-wrapper {
+  width: 400px !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
 }

@@ -105,12 +105,12 @@
   /* Contract content - positioned at 8.5cm from top */
   .two-column-layout {
     position: absolute !important;
-    top: 85mm !important; /* Adjusted to account for photo height */
+    top: 85mm !important; /* 8.5cm from top - adjusted to account for photo height */
     left: 10mm !important;
     width: calc(100% - 20mm) !important;
     display: flex !important;
     justify-content: space-between !important;
-    gap: 6mm !important;
+    gap: 10mm !important;
     z-index: 10 !important;
   }
   

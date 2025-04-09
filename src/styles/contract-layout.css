@@ -112,7 +112,7 @@
   width: calc(100% - 20mm);
   display: flex;
   justify-content: space-between;
-  gap: 6mm;
+  gap: 10mm; /* Increased gap between columns */
   z-index: 10;
   margin: 0;
 }
@@ -185,6 +185,7 @@
   
   .two-column-layout {
     display: flex !important;
+    gap: 10mm !important;
   }
   
   .id-photo-wrapper {

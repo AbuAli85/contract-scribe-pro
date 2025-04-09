@@ -27,7 +27,7 @@
   .two-column-layout {
     display: flex !important;
     justify-content: space-between !important;
-    gap: 15mm !important;
+    gap: 10mm !important;
   }
   
   /* Letterhead background - Ensure it covers full page with reduced opacity */
