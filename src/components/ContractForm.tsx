@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,8 +12,36 @@ interface ContractFormProps {
   onGenerateContract: (contractData: any) => void;
 }
 
+interface FormData {
+  firstParty: {
+    name: {
+      en: string;
+      ar: string;
+    };
+    crn: {
+      en: string;
+      ar: string;
+    };
+  };
+  secondParty: {
+    name: {
+      en: string;
+      ar: string;
+    };
+    nationality: {
+      en: string;
+      ar: string;
+    };
+    idNumber: string;
+  };
+  refNumber: string;
+  startDate: string;
+  endDate: string;
+  documentType: string;
+}
+
 const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContract }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     firstParty: {
       name: {
         en: "Falcon Eye Security Systems",
@@ -44,32 +71,47 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
 
   const handleInputChange = (field: string, value: string) => {
     const parts = field.split('.');
+    
     if (parts.length === 1) {
       setFormData(prev => ({ ...prev, [field]: value }));
     } else if (parts.length === 2) {
+      const [part0, part1] = parts;
       setFormData(prev => ({
         ...prev,
-        [parts[0]]: { ...prev[parts[0] as keyof typeof prev], [parts[1]]: value }
-      }));
-    } else if (parts.length === 3) {
-      setFormData(prev => ({
-        ...prev,
-        [parts[0]]: {
-          ...prev[parts[0] as keyof typeof prev],
-          [parts[1]]: {
-            ...prev[parts[0] as keyof typeof prev][parts[1] as any],
-            [parts[2]]: value
-          }
+        [part0]: { 
+          ...prev[part0 as keyof FormData], 
+          [part1]: value 
         }
       }));
+    } else if (parts.length === 3) {
+      const [part0, part1, part2] = parts;
+      setFormData(prev => {
+        const newState = { ...prev };
+        
+        if (part0 === 'firstParty' || part0 === 'secondParty') {
+          const firstLevel = { ...prev[part0] };
+          
+          if (firstLevel[part1 as keyof typeof firstLevel]) {
+            const secondLevel = { 
+              ...firstLevel[part1 as keyof typeof firstLevel] as Record<string, string>
+            };
+            
+            secondLevel[part2] = value;
+            
+            firstLevel[part1 as keyof typeof firstLevel] = secondLevel;
+          }
+          
+          newState[part0] = firstLevel;
+        }
+        
+        return newState;
+      });
     }
   };
 
   const handleGenerateContract = () => {
-    // Create a mock document with example content
     const mockContractData = {
       ...formData,
-      // Add sample content for testing/preview
       responsibilities: {
         en: "1. Promote products and services\n2. Attend meetings and trainings\n3. Follow company policies and procedures\n4. Report any issues to management",
         ar: "١. الترويج للمنتجات والخدمات\n٢. حضور الاجتماعات والتدريبات\n٣. اتباع سياسات وإجراءات الشركة\n٤. الإبلاغ عن أي مشاكل للإدارة"
@@ -79,9 +121,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
         ar: "هذه الاتفاقية بين الطرف الأول والطرف الثاني لتقديم خدمات الترويج."
       },
       status: "active",
-      // Add a sample letterhead URL
       letterhead: "https://via.placeholder.com/1000x1400/ffffff/ffffff?text=",
-      // Sample promoter photo for testing
       promoterPhoto: "https://via.placeholder.com/400x300/eeeeee/999999?text=ID+Document"
     };
     
@@ -98,7 +138,6 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
               {language === "ar" ? "الطرف الأول (الشركة)" : "First Party (Company)"}
             </h3>
             
-            {/* Company details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -148,7 +187,6 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
               {language === "ar" ? "الطرف الثاني (المروج)" : "Second Party (Promoter)"}
             </h3>
             
-            {/* Promoter details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -207,7 +245,6 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
               {language === "ar" ? "تفاصيل العقد" : "Contract Details"}
             </h3>
             
-            {/* Contract details */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
