@@ -35,7 +35,7 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
       top: 0;
       left: 0;
       width: 100%;
-      height: 100%;
+      height: 30mm;
       background-image: url('${contractData.letterhead}');
       background-size: cover;
       background-position: top center;
@@ -45,51 +45,55 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
     
     <div style="
       position: absolute;
-      top: 15mm;
+      top: 35mm;
       left: 20mm;
       font-family: monospace;
       font-size: 12px;
       font-weight: bold;
       color: #444;
       z-index: 10;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      padding: 6px 10px;
+      border-left: 3px solid #1a73e8;
     ">
-      Ref: ${refNumber}
+      Reference Number: ${refNumber}
     </div>
     
     <div style="
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 30mm 20mm 20mm;
+      padding: 45mm 20mm 20mm;
       height: 100%;
       box-sizing: border-box;
       position: relative;
       z-index: 5;
     ">
-      <div style="text-align: center; width: 100%; margin-bottom: 20mm;">
+      <div style="text-align: center; width: 100%; margin-bottom: 15mm;">
         <h2 style="
           font-size: 28px;
           font-weight: bold;
           color: #1a73e8;
           margin-bottom: 5mm;
-          margin-top: 10mm;
-        ">Identification Document</h2>
+          margin-top: 5mm;
+        ">Passport Document</h2>
         <p style="
           font-size: 18px;
           color: #555;
           text-align: center;
-        ">وثيقة الهوية</p>
+        ">وثيقة جواز السفر</p>
       </div>
       
       <div style="
         width: 100%;
         display: flex;
         justify-content: center;
-        margin-bottom: 30mm;
+        margin-bottom: 20mm;
       ">
         <div style="
           width: 80%;
-          max-width: 500px;
+          max-width: 140mm;
           border: 1px solid #ddd;
           border-radius: 4px;
           overflow: hidden;
@@ -98,7 +102,7 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
         ">
           <img 
             src="${contractData.promoterPhoto}" 
-            alt="Identification Document" 
+            alt="Passport Document" 
             style="
               width: 100%;
               height: auto;
@@ -106,6 +110,16 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
               display: block;
             "
           />
+          <div style="
+            text-align: center;
+            padding: 8px;
+            background-color: #f9f9f9;
+            color: #555;
+            font-size: 12px;
+            border-top: 1px solid #eee;
+          ">
+            Passport / جواز السفر
+          </div>
         </div>
       </div>
       
@@ -137,13 +151,34 @@ export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise
           </tr>
           <tr>
             <td style="padding: 8px 12px; font-weight: bold;">Document Type:</td>
-            <td style="padding: 8px 12px;">Identification</td>
+            <td style="padding: 8px 12px;">Passport</td>
           </tr>
           <tr>
             <td style="padding: 8px 12px; font-weight: bold;">Date:</td>
             <td style="padding: 8px 12px;">${new Date().toLocaleDateString()}</td>
           </tr>
         </table>
+        
+        <div style="
+          margin-top: 15px;
+          padding-top: 15px;
+          border-top: 1px dashed #ddd;
+          display: flex;
+          justify-content: space-between;
+          font-size: 12px;
+          color: #666;
+        ">
+          <div>
+            <div style="font-weight: bold; margin-bottom: 5px;">Company Information:</div>
+            <div>CR: ${contractData.firstParty?.crn?.en || "1410869"}</div>
+            <div>PO Box 762, PC-122 Al Khuwair, Bousher, Oman</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-weight: bold; margin-bottom: 5px;">Contact:</div>
+            <div>+968 9194 3449 / +968 9933 6958</div>
+            <div>www.falconeyegroup.net</div>
+          </div>
+        </div>
       </div>
     </div>
   `;

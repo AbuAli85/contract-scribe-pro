@@ -20,7 +20,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
 }) => {
   return (
     <>
-      {/* Reference number - positioned at the top */}
+      {/* Reference number - positioned below the letterhead */}
       <ReferenceNumber refNumber={contractData.refNumber} />
 
       {/* Contract Title - Main title of document */}
@@ -49,14 +49,16 @@ const ContractContent: React.FC<ContractContentProps> = ({
         )}
       </div>
 
-      {/* Signature Area with better positioning */}
+      {/* Enhanced Signature Area with better positioning */}
       <SignatureArea signatures={signatures} />
       
-      {/* Footer information */}
-      <div className="bottom-info mt-auto pt-4">
+      {/* Footer information with company details */}
+      <div className="bottom-info mt-10 pt-6 border-t border-gray-200 flex justify-between">
         <div className="company-info text-xs text-gray-600">
-          <div className="cr-number mb-1">CR Number: {contractData?.firstParty?.crn?.en || "1410869"}</div>
-          <div>PO Box 762, PC-122 Al Khuwair, Bousher, Sultanate of Oman</div>
+          <div className="cr-info">
+            <div className="cr-number mb-1 font-mono">CR: {contractData?.firstParty?.crn?.en || "1410869"}</div>
+            <div>PO Box 762, PC-122 Al Khuwair, Bousher, Sultanate of Oman</div>
+          </div>
         </div>
         <div className="contact-info text-xs text-gray-600 text-right">
           <div>+968 9194 3449 / +968 9933 6958</div>

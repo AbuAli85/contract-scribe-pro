@@ -19,7 +19,7 @@
   z-index: 10;
   width: 100%;
   height: 100%;
-  padding: 30mm 20mm 20mm;
+  padding: 35mm 20mm 20mm; /* Increased top padding to accommodate letterhead */
   box-sizing: border-box;
   margin: 0;
   left: 0;
@@ -30,8 +30,8 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
-  opacity: 0.05; /* Reduced opacity for better readability */
+  height: 30mm; /* Fixed height for letterhead */
+  opacity: 0.07; /* Reduced opacity for better readability */
   z-index: 1;
   pointer-events: none;
   object-fit: cover;
@@ -72,14 +72,15 @@
 
 /* Bottom Information */
 .bottom-info {
-  position: absolute;
-  bottom: 15mm;
-  left: 15mm;
-  right: 15mm;
+  position: relative;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: space-between;
   font-size: 8px;
   color: #666;
+  margin-top: 10mm;
 }
 
 /* Reference Section */
@@ -99,7 +100,8 @@
 /* ID Photo Styles - Centered with proper margins */
 .id-photo-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
   margin: 10mm 0 15mm 0;
   position: relative;
@@ -121,4 +123,33 @@
   width: 100%;
   height: auto;
   object-fit: contain;
+}
+
+/* Signature Area */
+.signature-area {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15mm;
+  margin-bottom: 10mm;
+}
+
+.signature-block {
+  flex: 1;
+  max-width: 45%;
+  text-align: center;
+  padding-top: 3mm;
+}
+
+.signature-line {
+  min-height: 15mm;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 3mm;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.signature-name {
+  margin-top: 3mm;
+  font-weight: 500;
 }

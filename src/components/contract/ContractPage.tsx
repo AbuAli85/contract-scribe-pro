@@ -26,7 +26,7 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
         left: '0'
       }}
     >
-      {/* Letterhead background */}
+      {/* Letterhead background that spans full width */}
       {contractData.letterhead && (
         <div
           className="letterhead-background"
@@ -35,7 +35,7 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
             top: 0,
             left: 0,
             width: '100%',
-            height: '100%',
+            height: '30mm', // Specific height for the letterhead area
             backgroundImage: `url('${contractData.letterhead}')`,
             backgroundSize: 'cover',
             backgroundPosition: 'top center',
@@ -75,7 +75,7 @@ const ContractPage: React.FC<ContractPageProps> = ({ contractData, children }) =
         style={{ 
           position: 'relative',
           zIndex: 10,
-          padding: '25mm 20mm 20mm',
+          padding: '35mm 20mm 20mm', // Increased top padding to accommodate letterhead
           width: '100%',
           height: '100%',
           boxSizing: 'border-box',

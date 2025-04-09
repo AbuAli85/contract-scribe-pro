@@ -106,3 +106,42 @@
   min-width: 80px;
   display: inline-block;
 }
+
+/* Signature area styling */
+.signature-area {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15mm;
+  padding-top: 5mm;
+}
+
+.signature-block {
+  flex: 1;
+  max-width: 45%;
+  text-align: center;
+}
+
+.signature-line {
+  height: 16mm;
+  margin-bottom: 3mm;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.signature-name {
+  font-weight: 500;
+  margin-top: 2mm;
+  color: #333;
+}
+
+/* Bottom info styling */
+.bottom-info {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15mm;
+  padding-top: 4mm;
+  border-top: 1px solid #eaeaea;
+  font-size: 9px;
+  color: #666;
+}
