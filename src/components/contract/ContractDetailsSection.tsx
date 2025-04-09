@@ -1,6 +1,6 @@
 
 import React from "react";
-import { ContractFormSection } from "@/components/contract/ContractFormSection";
+import ContractFormSection from "@/components/contract/ContractFormSection";
 import { Input } from "@/components/ui/input";
 
 interface ContractDetailsProps {

@@ -1,7 +1,6 @@
-
 import React from "react";
 import BilingualInput from "./BilingualInput";
-import { ContractFormSection } from "@/components/contract/ContractFormSection";
+import ContractFormSection from "@/components/contract/ContractFormSection";
 
 interface FirstParty {
   name: {

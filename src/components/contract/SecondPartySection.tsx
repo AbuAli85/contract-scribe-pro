@@ -1,7 +1,7 @@
 
 import React from "react";
 import BilingualInput from "./BilingualInput";
-import { ContractFormSection } from "@/components/contract/ContractFormSection";
+import ContractFormSection from "@/components/contract/ContractFormSection";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
