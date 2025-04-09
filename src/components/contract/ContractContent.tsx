@@ -24,7 +24,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
       <ReferenceNumber refNumber={contractData.refNumber} />
 
       {/* Contract Title - Main title of document */}
-      <h1 className="contract-main-title text-2xl font-bold text-center text-blue-700 mb-6">
+      <h1 className="contract-main-title text-2xl font-bold text-center text-blue-700 mb-5">
         {language === "en" ? "Promoter Assignment Contract" : "عقد تعيين مروّج"}
       </h1>
 
@@ -38,7 +38,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
       )}
 
       {/* Two Column Layout - English and Arabic sides with proper spacing */}
-      <div className="two-column-layout flex justify-between gap-8 mb-8">
+      <div className="two-column-layout flex justify-between gap-6 mb-6">
         {/* Columns order based on language */}
         {language === "en" ? (
           <>
@@ -57,7 +57,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
       <SignatureArea signatures={signatures} />
       
       {/* Footer information with company details */}
-      <div className="bottom-info mt-8 pt-4 border-t border-gray-200 flex justify-between">
+      <div className="bottom-info mt-6 pt-3 border-t border-gray-200 flex justify-between">
         <div className="company-info text-xs text-gray-600">
           <div className="cr-info">
             <div className="cr-number mb-1 font-mono">CR: {contractData?.firstParty?.crn?.en || "1410869"}</div>
