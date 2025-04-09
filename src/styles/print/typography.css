@@ -1,0 +1,71 @@
+
+/* 
+ * Print Typography
+ * Text styling for printed documents
+ */
+
+@media print {
+  /* Reference number */
+  .reference-number {
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    font-family: monospace !important;
+    color: #444 !important;
+    letter-spacing: 0.5px !important;
+  }
+  
+  /* Contract title */
+  .contract-main-title {
+    font-size: 20px !important;
+    font-weight: bold !important;
+    color: #1a73e8 !important;
+    margin-bottom: 10mm !important;
+    text-align: center !important;
+  }
+  
+  /* All text elements */
+  .contract-title,
+  .promoter-details,
+  .responsibilities,
+  .best-regards,
+  .contract-text,
+  .promoter-info,
+  .responsibilities-title,
+  .info-row,
+  .bottom-info {
+    color: black !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Contract columns */
+  .contract-column {
+    font-size: 11px !important;
+    line-height: 1.5 !important;
+  }
+  
+  /* Signature name */
+  .signature-name {
+    font-size: 10px !important;
+    margin-top: 5px !important;
+  }
+  
+  /* Bottom info */
+  .company-info,
+  .contact-info {
+    font-size: 8px !important;
+    color: #666 !important;
+  }
+}
+
+/* When printing class is active - typography elements */
+body.printing .contract-title,
+body.printing .promoter-details,
+body.printing .responsibilities,
+body.printing .best-regards,
+body.printing .responsibilities-title,
+body.printing .contract-text,
+body.printing .contract-main-title,
+body.printing .reference-number,
+body.printing .signature-name {
+  color: black !important;
+}

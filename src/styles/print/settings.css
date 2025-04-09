@@ -1,0 +1,62 @@
+
+/* 
+ * Print Settings
+ * Core print settings like page size, margins, and global rules
+ */
+
+@media print {
+  /* Base page settings - ZERO MARGINS */
+  @page {
+    size: A4 portrait;
+    margin: 0mm;
+  }
+  
+  /* Core body/html settings */
+  html, body, #root {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background-color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    left: 0 !important;
+  }
+  
+  /* A4 page container - exact dimensions */
+  .a4-page {
+    width: 210mm !important;
+    height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    position: relative !important;
+    background-color: white !important;
+    page-break-after: always !important;
+    break-after: always !important;
+    display: block !important;
+    left: 0 !important;
+  }
+
+  /* Fix for Safari and Firefox rendering issues */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+}
+
+/* Printing class applied to body */
+body.printing {
+  background-color: white !important;
+}
+
+body.printing .a4-page {
+  width: 210mm !important;
+  height: 297mm !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  left: 0 !important;
+}

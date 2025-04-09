@@ -1,0 +1,100 @@
+
+/* 
+ * Print Visibility
+ * Controls which elements are visible during printing and their display properties
+ */
+
+@media print {
+  /* Critical elements visibility */
+  .print-container,
+  .contract-preview,
+  .a4-page,
+  .contract-content,
+  .letterhead-background,
+  .two-column-layout,
+  .contract-column,
+  .contract-text,
+  .signature-area,
+  .signature-block,
+  .id-photo-container,
+  .reference-section,
+  .contract-title {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+  }
+  
+  /* Special handling for flex containers */
+  .two-column-layout,
+  .signature-area,
+  .bottom-info {
+    display: flex !important;
+    visibility: visible !important;
+  }
+  
+  /* Hide UI elements */
+  .print-hidden,
+  .print\:hidden,
+  button:not(.signature-block button),
+  .tabs-list,
+  header,
+  nav {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+  /* CRITICAL: Prevent nested duplicates */
+  .print-container .print-container,
+  .a4-page .a4-page,
+  .contract-content .contract-content,
+  .contract-preview .contract-preview,
+  .print-container-wrapper .print-container-wrapper {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+}
+
+/* When printing class is active */
+body.printing .print-container,
+body.printing .contract-preview,
+body.printing .a4-page,
+body.printing .contract-content,
+body.printing .letterhead-background,
+body.printing .two-column-layout,
+body.printing .contract-column,
+body.printing .contract-text,
+body.printing .signature-area,
+body.printing .signature-block,
+body.printing .id-photo-container,
+body.printing .id-photo-wrapper,
+body.printing .id-photo,
+body.printing .reference-section,
+body.printing .contract-title {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Special handling for flex containers when printing class is active */
+body.printing .two-column-layout,
+body.printing .signature-area,
+body.printing .bottom-info {
+  display: flex !important;
+}
+
+/* CRITICAL: Prevent nested duplicates when printing class is active */
+body.printing .print-container .print-container,
+body.printing .a4-page .a4-page,
+body.printing .contract-content .contract-content,
+body.printing .contract-preview .contract-preview,
+body.printing .print-container-wrapper .print-container-wrapper {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}

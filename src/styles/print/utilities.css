@@ -1,0 +1,65 @@
+
+/* 
+ * Print Utilities
+ * Utility classes for print debugging and fixes
+ */
+
+/* Ensure page breaks properly */
+@media print {
+  .page-break {
+    page-break-before: always !important;
+    break-before: always !important;
+  }
+  
+  .avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
+  /* Page break controls */
+  .a4-page {
+    page-break-after: always !important;
+    break-after: always !important;
+  }
+  
+  .passport-page {
+    page-break-before: always !important;
+    break-before: always !important;
+  }
+  
+  /* Error element - Hide during printing */
+  .error-message {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+/* Print debugging */
+.print-debug {
+  outline: 2px solid red !important;
+}
+
+.print-debug-info {
+  position: fixed !important;
+  bottom: 10px !important;
+  right: 10px !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid #ddd !important;
+  padding: 5px 10px !important;
+  font-size: 12px !important;
+  z-index: 9999 !important;
+  display: none !important;
+}
+
+/* Show debug in development */
+@media screen {
+  body.dev-mode .print-debug-info {
+    display: block !important;
+  }
+}
+
+@media print {
+  .print-debug-info {
+    display: none !important;
+  }
+}

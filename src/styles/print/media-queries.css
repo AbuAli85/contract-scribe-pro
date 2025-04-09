@@ -1,0 +1,48 @@
+
+/* 
+ * Print Media Queries
+ * Media query helpers for print
+ */
+
+/* Force print styles to apply when printing class is active */
+@media screen {
+  body.printing * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  body.printing .print-container,
+  body.printing .contract-preview,
+  body.printing .a4-page,
+  body.printing .contract-content {
+    background: white !important;
+  }
+  
+  body.printing .print-hidden,
+  body.printing .print\:hidden,
+  body.printing button:not(.signature-block button),
+  body.printing .tabs-list,
+  body.printing header,
+  body.printing nav {
+    display: none !important;
+  }
+}
+
+/* Print specific rules */
+@media print {
+  .print-only {
+    display: block !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Set print background colors for Safari */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+}

@@ -3,8 +3,7 @@
 @import './contract-layout.css';
 @import './contract-typography.css';
 @import './contract-components.css';
-@import './contract-print.css';
-@import './print/index.css';
+@import './print-system.css'; /* Updated to use modular print system */
 @import './print-typography.css';
 
 /* Global contract styles */
