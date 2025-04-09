@@ -18,6 +18,10 @@ const ContractContent: React.FC<ContractContentProps> = ({
   contractData, 
   signatures = [] 
 }) => {
+  // Determine document type for label
+  const documentType = contractData.documentType || 'id';
+  const documentLabel = documentType === 'passport' ? 'Passport / جواز السفر' : 'ID Card / بطاقة الهوية';
+
   return (
     <>
       {/* Reference number - positioned below the letterhead */}
@@ -32,8 +36,8 @@ const ContractContent: React.FC<ContractContentProps> = ({
       {contractData.promoterPhoto && (
         <PromoterPhoto 
           photoUrl={contractData.promoterPhoto} 
-          type={contractData.documentType || 'id'} 
-          label={contractData.documentType === 'passport' ? 'Passport / جواز السفر' : 'ID Card / بطاقة الهوية'}
+          type={documentType}
+          label={documentLabel}
         />
       )}
 
@@ -57,7 +61,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
       <SignatureArea signatures={signatures} />
       
       {/* Footer information with company details */}
-      <div className="bottom-info mt-6 pt-3 border-t border-gray-200 flex justify-between">
+      <div className="bottom-info mt-8 pt-4 border-t border-gray-200 flex justify-between">
         <div className="company-info text-xs text-gray-600">
           <div className="cr-info">
             <div className="cr-number mb-1 font-mono">CR: {contractData?.firstParty?.crn?.en || "1410869"}</div>
