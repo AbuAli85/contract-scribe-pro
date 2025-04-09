@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,34 +7,34 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileText } from "lucide-react";
 import { generateUniqueId } from "@/lib/utils";
+import { BilingualText } from "@/lib/types";
 
 interface ContractFormProps {
   language: "ar" | "en";
   onGenerateContract: (contractData: any) => void;
 }
 
+// Define BilingualObject type for reuse
+type BilingualObject = {
+  en: string;
+  ar: string;
+};
+
+// Define specific property structures
+interface FirstParty {
+  name: BilingualObject;
+  crn: BilingualObject;
+}
+
+interface SecondParty {
+  name: BilingualObject;
+  nationality: BilingualObject;
+  idNumber: string;
+}
+
 interface FormData {
-  firstParty: {
-    name: {
-      en: string;
-      ar: string;
-    };
-    crn: {
-      en: string;
-      ar: string;
-    };
-  };
-  secondParty: {
-    name: {
-      en: string;
-      ar: string;
-    };
-    nationality: {
-      en: string;
-      ar: string;
-    };
-    idNumber: string;
-  };
+  firstParty: FirstParty;
+  secondParty: SecondParty;
   refNumber: string;
   startDate: string;
   endDate: string;
@@ -73,39 +74,63 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
     const parts = field.split('.');
     
     if (parts.length === 1) {
+      // Handle top-level fields like refNumber, startDate, etc.
       setFormData(prev => ({ ...prev, [field]: value }));
     } else if (parts.length === 2) {
+      // Handle second-level fields like secondParty.idNumber
       const [part0, part1] = parts;
-      setFormData(prev => ({
-        ...prev,
-        [part0]: { 
-          ...prev[part0 as keyof FormData], 
-          [part1]: value 
-        }
-      }));
-    } else if (parts.length === 3) {
-      const [part0, part1, part2] = parts;
-      setFormData(prev => {
-        const newState = { ...prev };
-        
-        if (part0 === 'firstParty' || part0 === 'secondParty') {
-          const firstLevel = { ...prev[part0] };
+      
+      if (part0 === 'firstParty' || part0 === 'secondParty') {
+        setFormData(prev => {
+          const newState = { ...prev };
+          const firstLevelCopy = { ...prev[part0 as keyof FormData] };
           
-          if (firstLevel[part1 as keyof typeof firstLevel]) {
-            const secondLevel = { 
-              ...firstLevel[part1 as keyof typeof firstLevel] as Record<string, string>
-            };
-            
-            secondLevel[part2] = value;
-            
-            firstLevel[part1 as keyof typeof firstLevel] = secondLevel;
+          if (typeof firstLevelCopy[part1 as keyof typeof firstLevelCopy] === 'string') {
+            // @ts-ignore - We know this is safe within our controlled data structure
+            firstLevelCopy[part1] = value;
           }
           
-          newState[part0] = firstLevel;
-        }
+          // @ts-ignore - Type safety is maintained by our controlled structure
+          newState[part0] = firstLevelCopy;
+          return newState;
+        });
+      }
+    } else if (parts.length === 3) {
+      // Handle third-level fields like firstParty.name.en
+      const [part0, part1, part2] = parts;
+      
+      if ((part0 === 'firstParty' || part0 === 'secondParty') && 
+          (part1 === 'name' || part1 === 'crn' || part1 === 'nationality')) {
         
-        return newState;
-      });
+        setFormData(prev => {
+          // Create a deep copy to avoid mutation
+          const newState = { ...prev };
+          
+          if (part0 === 'firstParty') {
+            const firstPartyCopy = { ...prev.firstParty };
+            
+            if (part1 === 'name' || part1 === 'crn') {
+              const fieldCopy = { ...firstPartyCopy[part1] };
+              fieldCopy[part2 as keyof BilingualObject] = value;
+              firstPartyCopy[part1] = fieldCopy;
+            }
+            
+            newState.firstParty = firstPartyCopy;
+          } else if (part0 === 'secondParty') {
+            const secondPartyCopy = { ...prev.secondParty };
+            
+            if (part1 === 'name' || part1 === 'nationality') {
+              const fieldCopy = { ...secondPartyCopy[part1] };
+              fieldCopy[part2 as keyof BilingualObject] = value;
+              secondPartyCopy[part1] = fieldCopy;
+            }
+            
+            newState.secondParty = secondPartyCopy;
+          }
+          
+          return newState;
+        });
+      }
     }
   };
 
