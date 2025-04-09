@@ -51,20 +51,21 @@ export const exportToPDF = async (options: PDFExportOptions) => {
     // Hide UI elements and prepare for export
     const hiddenElements = prepareForExport(element as HTMLElement);
     
-    // Create PDF with appropriate dimensions
+    // Create PDF with appropriate dimensions - using precise A4 dimensions (210×297 mm)
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
       format: pageFormat,
-      compress: true
+      compress: true,
+      hotfixes: ['px_scaling'], // Fix scaling issues
     });
     
-    // Add the contract page
+    // Add the contract page - ensure we use exact dimensions
     await createContractPage(pdf, element as HTMLElement);
     
     // Add passport document as a second page if requested
     if (includePassport && contractData && contractData.promoterPhoto) {
-      pdf.addPage([210, 297], 'portrait');
+      pdf.addPage();
       await createPassportPage(pdf, contractData);
     }
     

@@ -47,6 +47,9 @@ const DownloadPDFButton = ({
       // Generate filename based on contract data
       const filename = `contract-${contractId}-${new Date().toISOString().slice(0, 10)}.pdf`;
       
+      // Apply critical styles for PDF export
+      document.body.classList.add('printing');
+      
       // Export to PDF with enhanced settings for full-page display
       await exportToPDF({
         selector: '.print-container',
@@ -56,10 +59,12 @@ const DownloadPDFButton = ({
         contractData: contractData, // Pass the full contract data for passport page
         includePassport,
         onSuccess: () => {
+          document.body.classList.remove('printing');
           setIsExporting(false);
           console.log("PDF export successful");
         },
         onError: (error) => {
+          document.body.classList.remove('printing');
           setIsExporting(false);
           console.error("PDF export error:", error);
           toast({
@@ -71,6 +76,7 @@ const DownloadPDFButton = ({
       });
     } catch (error) {
       console.error("Error in PDF export:", error);
+      document.body.classList.remove('printing');
       setIsExporting(false);
       
       toast({

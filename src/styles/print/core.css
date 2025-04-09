@@ -23,6 +23,7 @@
     padding: 0 !important;
     position: relative !important;
     z-index: 9999 !important;
+    overflow: visible !important;
   }
   
   /* Force visibility for all contract elements when printing */
@@ -34,12 +35,14 @@
     display: inherit !important;
     opacity: 1 !important;
     color: black !important;
+    overflow: visible !important;
   }
   
   /* Page settings - ZERO margins */
   @page {
     size: A4 portrait;
-    margin: 0mm;
+    margin: 0mm !important;
+    padding: 0mm !important;
   }
   
   /* Core body/html settings */
@@ -50,6 +53,9 @@
     padding: 0 !important;
     overflow: visible !important;
     background-color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
   
   /* A4 page container - exact dimensions */
@@ -58,11 +64,12 @@
     height: 297mm !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     position: relative !important;
     background-color: white !important;
     page-break-after: always !important;
     break-after: always !important;
+    display: block !important;
   }
   
   /* Contract content positioning */
@@ -73,6 +80,8 @@
     box-sizing: border-box !important;
     position: relative !important;
     z-index: 10 !important;
+    display: block !important;
+    visibility: visible !important;
   }
   
   /* Letterhead background - full page coverage */
@@ -90,37 +99,56 @@
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+  
+  /* Critical elements that must display correctly */
+  .contract-text,
+  .contract-title,
+  .reference-section,
+  .id-photo-container,
+  .promoter-details,
+  .signature-area,
+  .responsibilities,
+  .info-row,
+  .best-regards,
+  .responsibilities-title,
+  .reference-number,
+  .contract-column,
+  .contract-title-area,
+  .contract-main-title,
+  .signature-block,
+  .signature-line,
+  .signature-name,
+  .signature-image,
+  .promoter-info {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+  }
+  
+  /* Special handling for layout elements */
+  .two-column-layout {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    justify-content: space-between !important;
+    gap: 10mm !important;
+    width: 100% !important;
+  }
+  
+  .contract-column {
+    flex: 1 !important;
+    font-size: 11px !important;
+    line-height: 1.5 !important;
   }
   
   /* Error message */
   .error-message {
     display: none !important;
     visibility: hidden !important;
-  }
-  
-  /* Passport page */
-  .passport-page {
-    page-break-before: always !important;
-    break-before: always !important;
-    width: 210mm !important;
-    height: 297mm !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    position: relative !important;
-  }
-  
-  /* Passport content */
-  .passport-content {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    padding: 20mm !important;
-    height: 100% !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    position: relative !important;
-    z-index: 10 !important;
   }
 }
 
@@ -133,6 +161,7 @@ body.printing .contract-content {
   visibility: visible !important;
   opacity: 1 !important;
   color: black !important;
+  overflow: visible !important;
 }
 
 /* A4 page specific settings when printing class is active */
@@ -141,7 +170,9 @@ body.printing .a4-page {
   height: 297mm !important;
   margin: 0 !important;
   padding: 0 !important;
-  overflow: hidden !important;
+  overflow: visible !important;
+  position: relative !important;
+  box-shadow: none !important;
 }
 
 /* Content positioning when printing class is active */
@@ -176,29 +207,4 @@ body.printing .error-message,
 .error-message.print\:hidden {
   display: none !important;
   visibility: hidden !important;
-}
-
-/* Passport page styles */
-body.printing .passport-page {
-  page-break-before: always !important;
-  break-before: always !important;
-  width: 210mm !important;
-  height: 297mm !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  position: relative !important;
-}
-
-body.printing .passport-content {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  padding: 20mm !important;
-  height: 100% !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  position: relative !important;
-  z-index: 10 !important;
-  visibility: visible !important;
 }

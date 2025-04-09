@@ -58,7 +58,12 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
   }
 
   return (
-    <div ref={containerRef} className="contract-preview print-container" data-testid="print-container">
+    <div 
+      ref={containerRef} 
+      className="contract-preview print-container" 
+      data-testid="print-container"
+      style={{ margin: '0 auto' }}
+    >
       <div className="flex gap-2 mb-6 print:hidden">
         <PrintButton 
           language={language} 
@@ -74,7 +79,20 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
         />
       </div>
 
-      <div className="a4-page" style={{ width: '210mm', height: '297mm', margin: '0', padding: '0', overflow: 'hidden', position: 'relative' }}>
+      <div 
+        className="a4-page" 
+        style={{ 
+          width: '210mm', 
+          height: '297mm', 
+          margin: '0 auto', 
+          padding: '0', 
+          overflow: 'hidden', 
+          position: 'relative',
+          boxSizing: 'border-box',
+          boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+          background: 'white'
+        }}
+      >
         {/* Letterhead background - Full page coverage with proper positioning */}
         {contractData.letterhead && (
           <img
@@ -99,7 +117,17 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
           />
         )}
         
-        <div className="contract-content" style={{ position: 'relative', zIndex: 10, padding: '10mm', width: '100%', height: '100%', boxSizing: 'border-box' }}>
+        <div 
+          className="contract-content" 
+          style={{ 
+            position: 'relative', 
+            zIndex: 10, 
+            padding: '10mm', 
+            width: '100%', 
+            height: '100%', 
+            boxSizing: 'border-box' 
+          }}
+        >
           {/* Reference number */}
           <ReferenceNumber refNumber={contractData.refNumber} />
 
@@ -110,7 +138,14 @@ const ContractPreview = ({ language, contractData, signatures = [] }: ContractPr
           <ContractTitle language={language} />
 
           {/* Two Column Layout - English and Arabic sides */}
-          <div className="two-column-layout">
+          <div 
+            className="two-column-layout"
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: '10mm'
+            }}
+          >
             {/* Left Column - English */}
             {language === "en" ? (
               <>

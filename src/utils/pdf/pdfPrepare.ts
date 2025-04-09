@@ -19,41 +19,61 @@ export const prepareForExport = (element: HTMLElement): NodeListOf<Element> => {
     }
   });
 
-  // Ensure letterhead covers full page with proper dimensions
-  const letterhead = element.querySelector('.letterhead-background') as HTMLElement;
-  if (letterhead) {
-    letterhead.style.position = 'absolute';
-    letterhead.style.top = '0';
-    letterhead.style.left = '0';
-    letterhead.style.width = '100%';
-    letterhead.style.height = '100%';
-    letterhead.style.zIndex = '1';
-    letterhead.style.opacity = '0.8';
-    letterhead.style.objectFit = 'cover';
-    letterhead.style.margin = '0';
-    letterhead.style.padding = '0';
-    letterhead.style.border = 'none';
-  }
-
-  // Make sure the contract content is on top of the letterhead
-  const content = element.querySelector('.contract-content') as HTMLElement;
-  if (content) {
-    content.style.position = 'relative';
-    content.style.zIndex = '10';
-    // Use smaller padding to maximize content area
-    content.style.padding = '10mm';
-  }
-
-  // Set A4 page dimensions explicitly without margins
-  const a4Page = element.querySelector('.a4-page') as HTMLElement;
-  if (a4Page) {
-    a4Page.style.width = '210mm';
-    a4Page.style.height = '297mm';
-    a4Page.style.margin = '0';
-    a4Page.style.padding = '0';
-    a4Page.style.boxShadow = 'none';
-    a4Page.style.overflow = 'hidden';
-  }
+  // Force all critical elements to be visible
+  const criticalElements = element.querySelectorAll(
+    '.contract-preview, .a4-page, .contract-content, .letterhead-background, ' +
+    '.two-column-layout, .contract-column, .contract-text, .signature-area, ' +
+    '.signature-block, .contract-title, .reference-section, .id-photo-container, ' +
+    '.promoter-details, .responsibilities, .info-row, .best-regards, ' +
+    '.responsibilities-title, .reference-number'
+  );
+  
+  criticalElements.forEach((el) => {
+    if (el instanceof HTMLElement) {
+      el.style.visibility = 'visible';
+      el.style.opacity = '1';
+      
+      // Apply specific styles based on element type
+      if (el.classList.contains('a4-page')) {
+        el.style.width = '210mm';
+        el.style.height = '297mm';
+        el.style.margin = '0';
+        el.style.padding = '0';
+        el.style.boxShadow = 'none';
+        el.style.overflow = 'hidden';
+        el.style.position = 'relative';
+      }
+      
+      if (el.classList.contains('contract-content')) {
+        el.style.position = 'relative';
+        el.style.zIndex = '10';
+        el.style.padding = '10mm';
+        el.style.width = '100%';
+        el.style.height = '100%';
+        el.style.boxSizing = 'border-box';
+      }
+      
+      if (el.classList.contains('letterhead-background')) {
+        el.style.position = 'absolute';
+        el.style.top = '0';
+        el.style.left = '0';
+        el.style.width = '100%';
+        el.style.height = '100%';
+        el.style.zIndex = '1';
+        el.style.opacity = '0.8';
+        el.style.objectFit = 'cover';
+        el.style.margin = '0';
+        el.style.padding = '0';
+        el.style.border = 'none';
+      }
+      
+      if (el.classList.contains('two-column-layout')) {
+        el.style.display = 'flex';
+        el.style.justifyContent = 'space-between';
+        el.style.gap = '10mm';
+      }
+    }
+  });
 
   return hiddenElements;
 };

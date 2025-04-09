@@ -17,7 +17,47 @@ const convertElementToCanvas = async (element: HTMLElement): Promise<HTMLCanvasE
     useCORS: true, // Allow images from other domains
     logging: false,
     allowTaint: true,
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
+    imageTimeout: 15000, // Increased timeout for image loading
+    onclone: (clonedDoc, clonedElement) => {
+      // Ensure the cloned element has the correct dimensions for A4
+      if (clonedElement) {
+        clonedElement.style.width = '210mm';
+        clonedElement.style.height = '297mm';
+        clonedElement.style.margin = '0';
+        clonedElement.style.padding = '0';
+        clonedElement.style.overflow = 'hidden';
+        clonedElement.style.position = 'relative';
+        
+        // Make sure all child elements are visible
+        const allElements = clonedElement.querySelectorAll('*');
+        allElements.forEach(el => {
+          if (el instanceof HTMLElement) {
+            el.style.visibility = 'visible';
+            el.style.display = el.tagName.toLowerCase() === 'div' ? 'block' : '';
+            el.style.opacity = '1';
+          }
+        });
+        
+        // Make sure the letterhead is positioned correctly
+        const letterhead = clonedElement.querySelector('.letterhead-background');
+        if (letterhead instanceof HTMLElement) {
+          letterhead.style.position = 'absolute';
+          letterhead.style.top = '0';
+          letterhead.style.left = '0';
+          letterhead.style.width = '100%';
+          letterhead.style.height = '100%';
+          letterhead.style.zIndex = '1';
+        }
+        
+        // Make sure content is positioned on top
+        const content = clonedElement.querySelector('.contract-content');
+        if (content instanceof HTMLElement) {
+          content.style.position = 'relative';
+          content.style.zIndex = '10';
+        }
+      }
+    }
   });
 };
 
@@ -33,7 +73,8 @@ export const createContractPage = async (pdf: jsPDF, element: HTMLElement): Prom
   // Add canvas image to PDF - using exact A4 dimensions with no margins
   const imgData = canvas.toDataURL('image/png');
   
-  // Add the image to fill the entire page without margins - exact A4 size
+  // Add the image to fill the entire page without margins
+  // Using precise A4 dimensions (210×297 mm)
   pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
 };
 
