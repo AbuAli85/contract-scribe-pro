@@ -1,8 +1,9 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { printService } from '@/services/print.service';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import { useNestedPrintContainer } from '@/hooks/useNestedPrintContainer';
 
 interface PrintPreviewProps {
   children: React.ReactNode;
@@ -19,24 +20,19 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
   onReady,
   className = ""
 }) => {
-  const previewRef = useRef<HTMLDivElement>(null);
+  const { containerRef, isNested } = useNestedPrintContainer();
   const [hasWarnings, setHasWarnings] = useState(false);
   
   // Ensure visibility for printing when component mounts
   useEffect(() => {
-    if (!previewRef.current) return;
+    if (isNested || !containerRef.current) return;
     
     // Short delay to allow content to render fully
     const timer = setTimeout(() => {
       try {
-        // Make sure the print-container class is applied
-        if (previewRef.current) {
-          previewRef.current.classList.add('print-container');
-        }
-        
         // Add data-testid attribute for better targeting
-        if (previewRef.current && !previewRef.current.hasAttribute('data-testid')) {
-          previewRef.current.setAttribute('data-testid', 'print-container');
+        if (containerRef.current && !containerRef.current.hasAttribute('data-testid')) {
+          containerRef.current.setAttribute('data-testid', 'print-container');
         }
         
         // Apply critical printing styles immediately
@@ -72,7 +68,7 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
     }, 500);
     
     return () => clearTimeout(timer);
-  }, [onReady]);
+  }, [onReady, isNested]);
 
   // Apply print-specific styles to ensure content is visible
   const inlineStyles = `
@@ -124,6 +120,11 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
     }
   `;
 
+  // If nested, render without print container to avoid duplicates
+  if (isNested) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
     <>
       {/* Inline critical print styles */}
@@ -139,7 +140,7 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
       )}
     
       <div 
-        ref={previewRef} 
+        ref={containerRef} 
         className={`print-container ${className}`}
         data-testid="print-container"
         style={{ position: 'relative', width: '100%' }}

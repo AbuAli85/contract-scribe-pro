@@ -6,6 +6,7 @@ import ContractTitle from "./ContractTitle";
 import EnglishContractColumn from "./EnglishContractColumn";
 import ArabicContractColumn from "./ArabicContractColumn";
 import SignatureArea from "./SignatureArea";
+import { useNestedPrintContainer } from '@/hooks/useNestedPrintContainer';
 
 interface ContractContentProps {
   language: "ar" | "en";
@@ -22,13 +23,10 @@ const ContractContent: React.FC<ContractContentProps> = ({
   const documentType = contractData.documentType || 'id';
   const documentLabel = documentType === 'passport' ? 'Passport / جواز السفر' : 'ID Card / بطاقة الهوية';
 
-  // Check if already in a .contract-content container to prevent duplication
-  const isNested = React.useMemo(() => {
-    if (typeof document === 'undefined') return false;
-    const container = document.querySelector('.contract-content');
-    return container !== null && container.contains(document.activeElement);
-  }, []);
+  // Use our custom hook to detect nesting
+  const { isNested } = useNestedPrintContainer();
   
+  // If nested, return null to prevent duplication
   if (isNested) {
     console.warn('Warning: Nested contract content detected. Returning null to prevent duplication.');
     return null;

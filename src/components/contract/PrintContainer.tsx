@@ -1,7 +1,8 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { setupPrintContainer, cleanupPrinting } from '@/utils/print-container';
 import { printDebugTools } from '@/utils/print-debug-tools';
+import { useNestedPrintContainer } from '@/hooks/useNestedPrintContainer';
 
 interface PrintContainerProps {
   children: React.ReactNode;
@@ -11,23 +12,18 @@ interface PrintContainerProps {
 
 /**
  * A container for print-related content that ensures proper visibility
+ * and prevents duplicate content when nested
  */
 const PrintContainer: React.FC<PrintContainerProps> = ({
   children,
   onReady,
   className = ""
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { containerRef, isNested } = useNestedPrintContainer();
   
   // Initialize and validate print container
   useEffect(() => {
-    if (!containerRef.current) return;
-    
-    // Add print-container class and data-testid
-    if (!containerRef.current.classList.contains('print-container')) {
-      containerRef.current.classList.add('print-container');
-    }
-    containerRef.current.setAttribute('data-testid', 'print-container');
+    if (isNested || !containerRef.current) return;
     
     // Set up print container and critical styles
     const timer = setTimeout(() => {
@@ -58,22 +54,7 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
       clearTimeout(timer);
       cleanupPrinting();
     };
-  }, [onReady]);
-  
-  // Prevent nested duplicates by checking if we're already inside a print container
-  const isNested = React.useMemo(() => {
-    if (typeof document === 'undefined') return false;
-    
-    // Check if this container is inside another print container
-    const isInsideContainer = containerRef.current?.closest('.print-container') !== null 
-                             && containerRef.current?.closest('.print-container') !== containerRef.current;
-    
-    if (isInsideContainer) {
-      console.warn('Warning: Nested print container detected. This may cause duplicate content when printing.');
-    }
-    
-    return isInsideContainer;
-  }, []);
+  }, [onReady, isNested]);
   
   // If nested, wrap in a div without print-container class to avoid duplicates
   if (isNested) {

@@ -1,9 +1,10 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { printService } from '@/services/print.service';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import { setupPrintContainer, cleanupPrinting } from '@/utils/print-container';
+import { useNestedPrintContainer } from '@/hooks/useNestedPrintContainer';
 
 interface PrintPreviewProps {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ interface PrintPreviewProps {
 
 /**
  * An enhanced print preview component that handles visibility and print preparation
+ * while preventing duplicate content when nested
  */
 const PrintPreview: React.FC<PrintPreviewProps> = ({
   children,
@@ -21,17 +23,12 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
   showWarnings = true,
   className = ""
 }) => {
-  const previewRef = useRef<HTMLDivElement>(null);
-  const [isReady, setIsReady] = React.useState(false);
+  const { containerRef, isNested } = useNestedPrintContainer();
   const [warnings, setWarnings] = React.useState<string[]>([]);
   
   // Prepare content for printing and check for issues
   useEffect(() => {
-    if (!previewRef.current) return;
-    
-    // Immediately mark as print container
-    previewRef.current.classList.add('print-container');
-    previewRef.current.setAttribute('data-testid', 'print-container');
+    if (isNested || !containerRef.current) return;
     
     // Log container existence for debugging
     console.log('PrintPreview: Added print-container class to element');
@@ -82,8 +79,7 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
         // Apply visibility fixes
         printService.fixVisibility('.print-container');
         
-        // Set as ready anyway to allow printing
-        setIsReady(true);
+        // Set as ready
         setWarnings([]);
         
         // Notify parent component
@@ -92,7 +88,6 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
         console.log('PrintPreview content ready, print container exists:', !!document.querySelector('.print-container'));
       } catch (error) {
         console.error('Error preparing print content:', error);
-        setIsReady(false);
         setWarnings(['Error preparing content for printing']);
         onReady?.(false);
       }
@@ -110,10 +105,15 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
       }
       cleanupPrinting();
     };
-  }, [onReady, children]);
+  }, [onReady, children, isNested]);
+
+  // If nested, render without print container to avoid duplicates
+  if (isNested) {
+    return <div className={className}>{children}</div>;
+  }
 
   return (
-    <div ref={previewRef} className={`print-container ${className}`} data-testid="print-container">
+    <div ref={containerRef} className={`print-container ${className}`} data-testid="print-container">
       {showWarnings && warnings.length > 0 && (
         <Alert variant="destructive" className="mb-4 print:hidden">
           <AlertTriangle className="h-4 w-4" />
