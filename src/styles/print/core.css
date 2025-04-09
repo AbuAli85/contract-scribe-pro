@@ -63,6 +63,8 @@
     left: 0 !important;
   }
   
+  /* EXACT POSITIONING FOR ELEMENTS */
+  
   /* Reference number - exactly 2.5cm from top */
   .reference-section {
     position: absolute !important;
@@ -93,6 +95,13 @@
     flex-direction: column !important;
     align-items: center !important;
     z-index: 10 !important;
+  }
+  
+  /* ID photo wrapper - exactly 400px width */
+  .id-photo-wrapper {
+    width: 400px !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
   }
   
   /* Contract content - positioned at 3.5cm from top */

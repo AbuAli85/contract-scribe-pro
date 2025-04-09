@@ -24,6 +24,25 @@ const ContractContent: React.FC<ContractContentProps> = ({
 
   return (
     <div className="contract-content">
+      {/* Letterhead background - if available */}
+      {contractData.letterhead && (
+        <div 
+          className="letterhead-background" 
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundImage: `url('${contractData.letterhead}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: 0.05,
+            zIndex: 1
+          }}
+        />
+      )}
+
       {/* Reference number at top-left (2.5cm from top) */}
       <ReferenceNumber refNumber={contractData.refNumber} />
 
