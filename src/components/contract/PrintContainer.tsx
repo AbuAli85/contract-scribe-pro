@@ -137,6 +137,13 @@ const PrintContainer: React.FC<PrintContainerProps> = ({
         width: calc(100% - 20mm) !important;
       }
       
+      .signature-area {
+        position: absolute !important;
+        top: 75mm !important;
+        left: 10mm !important;
+        width: calc(100% - 20mm) !important;
+      }
+      
       .bottom-info {
         position: absolute !important;
         bottom: 20mm !important;

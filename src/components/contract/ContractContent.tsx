@@ -43,19 +43,25 @@ const ContractContent: React.FC<ContractContentProps> = ({
         />
       )}
 
-      {/* Reference number at top-left (2.5cm from top) */}
-      <ReferenceNumber refNumber={contractData.refNumber} />
+      {/* Reference number at top-left (positioned at 2.5cm from top) */}
+      <div className="reference-section">
+        <ReferenceNumber refNumber={contractData.refNumber} />
+      </div>
 
-      {/* Contract Title (2.8cm from top, centered) */}
-      <ContractTitle language={language} />
+      {/* Contract Title (positioned at 2.8cm from top) */}
+      <div className="contract-title-area">
+        <ContractTitle language={language} />
+      </div>
 
-      {/* ID Photo centered (3.2cm from top, width 400px) */}
+      {/* ID Photo (positioned at 3.2cm from top) */}
       {contractData.promoterPhoto && (
-        <PromoterPhoto 
-          photoUrl={contractData.promoterPhoto} 
-          type={documentType}
-          label={documentLabel}
-        />
+        <div className="id-photo-container">
+          <PromoterPhoto 
+            photoUrl={contractData.promoterPhoto} 
+            type={documentType}
+            label={documentLabel}
+          />
+        </div>
       )}
 
       {/* Two Column Layout - contract content (positioned at 3.5cm from top) */}
@@ -75,9 +81,11 @@ const ContractContent: React.FC<ContractContentProps> = ({
       </div>
 
       {/* Signature Area below content */}
-      <SignatureArea signatures={signatures} />
+      <div className="signature-area">
+        <SignatureArea signatures={signatures} />
+      </div>
       
-      {/* Footer information with absolute positioning */}
+      {/* Footer information */}
       <div className="bottom-info">
         <div className="company-info text-xs text-gray-600">
           <div className="cr-info">

@@ -64,6 +64,17 @@
     margin: 0 auto !important;
   }
   
+  /* Signature area properly positioned */
+  .signature-area {
+    position: absolute !important;
+    top: 75mm !important;
+    left: 10mm !important;
+    width: calc(100% - 20mm) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    z-index: 10 !important;
+  }
+  
   /* Bottom info positioning */
   .bottom-info {
     position: absolute !important;
@@ -131,6 +142,13 @@ body.printing .id-photo-wrapper {
   width: 400px !important;
   max-width: 100% !important;
   margin: 0 auto !important;
+}
+
+body.printing .signature-area {
+  position: absolute !important;
+  top: 75mm !important;
+  left: 10mm !important;
+  width: calc(100% - 20mm) !important;
 }
 
 body.printing .bottom-info {

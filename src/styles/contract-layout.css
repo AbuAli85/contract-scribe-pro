@@ -112,7 +112,7 @@
   width: calc(100% - 20mm);
   display: flex;
   justify-content: space-between;
-  gap: 10mm; /* Increased gap between columns */
+  gap: 10mm; /* Gap between columns */
   z-index: 10;
   margin: 0;
 }
@@ -133,12 +133,17 @@
 
 /* Signature Area */
 .signature-area {
+  position: absolute;
+  top: 75mm; /* Position after content */
+  left: 10mm;
+  width: calc(100% - 20mm);
   display: flex;
   justify-content: space-between;
   margin-top: 5mm;
   margin-bottom: 3mm;
   border-top: 1px solid #eaeaea;
   padding-top: 2mm;
+  z-index: 10;
 }
 
 .signature-block {
@@ -173,6 +178,7 @@
   color: #666;
   border-top: 1px solid #eaeaea;
   padding-top: 5mm;
+  z-index: 10;
 }
 
 /* Special handling for print */
@@ -180,11 +186,8 @@
   .a4-page {
     margin: 0;
     box-shadow: none;
-  }
-  
-  .letterhead-background {
-    width: 100%;
-    height: 100%;
+    width: 210mm !important;
+    height: 297mm !important;
   }
   
   .reference-section {
@@ -210,15 +213,17 @@
     width: calc(100% - 20mm) !important;
   }
   
+  .signature-area {
+    position: absolute !important;
+    top: 75mm !important;
+    left: 10mm !important;
+    width: calc(100% - 20mm) !important;
+  }
+  
   .bottom-info {
     position: absolute !important;
     bottom: 20mm !important;
     left: 10mm !important;
     right: 10mm !important;
-  }
-  
-  .passport-page {
-    page-break-before: always !important;
-    break-before: always !important;
   }
 }

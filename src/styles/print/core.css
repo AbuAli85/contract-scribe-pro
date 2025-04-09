@@ -116,6 +116,17 @@
     z-index: 10 !important;
   }
   
+  /* Signature area - positioned after content */
+  .signature-area {
+    position: absolute !important;
+    top: 75mm !important;
+    left: 10mm !important;
+    width: calc(100% - 20mm) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    z-index: 10 !important;
+  }
+  
   /* Bottom info positioning */
   .bottom-info {
     position: absolute !important;
@@ -171,6 +182,13 @@ body.printing .id-photo-container {
 body.printing .two-column-layout {
   position: absolute !important;
   top: 35mm !important; /* 3.5cm from top */
+  left: 10mm !important;
+  width: calc(100% - 20mm) !important;
+}
+
+body.printing .signature-area {
+  position: absolute !important;
+  top: 75mm !important;
   left: 10mm !important;
   width: calc(100% - 20mm) !important;
 }
