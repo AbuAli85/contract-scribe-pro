@@ -22,28 +22,8 @@ const ContractContent: React.FC<ContractContentProps> = ({
   const documentType = contractData.documentType || 'id';
   const documentLabel = documentType === 'passport' ? 'Passport / جواز السفر' : 'ID Card / بطاقة الهوية';
 
-  // Apply absolute positioning to match exact A4 specs
-  const styles = {
-    contractContent: {
-      position: 'relative',
-      width: '100%',
-      height: '100%',
-      padding: '0 20mm',
-      boxSizing: 'border-box',
-      zIndex: 10,
-    },
-    footerInfo: {
-      position: 'absolute',
-      bottom: '20mm',
-      left: '10mm',
-      right: '10mm',
-      borderTop: '1px solid #eaeaea',
-      paddingTop: '5mm',
-    }
-  } as const;
-
   return (
-    <div style={styles.contractContent} className="contract-content">
+    <div className="contract-content">
       {/* Reference number at top-left (2.5cm from top) */}
       <ReferenceNumber refNumber={contractData.refNumber} />
 
@@ -79,7 +59,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
       <SignatureArea signatures={signatures} />
       
       {/* Footer information with absolute positioning */}
-      <div style={styles.footerInfo} className="bottom-info flex justify-between text-xs">
+      <div className="bottom-info">
         <div className="company-info text-xs text-gray-600">
           <div className="cr-info">
             <div className="cr-number mb-1 font-mono">CR: {contractData?.firstParty?.crn?.en || "1410869"}</div>

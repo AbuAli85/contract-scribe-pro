@@ -18,7 +18,7 @@
   z-index: 10;
   width: 100%;
   height: 100%;
-  padding: 0 20mm;
+  padding: 0;
   box-sizing: border-box;
   margin: 0;
 }
@@ -29,7 +29,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.1;
+  opacity: 0.05;
   z-index: 1;
   pointer-events: none;
   object-fit: cover;
@@ -163,12 +163,16 @@
 
 /* Bottom Information */
 .bottom-info {
-  position: relative;
+  position: absolute;
+  bottom: 20mm;
+  left: 10mm;
+  right: 10mm;
   display: flex;
   justify-content: space-between;
   font-size: 8px;
   color: #666;
-  margin-top: 4mm;
+  border-top: 1px solid #eaeaea;
+  padding-top: 5mm;
 }
 
 /* Special handling for print */
@@ -181,15 +185,6 @@
   .letterhead-background {
     width: 100%;
     height: 100%;
-  }
-  
-  .two-column-layout {
-    display: flex !important;
-    gap: 10mm !important;
-  }
-  
-  .id-photo-wrapper {
-    width: 400px !important;
   }
   
   .reference-section {
@@ -213,6 +208,13 @@
     top: 35mm !important; /* 3.5cm from top */
     left: 10mm !important;
     width: calc(100% - 20mm) !important;
+  }
+  
+  .bottom-info {
+    position: absolute !important;
+    bottom: 20mm !important;
+    left: 10mm !important;
+    right: 10mm !important;
   }
   
   .passport-page {

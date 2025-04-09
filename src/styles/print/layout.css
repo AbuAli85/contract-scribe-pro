@@ -63,6 +63,17 @@
     max-width: 100% !important;
     margin: 0 auto !important;
   }
+  
+  /* Bottom info positioning */
+  .bottom-info {
+    position: absolute !important;
+    bottom: 20mm !important;
+    left: 10mm !important;
+    right: 10mm !important;
+    border-top: 1px solid #eaeaea !important;
+    padding-top: 5mm !important;
+    z-index: 10 !important;
+  }
 }
 
 /* Fix for flex containers when printing class is active */
@@ -120,4 +131,13 @@ body.printing .id-photo-wrapper {
   width: 400px !important;
   max-width: 100% !important;
   margin: 0 auto !important;
+}
+
+body.printing .bottom-info {
+  position: absolute !important;
+  bottom: 20mm !important;
+  left: 10mm !important;
+  right: 10mm !important;
+  border-top: 1px solid #eaeaea !important;
+  padding-top: 5mm !important;
 }

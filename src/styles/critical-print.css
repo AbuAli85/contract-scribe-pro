@@ -23,36 +23,6 @@
     overflow: visible !important;
   }
   
-  /* Special layout handling */
-  .two-column-layout {
-    display: flex !important;
-    justify-content: space-between !important;
-    gap: 10mm !important;
-  }
-  
-  /* Letterhead background - Ensure it covers full page with reduced opacity */
-  .letterhead-background {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    z-index: 1 !important;
-    opacity: 0.05 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-  }
-  
-  /* Contract content - Ensure it's on top of the letterhead */
-  .contract-content {
-    position: relative !important;
-    z-index: 10 !important;
-    padding: 0 20mm 20mm !important;
-    margin: 0 !important;
-  }
-  
   /* Page settings - ZERO margins for print */
   @page {
     size: A4 portrait;
