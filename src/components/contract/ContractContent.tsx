@@ -23,7 +23,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
   const documentType = contractData.documentType || 'id';
   const documentLabel = documentType === 'passport' ? 'Passport / جواز السفر' : 'ID Card / بطاقة الهوية';
 
-  // Use our custom hook to detect nesting
+  // Use our custom hook to detect nesting and prevent duplicate print content
   const { isNested } = useNestedPrintContainer();
   
   // If nested, return null to prevent duplication
@@ -33,11 +33,11 @@ const ContractContent: React.FC<ContractContentProps> = ({
   }
 
   return (
-    <div className="contract-content">
+    <div className="contract-content print-section">
       {/* Letterhead background - if available */}
       {contractData.letterhead && (
         <div 
-          className="letterhead-background" 
+          className="letterhead-background print-background" 
           style={{
             position: 'absolute',
             top: 0,
@@ -54,18 +54,18 @@ const ContractContent: React.FC<ContractContentProps> = ({
       )}
 
       {/* Reference number at top-left (positioned at 2.5cm from top) */}
-      <div className="reference-section">
+      <div className="reference-section print-section">
         <ReferenceNumber refNumber={contractData.refNumber} />
       </div>
 
       {/* Contract Title (positioned at 2.8cm from top) */}
-      <div className="contract-title-area">
+      <div className="contract-title-area print-section">
         <ContractTitle language={language} />
       </div>
 
       {/* ID Photo (positioned at 3.2cm from top) */}
       {contractData.promoterPhoto && (
-        <div className="id-photo-container">
+        <div className="id-photo-container print-section">
           <div className="id-photo-wrapper">
             <PromoterPhoto 
               photoUrl={contractData.promoterPhoto} 
@@ -77,7 +77,7 @@ const ContractContent: React.FC<ContractContentProps> = ({
       )}
 
       {/* Two Column Layout - contract content (positioned at 3.5cm from top) */}
-      <div className="two-column-layout">
+      <div className="two-column-layout print-section">
         {/* Columns order based on language */}
         {language === "en" ? (
           <>
@@ -93,12 +93,12 @@ const ContractContent: React.FC<ContractContentProps> = ({
       </div>
 
       {/* Signature Area below content */}
-      <div className="signature-area">
+      <div className="signature-area print-section">
         <SignatureArea signatures={signatures} />
       </div>
       
       {/* Footer information */}
-      <div className="bottom-info">
+      <div className="bottom-info print-section">
         <div className="company-info text-xs text-gray-600">
           <div className="cr-info">
             <div className="cr-number mb-1 font-mono">CR: {contractData?.firstParty?.crn?.en || "1410869"}</div>

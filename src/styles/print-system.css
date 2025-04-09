@@ -39,3 +39,61 @@
 
 /* Photos and images */
 @import './print/photos-images.css';
+
+/* Common print section class to ensure visibility */
+.print-section {
+  display: block;
+  visibility: visible;
+  position: relative;
+  z-index: 10;
+}
+
+.print-nested-container {
+  /* For nested content, we don't want print classes but still need proper styling */
+  position: relative;
+}
+
+.print-background {
+  position: absolute;
+  z-index: 1;
+}
+
+/* Print container debug styles */
+.print-debug-info {
+  background-color: #fffbea;
+  border: 1px solid #f7df1e;
+  padding: 8px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+@media print {
+  /* Hide debug info when printing */
+  .print-debug-info {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+  /* Ensure all print sections are visible */
+  .print-section {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+  }
+  
+  /* Handle nested containers */
+  .print-nested-container {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+/* Print ready state on html element - for JavaScript detection */
+html.print-ready .print-container {
+  background-color: white;
+  visibility: visible;
+  display: block;
+}

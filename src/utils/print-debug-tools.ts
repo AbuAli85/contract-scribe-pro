@@ -28,6 +28,15 @@ export const printDebugTools = {
       // 3. Additional browser-specific fixes
       const { browserName, tips } = printDiagnostics.getBrowserSpecificInfo();
       console.log(`${browserName}-specific tips:`, tips);
+      
+      // 4. Apply print-section classes to all elements that need it
+      const elementsToFix = document.querySelectorAll('.contract-content *, .signature-area *, .reference-section *, .two-column-layout *');
+      elementsToFix.forEach(el => {
+        if (el instanceof HTMLElement && !el.classList.contains('print-section') && 
+            !el.closest('.print-nested-container')) {
+          el.classList.add('print-visibility-fixed');
+        }
+      });
     } else {
       console.log('No major issues detected. Print preview should work correctly.');
     }
@@ -63,8 +72,26 @@ export const printDebugTools = {
       
       // @ts-ignore - Adding to window object
       window.printVisibilityFix = () => {
-        printService.fixVisibility();
+        printService.fixVisibility('.print-container');
         return "Visibility fixes applied. Check if printing works now.";
+      };
+      
+      // @ts-ignore - Adding to window object
+      window.checkNestedContainers = () => {
+        const containers = document.querySelectorAll('.print-container');
+        const nestedContainers = [];
+        
+        containers.forEach(container => {
+          if (container.closest('.print-container') !== container) {
+            nestedContainers.push(container);
+          }
+        });
+        
+        return {
+          totalContainers: containers.length,
+          nestedContainers: nestedContainers.length,
+          nestedElements: nestedContainers
+        };
       };
     }
     
