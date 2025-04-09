@@ -44,8 +44,8 @@ export function DocumentSelectionList({
           key={type}
           type={type as any}
           documents={docs}
-          onDocumentDeleted={onDocumentRemoved}
-          onDocumentUpdated={onDocumentUpdated}
+          onDocumentDeleted={(id) => onDocumentRemoved(id)}
+          onDocumentUpdated={(id) => onDocumentUpdated(id)}
         />
       ))}
     </div>
