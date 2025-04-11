@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import PrintContainer from "@/components/contract/PrintContainer";
 import ContractPage from "@/components/contract/ContractPage";
 import ContractContent from "@/components/contract/ContractContent";
 import PrintErrorPage from "@/components/contract/PrintErrorPage";
+import ContractError from "@/components/contract/ContractError";
 import { supabase } from "@/integrations/supabase/client";
 import PrintButton from "@/components/contract/PrintButton";
 
@@ -30,8 +30,7 @@ const ContractDetail = () => {
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(contractId);
         
         if (!isUuid) {
-          // For non-UUID IDs, use a different query approach or display a user-friendly error
-          console.log(`Non-UUID contract ID format detected: ${contractId}`);
+          // For non-UUID IDs, show a dedicated error
           throw new Error(`The contract ID format is invalid. Please use a valid UUID format instead of "${contractId}".`);
         }
         
@@ -79,55 +78,9 @@ const ContractDetail = () => {
     fetchContractData();
   }, [contractId, toast]);
 
-  // Handle error states
+  // Handle error states - use the dedicated ContractError component
   if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link to="/">
-            <Button variant="ghost" className="flex items-center gap-1">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
-            </Button>
-          </Link>
-        </div>
-        
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-lg font-medium text-red-800">Contract Error</h3>
-              <div className="mt-2 text-red-700">
-                <p>{error}</p>
-              </div>
-              <div className="mt-4">
-                <div className="bg-white p-3 rounded border border-red-200">
-                  <h4 className="font-semibold text-gray-800 mb-1">What might be wrong?</h4>
-                  <ul className="list-disc ml-4 text-sm text-gray-700">
-                    <li>The contract ID might be invalid (must be a UUID format)</li>
-                    <li>The contract might have been deleted</li>
-                    <li>You might not have permission to view this contract</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex gap-3 mt-6">
-          <Button onClick={() => navigate('/')} variant="default">
-            Go to Dashboard
-          </Button>
-          <Button onClick={() => window.history.back()} variant="secondary">
-            Go Back
-          </Button>
-        </div>
-      </div>
-    );
+    return <ContractError errorMessage={error} invalidId={contractId} />;
   }
 
   // Show loading state

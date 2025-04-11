@@ -2,7 +2,7 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, FileText, ArrowLeft, Info } from "lucide-react";
+import { Home, FileText, ArrowLeft, Info, Database } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
@@ -38,7 +38,7 @@ const NotFound = () => {
                 Make sure you're using the correct format: <code>/contracts/[contract-id]</code>
               </p>
               <p className="text-blue-600 text-sm">
-                Example: <code>/contracts/123e4567-e89b-12d3-a456-426614174000</code> for a valid contract
+                Contract IDs must be in valid UUID format
               </p>
             </div>
           )}
@@ -61,6 +61,27 @@ const NotFound = () => {
                     <code className="bg-white px-1 py-0.5 rounded border border-amber-200">
                       123e4567-e89b-12d3-a456-426614174000
                     </code>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {isLikelyInvalidUuid && (
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-left">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <Database className="h-5 w-5 text-blue-500" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-blue-700 mb-2 font-medium">
+                    Why UUIDs?
+                  </p>
+                  <p className="text-blue-600 text-sm mb-2">
+                    Our database requires UUID format for security and consistency reasons.
+                  </p>
+                  <p className="text-blue-600 text-sm">
+                    You can access contracts from the dashboard where all valid IDs are properly formatted.
                   </p>
                 </div>
               </div>
