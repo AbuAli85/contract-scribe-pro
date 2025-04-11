@@ -13,6 +13,18 @@ const NotFound = () => {
       "404 Error: User attempted to access non-existent route:",
       location.pathname
     );
+    
+    // If there's a contract ID issue, mark the body to prevent duplicate toast messages
+    const contractIdMatch = location.pathname.match(/\/contracts\/([^\/]+)/);
+    const invalidContractId = contractIdMatch ? contractIdMatch[1] : null;
+    
+    if (invalidContractId && !isValidUUID(invalidContractId)) {
+      document.body.setAttribute('data-uuid-error', 'true');
+    }
+    
+    return () => {
+      document.body.removeAttribute('data-uuid-error');
+    };
   }, [location.pathname]);
 
   // Check if the user was trying to access a contract

@@ -39,3 +39,13 @@ body {
     margin: 0;
   }
 }
+
+/* Prevent duplicate UUID error displays */
+[data-uuid-error="true"] .uuid-error {
+  display: none !important;
+}
+
+/* Hide duplicate error messages for contract ID issues */
+body[data-uuid-error="true"] [data-uuid-error="true"] {
+  display: none !important;
+}

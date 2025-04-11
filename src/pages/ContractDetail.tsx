@@ -27,6 +27,9 @@ const ContractDetail = () => {
 
   // Validate the contract ID immediately on component mount
   useEffect(() => {
+    // Set a flag to prevent duplicate error messages
+    document.body.removeAttribute('data-uuid-error');
+    
     if (!contractId) {
       setError("No contract ID provided");
       setLoading(false);
@@ -37,6 +40,7 @@ const ContractDetail = () => {
     if (!isValidUUID(contractId)) {
       const errorMessage = `The contract ID format is invalid. Please use a valid UUID format instead of "${contractId}".`;
       console.error(errorMessage);
+      document.body.setAttribute('data-uuid-error', 'true');
       setError(errorMessage);
       setLoading(false);
       return;
@@ -84,6 +88,11 @@ const ContractDetail = () => {
     };
     
     fetchContractData();
+    
+    return () => {
+      // Clean up error flag when unmounting
+      document.body.removeAttribute('data-uuid-error');
+    };
   }, [contractId]);
 
   // Handle downloading PDF
