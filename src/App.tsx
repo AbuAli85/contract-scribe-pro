@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import Dashboard from "./pages/Dashboard"
 import CreateContract from "./pages/CreateContract"
+import ContractDetail from "./pages/ContractDetail"
 import NotFound from "./pages/NotFound"
 import { Toaster } from "./components/ui/toaster"
 import { ThemeProvider } from "./components/ThemeProvider"
@@ -75,6 +76,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/create-contract" element={<CreateContract />} />
+          <Route path="/contracts/:contractId" element={<ContractDetail />} />
           <Route path="/print-error" element={<PrintErrorPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
