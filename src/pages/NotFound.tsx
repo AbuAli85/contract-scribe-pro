@@ -2,7 +2,7 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, FileText, ArrowLeft } from "lucide-react";
+import { Home, FileText, ArrowLeft, Info } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
@@ -16,6 +16,11 @@ const NotFound = () => {
 
   // Check if the user was trying to access a contract
   const isContractPath = location.pathname.includes('/contract');
+  
+  // Check if there's a specific ID pattern that looks like a non-UUID format
+  const contractIdMatch = location.pathname.match(/\/contracts\/([^\/]+)/);
+  const invalidContractId = contractIdMatch ? contractIdMatch[1] : null;
+  const isLikelyInvalidUuid = invalidContractId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(invalidContractId);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
@@ -33,8 +38,32 @@ const NotFound = () => {
                 Make sure you're using the correct format: <code>/contracts/[contract-id]</code>
               </p>
               <p className="text-blue-600 text-sm">
-                Example: <code>/contracts/c1</code> for contract with ID "c1"
+                Example: <code>/contracts/123e4567-e89b-12d3-a456-426614174000</code> for a valid contract
               </p>
+            </div>
+          )}
+          
+          {isLikelyInvalidUuid && (
+            <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6 text-left">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <Info className="h-5 w-5 text-amber-500" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-amber-700 mb-2 font-medium">
+                    Invalid Contract ID Format
+                  </p>
+                  <p className="text-amber-600 text-sm mb-2">
+                    The contract ID <code>"{invalidContractId}"</code> is not in the required UUID format.
+                  </p>
+                  <p className="text-amber-600 text-sm">
+                    Contract IDs must be valid UUIDs, for example: <br />
+                    <code className="bg-white px-1 py-0.5 rounded border border-amber-200">
+                      123e4567-e89b-12d3-a456-426614174000
+                    </code>
+                  </p>
+                </div>
+              </div>
             </div>
           )}
           
