@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import ContractError from "@/components/contract/ContractError";
 import { supabase } from "@/integrations/supabase/client";
 import PrintButton from "@/components/contract/PrintButton";
 import { isValidUUID } from "@/lib/utils";
+import { exportToPDF } from "@/utils/pdf/pdfExport";
 
 const ContractDetail = () => {
   const { contractId } = useParams<{ contractId: string }>();
@@ -20,6 +22,7 @@ const ContractDetail = () => {
   const [signatures, setSignatures] = useState<any[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const fetchContractData = async () => {
@@ -73,6 +76,48 @@ const ContractDetail = () => {
     
     fetchContractData();
   }, [contractId]);
+
+  // Handle downloading PDF
+  const handleDownloadPDF = async () => {
+    if (!contractData || !contractId) {
+      toast({
+        variant: "destructive",
+        title: "Export Error",
+        description: "Contract data is missing or invalid",
+      });
+      return;
+    }
+
+    // Validate contract ID format again before export
+    if (!isValidUUID(contractId)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Contract ID",
+        description: `The contract ID format is invalid. Please use a valid UUID format instead of "${contractId}".`,
+      });
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      await exportToPDF({
+        selector: '.print-container',
+        filename: `contract-${contractData.ref_number || contractId}.pdf`,
+        language: contractData?.language || "en",
+        contractData,
+        includePassport: true
+      });
+    } catch (error) {
+      console.error("Error exporting to PDF:", error);
+      toast({
+        variant: "destructive",
+        title: "PDF Export Failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Handle error states - use the dedicated ContractError component
   if (error) {
@@ -128,9 +173,23 @@ const ContractDetail = () => {
             contractId={contractId}
           />
           
-          <Button variant="outline" className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
-            {language === "ar" ? "تنزيل PDF" : "Download PDF"}
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+            onClick={handleDownloadPDF}
+            disabled={isExporting}
+          >
+            {isExporting ? (
+              <>
+                <span className="h-4 w-4 border-2 border-t-primary animate-spin rounded-full"></span>
+                {language === "ar" ? "جارٍ التصدير..." : "Exporting..."}
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4" />
+                {language === "ar" ? "تنزيل PDF" : "Download PDF"}
+              </>
+            )}
           </Button>
         </div>
       </div>

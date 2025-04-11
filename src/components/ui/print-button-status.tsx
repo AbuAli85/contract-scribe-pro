@@ -1,12 +1,12 @@
 
 import React from "react";
-import { Printer, Loader2, AlertTriangle, FileText } from "lucide-react";
+import { Printer, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
 interface PrintButtonStatusProps {
   isPrinting: boolean;
   isLoading: boolean;
   contentReady: boolean;
-  documentsCount: number;
+  documentsCount?: number;
   language: "ar" | "en";
 }
 
@@ -14,51 +14,44 @@ export function PrintButtonStatus({
   isPrinting,
   isLoading,
   contentReady,
-  documentsCount,
+  documentsCount = 0,
   language
 }: PrintButtonStatusProps) {
-  if (isPrinting) {
+  // Don't render the icon if we're in an error state
+  if (!contentReady && !isLoading && !isPrinting) {
     return (
       <>
-        <Loader2 className="h-4 w-4 animate-spin" />
-        <span>{language === "ar" ? "جاري الطباعة..." : "Printing..."}</span>
-      </>
-    );
-  }
-  
-  if (isLoading) {
-    return (
-      <>
-        <Loader2 className="h-4 w-4 animate-spin" />
-        <span>{language === "ar" ? "جاري التحميل..." : "Loading..."}</span>
-      </>
-    );
-  }
-  
-  if (!contentReady) {
-    return (
-      <>
-        <AlertTriangle className="h-4 w-4 text-yellow-500" />
-        <span>{language === "ar" ? "تجهيز المحتوى..." : "Preparing content..."}</span>
+        <AlertCircle className="h-4 w-4 text-destructive" />
+        {language === "ar" ? "خطأ" : "Error"}
       </>
     );
   }
 
+  // If printing is in progress, show the loader
+  if (isPrinting) {
+    return (
+      <>
+        <Loader2 className="h-4 w-4 animate-spin" />
+        {language === "ar" ? "جارٍ الطباعة..." : "Printing..."}
+      </>
+    );
+  }
+
+  // If data is loading, show a loader
+  if (isLoading) {
+    return (
+      <>
+        <Loader2 className="h-4 w-4 animate-spin" />
+        {language === "ar" ? "جارٍ التحميل..." : "Loading..."}
+      </>
+    );
+  }
+
+  // Default print button state
   return (
     <>
-      {documentsCount > 0 ? (
-        <FileText className="h-4 w-4" />
-      ) : (
-        <Printer className="h-4 w-4" />
-      )}
-      <span>
-        {language === "ar" ? "طباعة" : "Print"}
-      </span>
-      {documentsCount > 0 && (
-        <span className="ml-1 text-xs">
-          ({documentsCount} {language === "ar" ? "مستندات" : "documents"})
-        </span>
-      )}
+      <Printer className="h-4 w-4" />
+      {language === "ar" ? "طباعة" : "Print"}
     </>
   );
 }

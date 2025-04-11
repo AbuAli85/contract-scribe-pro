@@ -1,35 +1,34 @@
 
 /**
- * PDF Toast Notifications
- * Handles displaying success and error toast notifications
+ * PDF Export Toast Messages
+ * Contains toast messages for PDF export
  */
 import { toast } from '@/hooks/use-toast';
 
-/**
- * Toast notification display handlers
- */
 export const displayToasts = {
-  /**
-   * Show a success toast message
-   * @param language Current UI language
-   */
-  success: (language: 'en' | 'ar'): void => {
+  success: (language: 'en' | 'ar') => {
     toast({
-      title: language === "ar" ? "تم تحميل PDF بنجاح" : "PDF Downloaded",
-      description: language === "ar" ? "تم تحميل عقدك كملف PDF" : "Your contract has been downloaded as a PDF",
+      title: language === 'ar' ? 'تم تصدير الملف بنجاح' : 'PDF Export Successful',
+      description: language === 'ar' 
+        ? 'تم تصدير الملف بنجاح وحفظه على جهازك'
+        : 'The document has been exported and saved to your device',
     });
   },
-
-  /**
-   * Show an error toast message
-   * @param language Current UI language
-   * @param error Error object or message
-   */
-  error: (language: 'en' | 'ar', error: unknown): void => {
+  
+  error: (language: 'en' | 'ar', error: any) => {
+    // For UUID validation errors, we'll show a more specific message
+    const isUuidError = error instanceof Error && 
+      error.message.includes('invalid') && 
+      error.message.includes('UUID');
+    
     toast({
-      title: language === "ar" ? "خطأ في تحميل PDF" : "PDF Export Error",
-      description: error instanceof Error ? error.message : "An error occurred during PDF export",
-      variant: "destructive",
+      variant: 'destructive',
+      title: language === 'ar' ? 'خطأ في تصدير الملف' : 'PDF Export Failed',
+      description: isUuidError 
+        ? (language === 'ar' 
+            ? 'معرف العقد غير صالح. يرجى استخدام معرف بتنسيق UUID صالح.'
+            : 'Invalid contract ID. Please use a valid UUID format.')
+        : (error instanceof Error ? error.message : 'An unknown error occurred'),
     });
   }
 };
