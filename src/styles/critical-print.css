@@ -58,7 +58,8 @@
   button:not(.signature-block button),
   .tabs-list,
   header,
-  nav {
+  nav,
+  [data-uuid-error="true"] {
     display: none !important;
   }
   

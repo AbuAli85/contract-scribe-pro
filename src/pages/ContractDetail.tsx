@@ -33,6 +33,7 @@ const ContractDetail = () => {
       return;
     }
 
+    // Early validation for UUID format - do this synchronously before any async operations
     if (!isValidUUID(contractId)) {
       const errorMessage = `The contract ID format is invalid. Please use a valid UUID format instead of "${contractId}".`;
       console.error(errorMessage);
@@ -87,15 +88,16 @@ const ContractDetail = () => {
 
   // Handle downloading PDF
   const handleDownloadPDF = async () => {
-    // Validate contract data and ID before even attempting export
+    // Extra validation for contract data and ID - add redundant safety
     if (!contractData || !contractId) {
       displayToasts.error("en", new Error("Contract data is missing or invalid"));
       return;
     }
 
-    // Validate contract ID format again before export
+    // Double check UUID format to prevent download of invalid contracts
     if (!isValidUUID(contractId)) {
-      displayToasts.error("en", new Error(`The contract ID format is invalid. Please use a valid UUID format instead of "${contractId}".`));
+      const errorMessage = `The contract ID format is invalid. Please use a valid UUID format instead of "${contractId}".`;
+      displayToasts.error("en", new Error(errorMessage));
       return;
     }
 

@@ -20,6 +20,19 @@ const ContractError: React.FC<ContractErrorProps> = ({
   // Determine if we have a UUID format error
   const isUuidFormatError = errorMessage.includes("UUID") || errorMessage.includes("format is invalid");
 
+  // Add an attribute to help prevent duplicate error messages
+  React.useEffect(() => {
+    // Mark the document body to indicate we're showing a UUID error
+    if (isUuidFormatError) {
+      document.body.setAttribute('data-uuid-error', 'true');
+    }
+    
+    return () => {
+      // Clean up when component unmounts
+      document.body.removeAttribute('data-uuid-error');
+    };
+  }, [isUuidFormatError]);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">

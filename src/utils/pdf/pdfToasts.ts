@@ -20,6 +20,12 @@ export const displayToasts = {
     const isUuidError = error instanceof Error && 
       (error.message.includes('UUID') || error.message.includes('contract ID'));
     
+    // Don't show duplicate error messages for UUID validation
+    if (isUuidError && document.querySelector('[data-uuid-error="true"]')) {
+      console.warn('Suppressing duplicate UUID error toast');
+      return;
+    }
+    
     toast({
       variant: 'destructive',
       title: language === 'ar' ? 'خطأ في تصدير الملف' : 'PDF Export Failed',
@@ -28,6 +34,9 @@ export const displayToasts = {
             ? 'معرف العقد غير صالح. يرجى استخدام معرف بتنسيق UUID صالح.'
             : 'Invalid contract ID. Please use a valid UUID format.')
         : (error instanceof Error ? error.message : 'An unknown error occurred'),
+      data: {
+        uuidError: isUuidError
+      }
     });
   },
   
