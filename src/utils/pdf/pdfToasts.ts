@@ -34,9 +34,6 @@ export const displayToasts = {
             ? 'معرف العقد غير صالح. يرجى استخدام معرف بتنسيق UUID صالح.'
             : 'Invalid contract ID. Please use a valid UUID format.')
         : (error instanceof Error ? error.message : 'An unknown error occurred'),
-      data: {
-        uuidError: isUuidError
-      }
     });
   },
   

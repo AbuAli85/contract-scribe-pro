@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Home, ArrowLeft, FileText, Database } from "lucide-react";
+import { isValidUUID } from "@/lib/utils";
 
 interface ContractErrorProps {
   errorTitle?: string;
@@ -66,7 +67,7 @@ const ContractError: React.FC<ContractErrorProps> = ({
               <strong>Invalid UUID Format:</strong> Contract IDs must be in UUID format (e.g., 123e4567-e89b-12d3-a456-426614174000)
             </li>
           )}
-          {invalidId && (
+          {invalidId && !isValidUUID(invalidId) && (
             <li>
               You tried to access: <code className="bg-gray-100 px-2 py-1 rounded">{invalidId}</code> which is not a valid UUID
             </li>

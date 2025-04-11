@@ -3,6 +3,7 @@ import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, FileText, ArrowLeft, Info, Database } from "lucide-react";
+import { isValidUUID } from "@/lib/utils";
 
 const NotFound = () => {
   const location = useLocation();
@@ -20,7 +21,7 @@ const NotFound = () => {
   // Check if there's a specific ID pattern that looks like a non-UUID format
   const contractIdMatch = location.pathname.match(/\/contracts\/([^\/]+)/);
   const invalidContractId = contractIdMatch ? contractIdMatch[1] : null;
-  const isLikelyInvalidUuid = invalidContractId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(invalidContractId);
+  const isLikelyInvalidUuid = invalidContractId && !isValidUUID(invalidContractId);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
