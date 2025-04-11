@@ -10,6 +10,7 @@ import PrintErrorPage from "@/components/contract/PrintErrorPage";
 import ContractError from "@/components/contract/ContractError";
 import { supabase } from "@/integrations/supabase/client";
 import PrintButton from "@/components/contract/PrintButton";
+import { isValidUUID } from "@/lib/utils";
 
 const ContractDetail = () => {
   const { contractId } = useParams<{ contractId: string }>();
@@ -27,10 +28,7 @@ const ContractDetail = () => {
       setLoading(true);
       try {
         // Validate if the ID is a valid UUID
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(contractId);
-        
-        if (!isUuid) {
-          // For non-UUID IDs, show a dedicated error
+        if (!isValidUUID(contractId)) {
           throw new Error(`The contract ID format is invalid. Please use a valid UUID format instead of "${contractId}".`);
         }
         
@@ -65,18 +63,16 @@ const ContractDetail = () => {
       } catch (error) {
         console.error("Error fetching contract:", error);
         setError(error instanceof Error ? error.message : "Failed to load contract");
-        toast({
-          variant: "destructive",
-          title: "Error loading contract",
-          description: error instanceof Error ? error.message : "Failed to load contract",
-        });
+        
+        // We'll show the error in the ContractError component instead of a toast
+        // to avoid duplicate error messages
       } finally {
         setLoading(false);
       }
     };
     
     fetchContractData();
-  }, [contractId, toast]);
+  }, [contractId]);
 
   // Handle error states - use the dedicated ContractError component
   if (error) {
