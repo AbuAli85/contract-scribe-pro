@@ -14,6 +14,12 @@ declare module 'html2canvas' {
     imageTimeout?: number;
     ignoreElements?: (element: Element) => boolean;
     onclone?: (document: Document, element: HTMLElement) => void | Promise<void>;
+    x?: number;
+    y?: number;
+    scrollX?: number;
+    scrollY?: number;
+    windowWidth?: number;
+    windowHeight?: number;
   }
 
   export default function html2canvas(

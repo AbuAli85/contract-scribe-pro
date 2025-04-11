@@ -8,6 +8,7 @@ interface PrintButtonStatusProps {
   contentReady: boolean;
   documentsCount?: number;
   language: "ar" | "en";
+  errorMessage?: string;
 }
 
 export function PrintButtonStatus({
@@ -15,14 +16,21 @@ export function PrintButtonStatus({
   isLoading,
   contentReady,
   documentsCount = 0,
-  language
+  language,
+  errorMessage
 }: PrintButtonStatusProps) {
+  // Check if the error is related to UUID validation
+  const isUuidError = errorMessage && 
+    (errorMessage.includes('UUID') || errorMessage.includes('contract ID'));
+  
   // Don't render the icon if we're in an error state
   if (!contentReady && !isLoading && !isPrinting) {
     return (
       <>
         <AlertCircle className="h-4 w-4 text-destructive" />
-        {language === "ar" ? "خطأ" : "Error"}
+        {isUuidError 
+          ? (language === "ar" ? "معرف غير صالح" : "Invalid ID") 
+          : (language === "ar" ? "خطأ" : "Error")}
       </>
     );
   }

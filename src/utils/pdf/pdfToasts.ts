@@ -18,8 +18,7 @@ export const displayToasts = {
   error: (language: 'en' | 'ar', error: any) => {
     // For UUID validation errors, we'll show a more specific message
     const isUuidError = error instanceof Error && 
-      error.message.includes('invalid') && 
-      error.message.includes('UUID');
+      (error.message.includes('UUID') || error.message.includes('contract ID'));
     
     toast({
       variant: 'destructive',
@@ -29,6 +28,14 @@ export const displayToasts = {
             ? 'معرف العقد غير صالح. يرجى استخدام معرف بتنسيق UUID صالح.'
             : 'Invalid contract ID. Please use a valid UUID format.')
         : (error instanceof Error ? error.message : 'An unknown error occurred'),
+    });
+  },
+  
+  warning: (language: 'en' | 'ar', message: string) => {
+    toast({
+      variant: 'default',
+      title: language === 'ar' ? 'تحذير' : 'Warning',
+      description: message,
     });
   }
 };

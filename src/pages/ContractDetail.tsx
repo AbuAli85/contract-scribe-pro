@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import PrintButton from "@/components/contract/PrintButton";
 import { isValidUUID } from "@/lib/utils";
 import { exportToPDF } from "@/utils/pdf/pdfExport";
+import { displayToasts } from "@/utils/pdf/pdfToasts";
 
 const ContractDetail = () => {
   const { contractId } = useParams<{ contractId: string }>();
@@ -24,16 +25,26 @@ const ContractDetail = () => {
   const navigate = useNavigate();
   const [isExporting, setIsExporting] = useState(false);
 
+  // Validate the contract ID immediately on component mount
   useEffect(() => {
+    if (!contractId) {
+      setError("No contract ID provided");
+      setLoading(false);
+      return;
+    }
+
+    if (!isValidUUID(contractId)) {
+      const errorMessage = `The contract ID format is invalid. Please use a valid UUID format instead of "${contractId}".`;
+      console.error(errorMessage);
+      setError(errorMessage);
+      setLoading(false);
+      return;
+    }
+    
     const fetchContractData = async () => {
-      if (!contractId) return;
-      
-      setLoading(true);
       try {
-        // Validate if the ID is a valid UUID
-        if (!isValidUUID(contractId)) {
-          throw new Error(`The contract ID format is invalid. Please use a valid UUID format instead of "${contractId}".`);
-        }
+        // Contract ID is already validated at this point
+        setLoading(true);
         
         // Fetch contract data
         const { data: contract, error: contractError } = await supabase
@@ -66,9 +77,6 @@ const ContractDetail = () => {
       } catch (error) {
         console.error("Error fetching contract:", error);
         setError(error instanceof Error ? error.message : "Failed to load contract");
-        
-        // We'll show the error in the ContractError component instead of a toast
-        // to avoid duplicate error messages
       } finally {
         setLoading(false);
       }
@@ -79,22 +87,15 @@ const ContractDetail = () => {
 
   // Handle downloading PDF
   const handleDownloadPDF = async () => {
+    // Validate contract data and ID before even attempting export
     if (!contractData || !contractId) {
-      toast({
-        variant: "destructive",
-        title: "Export Error",
-        description: "Contract data is missing or invalid",
-      });
+      displayToasts.error("en", new Error("Contract data is missing or invalid"));
       return;
     }
 
     // Validate contract ID format again before export
     if (!isValidUUID(contractId)) {
-      toast({
-        variant: "destructive",
-        title: "Invalid Contract ID",
-        description: `The contract ID format is invalid. Please use a valid UUID format instead of "${contractId}".`,
-      });
+      displayToasts.error("en", new Error(`The contract ID format is invalid. Please use a valid UUID format instead of "${contractId}".`));
       return;
     }
 
@@ -109,11 +110,7 @@ const ContractDetail = () => {
       });
     } catch (error) {
       console.error("Error exporting to PDF:", error);
-      toast({
-        variant: "destructive",
-        title: "PDF Export Failed",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-      });
+      displayToasts.error(contractData?.language || "en", error);
     } finally {
       setIsExporting(false);
     }
