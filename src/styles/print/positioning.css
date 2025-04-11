@@ -24,6 +24,7 @@
     z-index: 10 !important;
   }
   
+  /* Adjust ID photo position to be more prominent as in the Oman sample */
   .id-photo-container {
     position: absolute !important;
     top: 32mm !important; /* 3.2cm from top */
@@ -36,14 +37,16 @@
   }
   
   .id-photo-wrapper {
-    width: 400px !important;
+    width: 400px !important; /* Make it larger as in the Oman ID card */
     max-width: 100% !important;
     margin: 0 auto !important;
+    border-radius: 4px !important; /* Match Oman ID style */
   }
   
+  /* Position the two-column layout below the ID photo */
   .two-column-layout {
     position: absolute !important;
-    top: 35mm !important; /* 3.5cm from top */
+    top: 40mm !important; /* Moved down to accommodate ID photo */
     left: 10mm !important;
     width: calc(100% - 20mm) !important;
     display: flex !important;
@@ -60,9 +63,10 @@
     padding: 0 !important;
   }
   
+  /* Adjust signature area to be at the bottom of the page */
   .signature-area {
     position: absolute !important;
-    top: 75mm !important; /* 7.5cm from top */
+    bottom: 40mm !important; /* Position from bottom instead of top */
     left: 10mm !important;
     width: calc(100% - 20mm) !important;
     display: flex !important;
@@ -80,6 +84,26 @@
     z-index: 10 !important;
     display: flex !important;
     justify-content: space-between !important;
+  }
+  
+  /* Company info at footer to match Falcon Eye letterhead */
+  .company-info {
+    position: absolute !important;
+    bottom: 10mm !important;
+    left: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+    border-top: 1px solid #00a99d !important; /* Falcon Eye teal color */
+    padding-top: 5mm !important;
+    font-size: 9px !important;
+    color: #333 !important;
+  }
+  
+  .cr-number {
+    font-weight: bold !important;
+    color: #00a99d !important; /* Falcon Eye teal color */
   }
 }
 
@@ -107,7 +131,7 @@ body.printing .id-photo-container {
 
 body.printing .two-column-layout {
   position: absolute !important;
-  top: 35mm !important; /* 3.5cm from top */
+  top: 40mm !important; /* Adjusted to match print media query */
   left: 10mm !important;
   width: calc(100% - 20mm) !important;
   display: flex !important;
@@ -119,16 +143,18 @@ body.printing .contract-column {
 
 body.printing .signature-area {
   position: absolute !important;
-  top: 75mm !important;
+  bottom: 40mm !important; /* Position from bottom instead of top */
   left: 10mm !important;
   width: calc(100% - 20mm) !important;
   display: flex !important;
 }
 
+body.printing .company-info,
 body.printing .bottom-info {
   position: absolute !important;
-  bottom: 20mm !important;
+  bottom: 10mm !important;
   left: 10mm !important;
   right: 10mm !important;
   display: flex !important;
 }
+

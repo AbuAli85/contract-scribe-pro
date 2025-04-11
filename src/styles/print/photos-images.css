@@ -20,6 +20,8 @@
     margin: 0 auto !important;
     border: 1px solid #ddd !important;
     overflow: hidden !important;
+    border-radius: 4px !important; /* Add rounded corners */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important; /* Add shadow for depth */
   }
   
   .id-photo {
@@ -63,9 +65,10 @@
     margin-bottom: 15mm !important;
     border: 1px solid #ddd !important;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    border-radius: 3px !important; /* Match Oman ID style */
   }
   
-  /* Passport details styling */
+  /* Passport details styling to match Oman ID style */
   .passport-details {
     width: 80% !important;
     margin-top: auto !important;
@@ -76,6 +79,16 @@
     background-color: rgba(255, 255, 255, 0.9) !important;
     display: block !important;
     visibility: visible !important;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1) !important;
+  }
+  
+  /* Style for the Oman Royal Police header */
+  .official-header {
+    width: 100% !important;
+    text-align: center !important;
+    margin-bottom: 10mm !important;
+    color: #7E69AB !important; /* Purple color similar to Oman document */
+    font-weight: bold !important;
   }
   
   /* Fix for image scaling in PDF */
@@ -149,3 +162,30 @@ body.printing .passport-image {
   max-height: 50% !important;
   object-fit: contain !important;
 }
+
+/* Oman-specific ID styling */
+.oman-id-details {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+  width: 100% !important;
+  margin-top: 10mm !important;
+  font-size: 11px !important;
+  border: 1px solid #e0e0e0 !important;
+  padding: 10px !important;
+  border-radius: 4px !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.oman-id-field {
+  display: flex !important;
+  justify-content: space-between !important;
+  border-bottom: 1px dotted #eee !important;
+  padding: 3px 0 !important;
+}
+
+.oman-id-field-label {
+  font-weight: bold !important;
+  color: #7E69AB !important; /* Purple color similar to Oman document */
+}
+

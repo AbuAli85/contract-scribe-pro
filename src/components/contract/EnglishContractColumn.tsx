@@ -35,7 +35,7 @@ const EnglishContractColumn = ({ contractData }: EnglishContractColumnProps) => 
       <p className="contract-text">
         This contract is between{" "}
         <strong>
-          {contractData.firstParty?.name?.en || "Falcon Eye Management and Business SPC"} (First Party)
+          {contractData.firstParty?.name?.en || "Falcon EYE Management and Business SPC"} (First Party)
         </strong>{" "}
         having the C.R. No.: <strong>{contractData.firstParty?.crn?.en || "1410869"}</strong>
       </p>
@@ -48,7 +48,7 @@ const EnglishContractColumn = ({ contractData }: EnglishContractColumnProps) => 
       <p className="contract-text">
         The Second Party agrees to provide The First Party with a qualified promoter to sell ("
         <strong>{contractData.product?.en || "Electronics"}</strong>") products at{" "}
-        <strong>{contractData.location?.en || "Muscat Grand Mall"}</strong>.
+        <strong>{contractData.location?.en || "Al Khuwair, Muscat"}</strong>.
       </p>
 
       <div className="promoter-details">
@@ -58,6 +58,9 @@ const EnglishContractColumn = ({ contractData }: EnglishContractColumnProps) => 
           </div>
           <div className="info-row">
             <strong>ID NO:</strong> {contractData.promoter?.id?.en || "126208869"}
+          </div>
+          <div className="info-row">
+            <strong>Nationality:</strong> {contractData.promoter?.nationality?.en || "Indian"}
           </div>
           <div className="info-row">
             <strong>From:</strong> {formatDate(contractData.startDate?.en || "06/04/2025")} <strong>to:</strong>{" "}

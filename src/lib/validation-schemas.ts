@@ -30,7 +30,7 @@ export const partySchema = z.object({
   }).optional(),
 });
 
-// Schema for a promoter
+// Schema for a promoter - Updated to include nationality field
 export const promoterSchema = z.object({
   name: z.object({
     en: z.string().min(2, { message: "Name in English must be at least 2 characters" }),
@@ -78,10 +78,11 @@ export const contractDetailsSchema = z.object({
   }).optional(),
 });
 
-// Schema for contract attachments
+// Schema for contract attachments - Updated to handle Oman ID card
 export const contractAttachmentsSchema = z.object({
   letterhead: z.string().optional(),
-  promoterPhoto: z.string().optional(),
+  promoterPhoto: z.string().optional(), // ID card photo
+  passportPhoto: z.string().optional(), // Additional passport photo
   additionalDocuments: z.array(
     z.object({
       name: z.string(),
@@ -103,13 +104,15 @@ export const contractSchema = z.object({
   status: z.enum(["draft", "pending", "approved", "rejected", "expired"]).default("draft"),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
+  language: z.enum(["en", "ar"]).default("en"),
 });
 
-// Form validation schema
+// Form validation schema - Updated to include nationality fields and match Oman requirements
 export const contractFormSchema = z.object({
   firstParty: z.string().min(1, { message: "Please select the first party" }),
   secondParty: z.string().min(1, { message: "Please select the second party" }),
   promoter: z.string().min(1, { message: "Please select the promoter" }),
+  nationality: z.string().optional(), // Added nationality field
   product: z.string().min(1, { message: "Please select the product" }),
   location: z.string().min(1, { message: "Please select the location" }),
   startDate: z.date({ required_error: "Please select a start date" }),
@@ -124,7 +127,7 @@ export const contractFormSchema = z.object({
   path: ["endDate"],
 });
 
-// Schema for document validation
+// Schema for document validation - Including types relevant to Oman
 export const documentSchema = z.object({
   name: z.string().min(1, { message: "Document name is required" }),
   file: z.string().min(1, { message: "Document file is required" }),
@@ -134,3 +137,4 @@ export const documentSchema = z.object({
   size: z.number().optional(),
   uploadedAt: z.date().optional(),
 });
+

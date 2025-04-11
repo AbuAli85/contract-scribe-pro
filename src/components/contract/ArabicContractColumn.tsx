@@ -48,7 +48,7 @@ const ArabicContractColumn = ({ contractData }: ArabicContractColumnProps) => {
       <p className="contract-text">
         الطرف الثاني يوافق على تزويد الطرف الأول بمروج مؤهل لبيع منتجات "
         <strong>{contractData.product?.ar || "الإلكترونيات"}</strong>" في{" "}
-        <strong>{contractData.location?.ar || "مسقط جراند مول"}</strong>.
+        <strong>{contractData.location?.ar || "الخوير، مسقط"}</strong>.
       </p>
 
       <div className="promoter-details">
@@ -58,6 +58,9 @@ const ArabicContractColumn = ({ contractData }: ArabicContractColumnProps) => {
           </div>
           <div className="info-row">
             <strong>رقم الهوية:</strong> {contractData.promoter?.id?.ar || "126208869"}
+          </div>
+          <div className="info-row">
+            <strong>الجنسية:</strong> {contractData.promoter?.nationality?.ar || "هندي"}
           </div>
           <div className="info-row">
             <strong>من:</strong> {formatDate(contractData.startDate?.ar || "06/04/2025")} <strong>إلى:</strong>{" "}
