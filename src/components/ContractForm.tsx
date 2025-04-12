@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,9 +31,16 @@ interface SecondParty {
   idNumber: string;
 }
 
+interface Employer {
+  nameEn: string;
+  nameAr: string;
+  crn: string;
+}
+
 interface FormData {
   firstParty: FirstParty;
   secondParty: SecondParty;
+  employer: Employer;
   refNumber: string;
   startDate: string;
   endDate: string;
@@ -62,6 +70,11 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
       },
       idNumber: "",
     },
+    employer: {
+      nameEn: "",
+      nameAr: "",
+      crn: ""
+    },
     refNumber: `REF-${generateUniqueId().substring(0, 8)}`,
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().split('T')[0],
@@ -71,6 +84,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
   // State for Excel data options
   const [firstPartyOptions, setFirstPartyOptions] = useState<Array<{ value: string, label: string }>>([]);
   const [secondPartyOptions, setSecondPartyOptions] = useState<Array<{ value: string, label: string }>>([]);
+  const [employerOptions, setEmployerOptions] = useState<Array<{ value: string, label: string }>>([]);
   const [promoterOptions, setPromoterOptions] = useState<Array<{ value: string, label: string }>>([]);
   const [productOptions, setProductOptions] = useState<Array<{ value: string, label: string }>>([]);
   const [locationOptions, setLocationOptions] = useState<Array<{ value: string, label: string }>>([]);
@@ -95,6 +109,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
         label: language === "ar" ? party.nameAr : party.nameEn
       }));
       setSecondPartyOptions(formattedOptions);
+      setEmployerOptions(formattedOptions);
     }
 
     if (options.promoters.length > 0) {
@@ -129,20 +144,23 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
       // Handle top-level fields like refNumber, startDate, etc.
       setFormData(prev => ({ ...prev, [field]: value }));
     } else if (parts.length === 2) {
-      // Handle second-level fields like secondParty.idNumber
+      // Handle second-level fields like secondParty.idNumber or employer fields
       const [part0, part1] = parts;
       
-      if (part0 === 'firstParty' || part0 === 'secondParty') {
+      if (part0 === 'firstParty' || part0 === 'secondParty' || part0 === 'employer') {
         setFormData(prev => {
           const newState = { ...prev };
-          // Type assertion to ensure TypeScript knows this is an object
-          const firstLevelCopy = { ...(prev[part0 as keyof FormData] as object) };
           
           if (part0 === 'secondParty' && part1 === 'idNumber') {
             // Handle the special case for idNumber which is a string
-            const secondPartyCopy = firstLevelCopy as SecondParty;
+            const secondPartyCopy = { ...prev.secondParty };
             secondPartyCopy.idNumber = value;
             newState.secondParty = secondPartyCopy;
+          } else if (part0 === 'employer') {
+            // Handle employer fields
+            const employerCopy = { ...prev.employer };
+            employerCopy[part1 as keyof Employer] = value;
+            newState.employer = employerCopy;
           }
           
           return newState;
@@ -262,6 +280,7 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
             language={language}
             onChange={handleInputChange}
             promoterOptions={promoterOptions}
+            employerOptions={employerOptions}
           />
           
           <ContractDetailsSection

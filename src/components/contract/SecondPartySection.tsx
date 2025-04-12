@@ -4,7 +4,7 @@ import BilingualInput from "./BilingualInput";
 import ContractFormSection from "@/components/contract/ContractFormSection";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserCheck } from "lucide-react";
+import { Building, UserCheck } from "lucide-react";
 
 interface SecondParty {
   name: {
@@ -24,6 +24,7 @@ interface SecondPartySectionProps {
   language: "ar" | "en";
   onChange: (field: string, value: string) => void;
   promoterOptions?: Array<{ value: string, label: string }>;
+  employerOptions?: Array<{ value: string, label: string }>;
 }
 
 const SecondPartySection: React.FC<SecondPartySectionProps> = ({
@@ -31,14 +32,15 @@ const SecondPartySection: React.FC<SecondPartySectionProps> = ({
   documentType,
   language,
   onChange,
-  promoterOptions = []
+  promoterOptions = [],
+  employerOptions = []
 }) => {
   const handleNameEnChange = (value: string) => onChange("secondParty.name.en", value);
   const handleNameArChange = (value: string) => onChange("secondParty.name.ar", value);
   const handleIdNumberChange = (value: string) => onChange("secondParty.idNumber", value);
   const handleDocumentTypeChange = (value: string) => onChange("documentType", value);
   
-  const handleSelectChange = (value: string) => {
+  const handlePromoterSelectChange = (value: string) => {
     try {
       const selectedPromoter = JSON.parse(value);
       onChange("secondParty.name.en", selectedPromoter.nameEn);
@@ -53,6 +55,17 @@ const SecondPartySection: React.FC<SecondPartySectionProps> = ({
       console.error("Error parsing selected promoter:", error);
     }
   };
+  
+  const handleEmployerSelectChange = (value: string) => {
+    try {
+      const selectedEmployer = JSON.parse(value);
+      onChange("employer.nameEn", selectedEmployer.nameEn);
+      onChange("employer.nameAr", selectedEmployer.nameAr);
+      onChange("employer.crn", selectedEmployer.crn);
+    } catch (error) {
+      console.error("Error parsing selected employer:", error);
+    }
+  };
 
   return (
     <ContractFormSection 
@@ -63,7 +76,7 @@ const SecondPartySection: React.FC<SecondPartySectionProps> = ({
           <label className="block text-sm font-medium mb-1">
             {language === "ar" ? "اختر المروج:" : "Select Promoter:"}
           </label>
-          <Select onValueChange={handleSelectChange}>
+          <Select onValueChange={handlePromoterSelectChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={language === "ar" ? "اختر المروج" : "Select Promoter"} />
             </SelectTrigger>
@@ -71,6 +84,27 @@ const SecondPartySection: React.FC<SecondPartySectionProps> = ({
               {promoterOptions.map((option, index) => (
                 <SelectItem key={index} value={option.value} className="flex items-center">
                   <UserCheck className="h-4 w-4 mr-2 text-green-500" />
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      
+      {employerOptions.length > 0 && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">
+            {language === "ar" ? "اختر المشغل:" : "Select Employer:"}
+          </label>
+          <Select onValueChange={handleEmployerSelectChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={language === "ar" ? "اختر المشغل" : "Select Employer"} />
+            </SelectTrigger>
+            <SelectContent>
+              {employerOptions.map((option, index) => (
+                <SelectItem key={index} value={option.value} className="flex items-center">
+                  <Building className="h-4 w-4 mr-2 text-blue-500" />
                   {option.label}
                 </SelectItem>
               ))}

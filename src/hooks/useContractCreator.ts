@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { ar, enUS } from 'date-fns/locale'
@@ -13,6 +14,11 @@ export interface ContractData {
     crn: string
   }
   secondParty: {
+    nameEn: string
+    nameAr: string
+    crn: string
+  }
+  employer: {
     nameEn: string
     nameAr: string
     crn: string
@@ -49,6 +55,7 @@ export interface ContractData {
 export interface ContractOptions {
   firstParties: Array<{ nameEn: string; nameAr: string; crn: string }>
   secondParties: Array<{ nameEn: string; nameAr: string; crn: string }>
+  employers: Array<{ nameEn: string; nameAr: string; crn: string }>
   promoters: Array<{ nameEn: string; nameAr: string; id: string; nationality?: { en: string; ar: string } }>
   products: Array<{ nameEn: string; nameAr: string }>
   locations: Array<{ nameEn: string; nameAr: string }>
@@ -62,6 +69,7 @@ export function useContractCreator() {
     referenceNumber: '',
     firstParty: { nameEn: '', nameAr: '', crn: '' },
     secondParty: { nameEn: '', nameAr: '', crn: '' },
+    employer: { nameEn: '', nameAr: '', crn: '' },
     promoter: { nameEn: '', nameAr: '', id: '' },
     product: { nameEn: '', nameAr: '' },
     location: { nameEn: '', nameAr: '' },
@@ -73,6 +81,7 @@ export function useContractCreator() {
   const [options, setOptions] = useState<ContractOptions>({
     firstParties: [],
     secondParties: [],
+    employers: [],
     promoters: [],
     products: [],
     locations: [],
@@ -168,6 +177,7 @@ export function useContractCreator() {
       
       const extractedFirstParties: Array<{ nameEn: string; nameAr: string; crn: string }> = []
       const extractedSecondParties: Array<{ nameEn: string; nameAr: string; crn: string }> = []
+      const extractedEmployers: Array<{ nameEn: string; nameAr: string; crn: string }> = []
       const extractedPromoters: Array<{ nameEn: string; nameAr: string; id: string; nationality?: { en: string; ar: string } }> = []
       const extractedProducts: Array<{ nameEn: string; nameAr: string }> = []
       const extractedLocations: Array<{ nameEn: string; nameAr: string }> = []
@@ -181,11 +191,17 @@ export function useContractCreator() {
             nameAr: row.nameAr || row.name_ar || row.NameAr || row.client_nameAr || '',
             crn: row.crn || row.CRN || row.client_crn || ''
           })
-        } else if (entryType.toLowerCase() === 'employer' || (row.nameEn && row.crn)) {
+        } else if (entryType.toLowerCase() === 'employer' || (row.employerNameEn || row.employer_nameEn)) {
+          extractedEmployers.push({
+            nameEn: row.employerNameEn || row.employer_nameEn || row.EmployerNameEn || '',
+            nameAr: row.employerNameAr || row.employer_nameAr || row.EmployerNameAr || '',
+            crn: row.employerCrn || row.employer_crn || row.EmployerCRN || ''
+          })
+        } else if (entryType.toLowerCase() === 'secondparty' || row.crn) {
           extractedSecondParties.push({
-            nameEn: row.nameEn || row.name_en || row.NameEn || row.employer_nameEn || '',
-            nameAr: row.nameAr || row.name_ar || row.NameAr || row.employer_nameAr || '',
-            crn: row.crn || row.CRN || row.employer_crn || ''
+            nameEn: row.nameEn || row.name_en || row.NameEn || row.secondparty_nameEn || '',
+            nameAr: row.nameAr || row.name_ar || row.NameAr || row.secondparty_nameAr || '',
+            crn: row.crn || row.CRN || row.secondparty_crn || ''
           })
         } else if (entryType.toLowerCase() === 'promoter' || row.id) {
           extractedPromoters.push({
@@ -224,6 +240,14 @@ export function useContractCreator() {
             })
           } else if (sheetName.toLowerCase().includes('employer')) {
             sheetData.forEach((row: any) => {
+              extractedEmployers.push({
+                nameEn: row.nameEn || row.name_en || row.NameEn || row.employerNameEn || row.employer_nameEn || '',
+                nameAr: row.nameAr || row.name_ar || row.NameAr || row.employerNameAr || row.employer_nameAr || '',
+                crn: row.crn || row.CRN || row.employerCrn || row.employer_crn || ''
+              })
+            })
+          } else if (sheetName.toLowerCase().includes('secondparty')) {
+            sheetData.forEach((row: any) => {
               extractedSecondParties.push({
                 nameEn: row.nameEn || row.name_en || row.NameEn || '',
                 nameAr: row.nameAr || row.name_ar || row.NameAr || '',
@@ -260,9 +284,15 @@ export function useContractCreator() {
         })
       }
       
+      // If no specific employer data was found, use second parties as employers
+      if (extractedEmployers.length === 0 && extractedSecondParties.length > 0) {
+        extractedEmployers = [...extractedSecondParties];
+      }
+      
       console.log('Extracted data from Excel:', {
         firstParties: extractedFirstParties,
         secondParties: extractedSecondParties,
+        employers: extractedEmployers,
         promoters: extractedPromoters,
         products: extractedProducts,
         locations: extractedLocations
@@ -272,6 +302,7 @@ export function useContractCreator() {
         ...prev,
         firstParties: [...prev.firstParties, ...extractedFirstParties],
         secondParties: [...prev.secondParties, ...extractedSecondParties],
+        employers: [...prev.employers, ...extractedEmployers],
         promoters: [...prev.promoters, ...extractedPromoters],
         products: [...prev.products, ...extractedProducts],
         locations: [...prev.locations, ...extractedLocations]
@@ -280,8 +311,8 @@ export function useContractCreator() {
       toast({
         title: language === 'ar' ? 'تمت المعالجة بنجاح' : 'Processed successfully',
         description: language === 'ar' 
-          ? `تم تحليل ملف البيانات واستخراج: ${extractedFirstParties.length} عميل، ${extractedSecondParties.length} مشغل، ${extractedPromoters.length} مروج`
-          : `Data file processed: ${extractedFirstParties.length} clients, ${extractedSecondParties.length} employers, ${extractedPromoters.length} promoters extracted`,
+          ? `تم تحليل ملف البيانات واستخراج: ${extractedFirstParties.length} عميل، ${extractedEmployers.length} مشغل، ${extractedPromoters.length} مروج`
+          : `Data file processed: ${extractedFirstParties.length} clients, ${extractedEmployers.length} employers, ${extractedPromoters.length} promoters extracted`,
       })
       
     } catch (error) {
@@ -502,7 +533,11 @@ export function useContractCreator() {
     isLoading,
     generateReferenceNumber,
     formatDate,
-    handleExcelUpload,
+    handleExcelUpload: (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!e.target.files || e.target.files.length === 0) return;
+      const file = e.target.files[0];
+      processExcelFile(file);
+    },
     handleLetterheadUpload,
     handlePromoterPhotoUpload,
     handleGenerateContract,
