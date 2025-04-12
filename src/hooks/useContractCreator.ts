@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { ar, enUS } from 'date-fns/locale'
@@ -284,15 +283,14 @@ export function useContractCreator() {
         })
       }
       
-      // If no specific employer data was found, use second parties as employers
-      if (extractedEmployers.length === 0 && extractedSecondParties.length > 0) {
-        extractedEmployers = [...extractedSecondParties];
-      }
+      const employersToUse = extractedEmployers.length === 0 && extractedSecondParties.length > 0 
+        ? [...extractedSecondParties] 
+        : extractedEmployers;
       
       console.log('Extracted data from Excel:', {
         firstParties: extractedFirstParties,
         secondParties: extractedSecondParties,
-        employers: extractedEmployers,
+        employers: employersToUse,
         promoters: extractedPromoters,
         products: extractedProducts,
         locations: extractedLocations
@@ -302,7 +300,7 @@ export function useContractCreator() {
         ...prev,
         firstParties: [...prev.firstParties, ...extractedFirstParties],
         secondParties: [...prev.secondParties, ...extractedSecondParties],
-        employers: [...prev.employers, ...extractedEmployers],
+        employers: [...prev.employers, ...employersToUse],
         promoters: [...prev.promoters, ...extractedPromoters],
         products: [...prev.products, ...extractedProducts],
         locations: [...prev.locations, ...extractedLocations]
@@ -311,8 +309,8 @@ export function useContractCreator() {
       toast({
         title: language === 'ar' ? 'تمت المعالجة بنجاح' : 'Processed successfully',
         description: language === 'ar' 
-          ? `تم تحليل ملف البيانات واستخراج: ${extractedFirstParties.length} عميل، ${extractedEmployers.length} مشغل، ${extractedPromoters.length} مروج`
-          : `Data file processed: ${extractedFirstParties.length} clients, ${extractedEmployers.length} employers, ${extractedPromoters.length} promoters extracted`,
+          ? `تم تحليل ملف البيانات واستخراج: ${extractedFirstParties.length} عميل، ${employersToUse.length} مشغل، ${extractedPromoters.length} مروج`
+          : `Data file processed: ${extractedFirstParties.length} clients, ${employersToUse.length} employers, ${extractedPromoters.length} promoters extracted`,
       })
       
     } catch (error) {
@@ -493,6 +491,7 @@ export function useContractCreator() {
       referenceNumber: contractData.referenceNumber,
       firstParty: { nameEn: '', nameAr: '', crn: '' },
       secondParty: { nameEn: '', nameAr: '', crn: '' },
+      employer: { nameEn: '', nameAr: '', crn: '' },
       promoter: { nameEn: '', nameAr: '', id: '' },
       product: { nameEn: '', nameAr: '' },
       location: { nameEn: '', nameAr: '' },
