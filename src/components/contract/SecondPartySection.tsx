@@ -4,6 +4,7 @@ import BilingualInput from "./BilingualInput";
 import ContractFormSection from "@/components/contract/ContractFormSection";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { UserCheck } from "lucide-react";
 
 interface SecondParty {
   name: {
@@ -22,23 +23,62 @@ interface SecondPartySectionProps {
   documentType: string;
   language: "ar" | "en";
   onChange: (field: string, value: string) => void;
+  promoterOptions?: Array<{ value: string, label: string }>;
 }
 
 const SecondPartySection: React.FC<SecondPartySectionProps> = ({
   secondParty,
   documentType,
   language,
-  onChange
+  onChange,
+  promoterOptions = []
 }) => {
   const handleNameEnChange = (value: string) => onChange("secondParty.name.en", value);
   const handleNameArChange = (value: string) => onChange("secondParty.name.ar", value);
   const handleIdNumberChange = (value: string) => onChange("secondParty.idNumber", value);
   const handleDocumentTypeChange = (value: string) => onChange("documentType", value);
+  
+  const handleSelectChange = (value: string) => {
+    try {
+      const selectedPromoter = JSON.parse(value);
+      onChange("secondParty.name.en", selectedPromoter.nameEn);
+      onChange("secondParty.name.ar", selectedPromoter.nameAr);
+      onChange("secondParty.idNumber", selectedPromoter.id);
+      
+      if (selectedPromoter.nationality) {
+        onChange("secondParty.nationality.en", selectedPromoter.nationality.en);
+        onChange("secondParty.nationality.ar", selectedPromoter.nationality.ar);
+      }
+    } catch (error) {
+      console.error("Error parsing selected promoter:", error);
+    }
+  };
 
   return (
     <ContractFormSection 
       title={language === "ar" ? "الطرف الثاني (المروج)" : "Second Party (Promoter)"}
     >
+      {promoterOptions.length > 0 && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">
+            {language === "ar" ? "اختر المروج:" : "Select Promoter:"}
+          </label>
+          <Select onValueChange={handleSelectChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={language === "ar" ? "اختر المروج" : "Select Promoter"} />
+            </SelectTrigger>
+            <SelectContent>
+              {promoterOptions.map((option, index) => (
+                <SelectItem key={index} value={option.value} className="flex items-center">
+                  <UserCheck className="h-4 w-4 mr-2 text-green-500" />
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      
       <BilingualInput
         englishValue={secondParty.name.en}
         arabicValue={secondParty.name.ar}

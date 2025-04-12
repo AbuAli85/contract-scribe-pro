@@ -1,45 +1,113 @@
 
 import React from "react";
-import ContractFormSection from "@/components/contract/ContractFormSection";
 import { Input } from "@/components/ui/input";
+import ContractFormSection from "@/components/contract/ContractFormSection";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Map, Package } from "lucide-react";
 
-interface ContractDetailsProps {
+interface ContractDetailsSectionProps {
   refNumber: string;
   startDate: string;
   endDate: string;
   language: "ar" | "en";
   onChange: (field: string, value: string) => void;
+  productOptions?: Array<{ value: string, label: string }>;
+  locationOptions?: Array<{ value: string, label: string }>;
 }
 
-const ContractDetailsSection: React.FC<ContractDetailsProps> = ({
+const ContractDetailsSection: React.FC<ContractDetailsSectionProps> = ({
   refNumber,
   startDate,
   endDate,
   language,
-  onChange
+  onChange,
+  productOptions = [],
+  locationOptions = []
 }) => {
-  const handleRefNumberChange = (value: string) => onChange("refNumber", value);
   const handleStartDateChange = (value: string) => onChange("startDate", value);
   const handleEndDateChange = (value: string) => onChange("endDate", value);
+  
+  const handleProductChange = (value: string) => {
+    try {
+      const selectedProduct = JSON.parse(value);
+      onChange("product.nameEn", selectedProduct.nameEn);
+      onChange("product.nameAr", selectedProduct.nameAr);
+    } catch (error) {
+      console.error("Error parsing selected product:", error);
+    }
+  };
+  
+  const handleLocationChange = (value: string) => {
+    try {
+      const selectedLocation = JSON.parse(value);
+      onChange("location.nameEn", selectedLocation.nameEn);
+      onChange("location.nameAr", selectedLocation.nameAr);
+    } catch (error) {
+      console.error("Error parsing selected location:", error);
+    }
+  };
 
   return (
     <ContractFormSection 
       title={language === "ar" ? "تفاصيل العقد" : "Contract Details"}
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">
+          {language === "ar" ? "رقم المرجع" : "Reference Number"}
+        </label>
+        <Input
+          value={refNumber}
+          readOnly
+          className="bg-gray-50"
+        />
+      </div>
+      
+      {productOptions.length > 0 && (
+        <div className="mb-4">
           <label className="block text-sm font-medium mb-1">
-            {language === "ar" ? "رقم المرجع" : "Reference Number"}
+            {language === "ar" ? "المنتج:" : "Product:"}
           </label>
-          <Input
-            value={refNumber}
-            onChange={(e) => handleRefNumberChange(e.target.value)}
-            placeholder={language === "ar" ? "مثال: REF-12345" : "e.g. REF-12345"}
-          />
+          <Select onValueChange={handleProductChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={language === "ar" ? "اختر المنتج" : "Select Product"} />
+            </SelectTrigger>
+            <SelectContent>
+              {productOptions.map((option, index) => (
+                <SelectItem key={index} value={option.value} className="flex items-center">
+                  <Package className="h-4 w-4 mr-2 text-blue-500" />
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
+      )}
+      
+      {locationOptions.length > 0 && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">
+            {language === "ar" ? "الموقع:" : "Location:"}
+          </label>
+          <Select onValueChange={handleLocationChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={language === "ar" ? "اختر الموقع" : "Select Location"} />
+            </SelectTrigger>
+            <SelectContent>
+              {locationOptions.map((option, index) => (
+                <SelectItem key={index} value={option.value} className="flex items-center">
+                  <Map className="h-4 w-4 mr-2 text-amber-500" />
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">
-            {language === "ar" ? "تاريخ البدء" : "Start Date"}
+            {language === "ar" ? "تاريخ البداية" : "Start Date"}
           </label>
           <Input
             type="date"
@@ -49,7 +117,7 @@ const ContractDetailsSection: React.FC<ContractDetailsProps> = ({
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">
-            {language === "ar" ? "تاريخ الانتهاء" : "End Date"}
+            {language === "ar" ? "تاريخ النهاية" : "End Date"}
           </label>
           <Input
             type="date"
