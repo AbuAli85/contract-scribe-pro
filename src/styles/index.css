@@ -63,6 +63,7 @@ body[data-uuid-error="true"] [data-uuid-error="true"] {
   border-color: var(--falcon-teal);
 }
 
+/* Oman ID Card Styling - Updated to match template */
 .oman-id-card {
   border-radius: 8px;
   border: 1px solid #ddd;

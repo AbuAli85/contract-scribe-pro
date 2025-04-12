@@ -1,219 +1,210 @@
 
 /**
  * PDF Passport Page Creator
- * Creates the passport document page in PDF format
+ * Creates a passport/ID document page in PDF format
  */
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 /**
- * Creates a passport page in the PDF
+ * Creates a passport or ID document page in the PDF
  * @param pdf jsPDF instance
- * @param contractData Contract data containing passport information
+ * @param contractData Contract data containing promoter info
  */
 export const createPassportPage = async (pdf: jsPDF, contractData: any): Promise<void> => {
-  // Create a temporary div for the passport page
-  const tempDiv = document.createElement('div');
-  tempDiv.className = 'passport-page';
-  tempDiv.style.width = '210mm';
-  tempDiv.style.height = '297mm';
-  tempDiv.style.margin = '0';
-  tempDiv.style.padding = '0';
-  tempDiv.style.overflow = 'hidden';
-  tempDiv.style.position = 'absolute';
-  tempDiv.style.top = '-9999px';
-  tempDiv.style.left = '-9999px';
-  tempDiv.style.backgroundColor = 'white';
-  
-  // Generate reference number for second page
-  const refNumber = contractData.refNumber || 'PAC-20250409-6996';
-  
-  // Add passport content with improved layout and letterhead
-  tempDiv.innerHTML = `
-    <div style="
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url('${contractData.letterhead}');
-      background-size: cover;
-      background-position: top center;
-      opacity: 0.08;
-      z-index: 1;
-    "></div>
-    
-    <div style="
-      position: relative;
-      padding: 40mm 20mm 20mm;
-      height: 100%;
-      box-sizing: border-box;
-      z-index: 10;
-    ">
-      <div style="
-        margin-bottom: 5mm;
-        padding: 2mm 4mm;
-        background-color: #f9f9f9;
-        border-radius: 4px;
-        border-left: 3px solid #1a73e8;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        position: relative;
-        z-index: 10;
-        font-family: monospace;
-        font-size: 12px;
-        font-weight: bold;
-        color: #444;
-      ">
-        <span style="font-weight: bold;">Reference Number:</span> ${refNumber}
-      </div>
-      
-      <div style="
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-      ">
-        <div style="text-align: center; width: 100%; margin-bottom: 10mm;">
-          <h2 style="
-            font-size: 24px;
-            font-weight: bold;
-            color: #1a73e8;
-            margin-bottom: 4mm;
-            margin-top: 2mm;
-          ">Passport Document</h2>
-          <p style="
-            font-size: 18px;
-            color: #555;
-            text-align: center;
-            margin-top: 0;
-          ">وثيقة جواز السفر</p>
-        </div>
+  // Create a temporary container for the passport page
+  const tempContainer = document.createElement('div');
+  tempContainer.className = 'passport-page';
+  tempContainer.style.width = '210mm';
+  tempContainer.style.height = '297mm';
+  tempContainer.style.padding = '20mm';
+  tempContainer.style.boxSizing = 'border-box';
+  tempContainer.style.position = 'fixed';
+  tempContainer.style.top = '-9999px';
+  tempContainer.style.left = '-9999px';
+  tempContainer.style.zIndex = '-1';
+  tempContainer.style.backgroundColor = 'white';
+  document.body.appendChild(tempContainer);
+
+  // Check if we should create Oman ID card style or regular passport page
+  const useOmanStyle = true; // Set to true to use Oman ID style
+
+  if (useOmanStyle) {
+    // Create Oman ID card style
+    tempContainer.innerHTML = `
+      <div class="passport-content">
+        <div class="official-header">Sultanate of Oman - Royal Oman Police</div>
         
-        <div style="
-          width: 100%;
-          display: flex;
-          justify-content: center;
-          margin-bottom: 15mm;
-        ">
-          <div style="
-            width: 80%;
-            max-width: 130mm;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            background: white;
-          ">
-            <img 
-              src="${contractData.promoterPhoto}" 
-              alt="Passport Document" 
-              style="
-                width: 100%;
-                height: auto;
-                object-fit: contain;
-                display: block;
-              "
-            />
-            <div style="
-              text-align: center;
-              padding: 8px;
-              background-color: #f9f9f9;
-              color: #555;
-              font-size: 12px;
-              border-top: 1px solid #eee;
-            ">
-              Passport / جواز السفر
-            </div>
-          </div>
-        </div>
-        
-        <div style="
-          width: 80%;
-          margin: 0 auto;
-          border: 1px solid #eee;
-          border-radius: 8px;
-          padding: 15px 20px;
-          background-color: #fafafa;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        ">
-          <table style="
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-          ">
-            <tr>
-              <td style="padding: 8px 12px; font-weight: bold; width: 40%;">Name:</td>
-              <td style="padding: 8px 12px;">${contractData.promoter?.name?.en || 'N/A'}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 12px; font-weight: bold;">ID Number:</td>
-              <td style="padding: 8px 12px;">${contractData.promoter?.id?.en || 'N/A'}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 12px; font-weight: bold;">Reference Number:</td>
-              <td style="padding: 8px 12px;">${refNumber}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 12px; font-weight: bold;">Document Type:</td>
-              <td style="padding: 8px 12px;">Passport</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 12px; font-weight: bold;">Date:</td>
-              <td style="padding: 8px 12px;">${new Date().toLocaleDateString()}</td>
-            </tr>
-          </table>
+        <div class="oman-id-card">
+          <div class="oman-id-header">Resident Identity Card</div>
           
-          <div style="
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px dashed #ddd;
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #666;
-          ">
-            <div>
-              <div style="font-weight: bold; margin-bottom: 5px;">Company Information:</div>
-              <div>CR: ${contractData.firstParty?.crn?.en || "1410869"}</div>
-              <div>PO Box 762, PC-122 Al Khuwair, Bousher, Oman</div>
-            </div>
-            <div style="text-align: right;">
-              <div style="font-weight: bold; margin-bottom: 5px;">Contact:</div>
-              <div>+968 9194 3449 / +968 9933 6958</div>
-              <div>www.falconeyegroup.net</div>
+          <div class="oman-id-content">
+            <img 
+              src="${contractData.promoterPhoto || 'placeholder-image.png'}" 
+              alt="Promoter ID" 
+              class="oman-id-photo"
+            />
+            
+            <div class="oman-id-details">
+              <div class="oman-id-field">
+                <span class="oman-id-field-label">Name:</span>
+                <span class="oman-id-field-value">${contractData.promoter?.nameEn || 'Farzan Riyaz Munde'}</span>
+              </div>
+              
+              <div class="oman-id-field">
+                <span class="oman-id-field-label">ID No:</span>
+                <span class="oman-id-field-value">${contractData.promoter?.id || '126208869'}</span>
+              </div>
+              
+              <div class="oman-id-field">
+                <span class="oman-id-field-label">Nationality:</span>
+                <span class="oman-id-field-value">${contractData.promoter?.nationality?.en || 'Indian'}</span>
+              </div>
             </div>
           </div>
+          
+          <div class="oman-id-footer">
+            Civil ID • رقم البطاقة المدنية
+          </div>
+        </div>
+        
+        <div class="passport-details">
+          <p style="text-align: center; font-weight: bold;">
+            This is an official copy of the promoter's identification document.
+          </p>
+          <p style="text-align: center;">
+            Contract Reference: ${contractData.referenceNumber || 'N/A'}
+          </p>
         </div>
       </div>
-    </div>
+    `;
+  } else {
+    // Create standard passport page
+    tempContainer.innerHTML = `
+      <div class="passport-content">
+        <h1 class="passport-header">Promoter Identification Document</h1>
+        <img src="${contractData.promoterPhoto || 'placeholder-image.png'}" alt="Promoter ID" class="passport-image" />
+        <div class="passport-details">
+          <p><strong>Name:</strong> ${contractData.promoter?.nameEn || 'N/A'}</p>
+          <p><strong>ID Number:</strong> ${contractData.promoter?.id || 'N/A'}</p>
+          <p><strong>Contract Reference:</strong> ${contractData.referenceNumber || 'N/A'}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  // Apply styles for printing
+  const style = document.createElement('style');
+  style.textContent = `
+    .passport-page {
+      width: 210mm;
+      height: 297mm;
+      background: white;
+      box-sizing: border-box;
+      padding: 20mm;
+    }
+    .passport-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+    }
+    .passport-header {
+      margin-bottom: 20mm;
+      font-size: 24px;
+      text-align: center;
+    }
+    .passport-image {
+      max-width: 70%;
+      max-height: 50%;
+      object-fit: contain;
+      margin-bottom: 20mm;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .passport-details {
+      width: 80%;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .official-header {
+      width: 100%;
+      text-align: center;
+      margin-bottom: 20mm;
+      font-size: 16px;
+      font-weight: bold;
+      color: #7E69AB;
+    }
+    .oman-id-card {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto 20mm;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .oman-id-header {
+      background-color: #7E69AB;
+      color: white;
+      padding: 8px 15px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .oman-id-content {
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .oman-id-photo {
+      width: 100%;
+      height: auto;
+      max-height: 200px;
+      object-fit: contain;
+      border: 1px solid #eee;
+    }
+    .oman-id-details {
+      display: grid;
+      gap: 8px;
+    }
+    .oman-id-field {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dotted #eee;
+      padding: 4px 0;
+    }
+    .oman-id-field-label {
+      font-weight: bold;
+      color: #7E69AB;
+    }
+    .oman-id-footer {
+      background-color: #f9f9f9;
+      text-align: center;
+      padding: 8px;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #eee;
+    }
   `;
-  
-  // Add to DOM temporarily
-  document.body.appendChild(tempDiv);
-  
+  tempContainer.appendChild(style);
+
   try {
-    // Convert to canvas
-    const canvas = await html2canvas(tempDiv, {
+    // Convert to canvas and add to PDF
+    const canvas = await html2canvas(tempContainer, {
       scale: 2, // Higher scale for better quality
       useCORS: true,
-      allowTaint: true,
-      backgroundColor: 'white',
       logging: false,
-      width: 796, // A4 width at 96 DPI
-      height: 1123 // A4 height at 96 DPI
+      backgroundColor: 'white'
     });
     
-    // Add to PDF
     const imgData = canvas.toDataURL('image/png');
-    pdf.addPage();
-    pdf.addImage(imgData, 'PNG', 0, 0, 210, 297); // A4 dimensions in mm
-    
-    console.log('Passport page added to PDF successfully');
+    pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
   } catch (error) {
     console.error('Error creating passport page:', error);
-    throw error;
   } finally {
-    // Remove temp element
-    document.body.removeChild(tempDiv);
+    // Clean up
+    document.body.removeChild(tempContainer);
   }
 };

@@ -68,6 +68,28 @@
     border-radius: 3px !important; /* Match Oman ID style */
   }
   
+  /* Oman ID Card specific print styles */
+  .oman-id-card {
+    max-width: 400px !important;
+    margin: 20px auto !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .oman-id-header {
+    background-color: #7E69AB !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .oman-id-footer {
+    background-color: #f9f9f9 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
   /* Passport details styling to match Oman ID style */
   .passport-details {
     width: 80% !important;
@@ -188,4 +210,3 @@ body.printing .passport-image {
   font-weight: bold !important;
   color: #7E69AB !important; /* Purple color similar to Oman document */
 }
-

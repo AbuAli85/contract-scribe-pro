@@ -38,7 +38,7 @@ const OmanIdCard: React.FC<OmanIdCardProps> = ({
     promoterData.nationality?.ar || 'هندي';
   
   return (
-    <div className="oman-id-card">
+    <div className={`oman-id-card ${language === 'ar' ? 'rtl' : ''}`}>
       <div className="oman-id-header">
         {language === 'en' ? 'Resident Identity Card' : 'بطاقة الإقامة'}
       </div>
