@@ -1,66 +1,12 @@
+
 import { useState, useEffect } from 'react'
-import { format } from 'date-fns'
-import { ar, enUS } from 'date-fns/locale'
-import { exportToPDF } from '@/utils/pdf/pdfExport'
 import { useToast } from '@/hooks/use-toast'
-import * as XLSX from 'xlsx'
-
-export interface ContractData {
-  referenceNumber: string
-  firstParty: {
-    nameEn: string
-    nameAr: string
-    crn: string
-  }
-  secondParty: {
-    nameEn: string
-    nameAr: string
-    crn: string
-  }
-  employer: {
-    nameEn: string
-    nameAr: string
-    crn: string
-  }
-  promoter: {
-    nameEn: string
-    nameAr: string
-    id: string
-    nationality?: {
-      en: string
-      ar: string
-    }
-  }
-  product: {
-    nameEn: string
-    nameAr: string
-  }
-  location: {
-    nameEn: string
-    nameAr: string
-  }
-  startDate: {
-    en: string
-    ar: string
-  }
-  endDate: {
-    en: string
-    ar: string
-  }
-  letterheadImage: string | null
-  promoterPhoto: string | null
-}
-
-export interface ContractOptions {
-  firstParties: Array<{ nameEn: string; nameAr: string; crn: string }>
-  secondParties: Array<{ nameEn: string; nameAr: string; crn: string }>
-  employers: Array<{ nameEn: string; nameAr: string; crn: string }>
-  promoters: Array<{ nameEn: string; nameAr: string; id: string; nationality?: { en: string; ar: string } }>
-  products: Array<{ nameEn: string; nameAr: string }>
-  locations: Array<{ nameEn: string; nameAr: string }>
-  letterheads: Array<{ name: string; dataUrl: string }>
-  promoterPhotos: Array<{ name: string; dataUrl: string }>
-}
+import { formatContractDate } from '@/utils/contract/dateFormatter'
+import { handleFileRead } from '@/utils/file/fileReader'
+import { processExcelData } from '@/utils/excel/excelProcessor'
+import { exportContractToPDF } from '@/utils/contract/contractExporter'
+import { generateContractReferenceNumber } from '@/utils/contract/referenceGenerator'
+import type { ContractData, ContractOptions } from '@/types/contract'
 
 export function useContractCreator() {
   const [language, setLanguage] = useState<'ar' | 'en'>('ar')
@@ -92,76 +38,18 @@ export function useContractCreator() {
   const { toast } = useToast()
 
   useEffect(() => {
-    generateReferenceNumber()
-  }, [])
-
-  const generateReferenceNumber = () => {
-    const date = new Date()
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
-    
-    const refNumber = `PRO-${year}${month}${day}-${random}`
-    
+    const refNumber = generateContractReferenceNumber()
     setContractData(prev => ({
       ...prev,
       referenceNumber: refNumber
     }))
-  }
+  }, [])
 
-  const formatDate = (dateStr: string, targetLang: 'en' | 'ar') => {
-    if (!dateStr) return { en: '', ar: '' }
+  const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return
     
-    try {
-      if (dateStr.includes('/')) {
-        const [day, month, year] = dateStr.split('/').map(Number)
-        const date = new Date(year, month - 1, day)
-        
-        return {
-          en: format(date, "PPP", { locale: enUS }),
-          ar: format(date, "PPP", { locale: ar })
-        }
-      }
-      
-      const date = new Date(dateStr)
-      return {
-        en: format(date, "PPP", { locale: enUS }),
-        ar: format(date, "PPP", { locale: ar })
-      }
-    } catch (e) {
-      console.error('Error formatting date:', e)
-      return { en: dateStr, ar: dateStr }
-    }
-  }
-
-  const handleFileRead = (file: File, fileType: 'excel' | 'letterhead' | 'promoterPhoto'): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      
-      reader.onload = (e) => {
-        if (!e.target?.result) {
-          reject(new Error('Failed to read file'))
-          return
-        }
-        
-        if (fileType === 'excel') {
-          resolve(e.target.result)
-        } else {
-          resolve(e.target.result)
-        }
-      }
-      
-      reader.onerror = (e) => {
-        reject(e)
-      }
-      
-      if (fileType === 'excel') {
-        reader.readAsBinaryString(file)
-      } else {
-        reader.readAsDataURL(file)
-      }
-    })
+    const file = e.target.files[0]
+    await processExcelFile(file)
   }
 
   const processExcelFile = async (file: File) => {
@@ -169,138 +57,20 @@ export function useContractCreator() {
       setIsLoading(true)
       
       const data = await handleFileRead(file, 'excel')
-      const workbook = XLSX.read(data, { type: 'binary' })
-      const firstSheetName = workbook.SheetNames[0]
-      const worksheet = workbook.Sheets[firstSheetName]
-      const jsonData = XLSX.utils.sheet_to_json(worksheet)
-      
-      const extractedFirstParties: Array<{ nameEn: string; nameAr: string; crn: string }> = []
-      const extractedSecondParties: Array<{ nameEn: string; nameAr: string; crn: string }> = []
-      const extractedEmployers: Array<{ nameEn: string; nameAr: string; crn: string }> = []
-      const extractedPromoters: Array<{ nameEn: string; nameAr: string; id: string; nationality?: { en: string; ar: string } }> = []
-      const extractedProducts: Array<{ nameEn: string; nameAr: string }> = []
-      const extractedLocations: Array<{ nameEn: string; nameAr: string }> = []
-      
-      jsonData.forEach((row: any) => {
-        const entryType = row.Type || 'unknown'
-        
-        if (entryType.toLowerCase() === 'client' || (row.nameEn && row.crn && !row.id)) {
-          extractedFirstParties.push({
-            nameEn: row.nameEn || row.name_en || row.NameEn || row.client_nameEn || '',
-            nameAr: row.nameAr || row.name_ar || row.NameAr || row.client_nameAr || '',
-            crn: row.crn || row.CRN || row.client_crn || ''
-          })
-        } else if (entryType.toLowerCase() === 'employer' || (row.employerNameEn || row.employer_nameEn)) {
-          extractedEmployers.push({
-            nameEn: row.employerNameEn || row.employer_nameEn || row.EmployerNameEn || '',
-            nameAr: row.employerNameAr || row.employer_nameAr || row.EmployerNameAr || '',
-            crn: row.employerCrn || row.employer_crn || row.EmployerCRN || ''
-          })
-        } else if (entryType.toLowerCase() === 'secondparty' || row.crn) {
-          extractedSecondParties.push({
-            nameEn: row.nameEn || row.name_en || row.NameEn || row.secondparty_nameEn || '',
-            nameAr: row.nameAr || row.name_ar || row.NameAr || row.secondparty_nameAr || '',
-            crn: row.crn || row.CRN || row.secondparty_crn || ''
-          })
-        } else if (entryType.toLowerCase() === 'promoter' || row.id) {
-          extractedPromoters.push({
-            nameEn: row.nameEn || row.name_en || row.NameEn || row.promoter_nameEn || '',
-            nameAr: row.nameAr || row.name_ar || row.NameAr || row.promoter_nameAr || '',
-            id: row.id || row.ID || row.promoter_id || '',
-            nationality: row.nationality ? {
-              en: row.nationality.en || row.nationality_en || 'Indian',
-              ar: row.nationality.ar || row.nationality_ar || 'هندي'
-            } : { en: 'Indian', ar: 'هندي' }
-          })
-        } else if (entryType.toLowerCase() === 'product' || row.product_nameEn) {
-          extractedProducts.push({
-            nameEn: row.nameEn || row.product_nameEn || row.ProductNameEn || '',
-            nameAr: row.nameAr || row.product_nameAr || row.ProductNameAr || ''
-          })
-        } else if (entryType.toLowerCase() === 'location' || row.location_nameEn) {
-          extractedLocations.push({
-            nameEn: row.nameEn || row.location_nameEn || row.LocationNameEn || '',
-            nameAr: row.nameAr || row.location_nameAr || row.LocationNameAr || ''
-          })
-        }
-      })
-      
-      if (workbook.SheetNames.length > 1) {
-        workbook.SheetNames.forEach(sheetName => {
-          const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName])
-          
-          if (sheetName.toLowerCase().includes('client')) {
-            sheetData.forEach((row: any) => {
-              extractedFirstParties.push({
-                nameEn: row.nameEn || row.name_en || row.NameEn || '',
-                nameAr: row.nameAr || row.name_ar || row.NameAr || '',
-                crn: row.crn || row.CRN || ''
-              })
-            })
-          } else if (sheetName.toLowerCase().includes('employer')) {
-            sheetData.forEach((row: any) => {
-              extractedEmployers.push({
-                nameEn: row.nameEn || row.name_en || row.NameEn || row.employerNameEn || row.employer_nameEn || '',
-                nameAr: row.nameAr || row.name_ar || row.NameAr || row.employerNameAr || row.employer_nameAr || '',
-                crn: row.crn || row.CRN || row.employerCrn || row.employer_crn || ''
-              })
-            })
-          } else if (sheetName.toLowerCase().includes('secondparty')) {
-            sheetData.forEach((row: any) => {
-              extractedSecondParties.push({
-                nameEn: row.nameEn || row.name_en || row.NameEn || '',
-                nameAr: row.nameAr || row.name_ar || row.NameAr || '',
-                crn: row.crn || row.CRN || ''
-              })
-            })
-          } else if (sheetName.toLowerCase().includes('promoter')) {
-            sheetData.forEach((row: any) => {
-              extractedPromoters.push({
-                nameEn: row.nameEn || row.name_en || row.NameEn || '',
-                nameAr: row.nameAr || row.name_ar || row.NameAr || '',
-                id: row.id || row.ID || '',
-                nationality: row.nationality ? {
-                  en: row.nationality.en || row.nationality_en || 'Indian',
-                  ar: row.nationality.ar || row.nationality_ar || 'هندي'
-                } : { en: 'Indian', ar: 'هندي' }
-              })
-            })
-          } else if (sheetName.toLowerCase().includes('product')) {
-            sheetData.forEach((row: any) => {
-              extractedProducts.push({
-                nameEn: row.nameEn || row.name_en || row.NameEn || '',
-                nameAr: row.nameAr || row.name_ar || row.NameAr || ''
-              })
-            })
-          } else if (sheetName.toLowerCase().includes('location')) {
-            sheetData.forEach((row: any) => {
-              extractedLocations.push({
-                nameEn: row.nameEn || row.name_en || row.NameEn || '',
-                nameAr: row.nameAr || row.name_ar || row.NameAr || ''
-              })
-            })
-          }
-        })
-      }
-      
-      const employersToUse = extractedEmployers.length === 0 && extractedSecondParties.length > 0 
-        ? [...extractedSecondParties] 
-        : extractedEmployers;
-      
-      console.log('Extracted data from Excel:', {
+      const { 
         firstParties: extractedFirstParties,
         secondParties: extractedSecondParties,
-        employers: employersToUse,
+        employers: extractedEmployers,
         promoters: extractedPromoters,
         products: extractedProducts,
         locations: extractedLocations
-      })
+      } = await processExcelData(data)
       
       setOptions(prev => ({
         ...prev,
         firstParties: [...prev.firstParties, ...extractedFirstParties],
         secondParties: [...prev.secondParties, ...extractedSecondParties],
-        employers: [...prev.employers, ...employersToUse],
+        employers: [...prev.employers, ...extractedEmployers],
         promoters: [...prev.promoters, ...extractedPromoters],
         products: [...prev.products, ...extractedProducts],
         locations: [...prev.locations, ...extractedLocations]
@@ -309,8 +79,8 @@ export function useContractCreator() {
       toast({
         title: language === 'ar' ? 'تمت المعالجة بنجاح' : 'Processed successfully',
         description: language === 'ar' 
-          ? `تم تحليل ملف البيانات واستخراج: ${extractedFirstParties.length} عميل، ${employersToUse.length} مشغل، ${extractedPromoters.length} مروج`
-          : `Data file processed: ${extractedFirstParties.length} clients, ${employersToUse.length} employers, ${extractedPromoters.length} promoters extracted`,
+          ? `تم تحليل ملف البيانات واستخراج: ${extractedFirstParties.length} عميل، ${extractedEmployers.length} مشغل، ${extractedPromoters.length} مروج`
+          : `Data file processed: ${extractedFirstParties.length} clients, ${extractedEmployers.length} employers, ${extractedPromoters.length} promoters extracted`,
       })
       
     } catch (error) {
@@ -325,13 +95,6 @@ export function useContractCreator() {
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return
-    
-    const file = e.target.files[0]
-    await processExcelFile(file)
   }
 
   const handleLetterheadUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -454,7 +217,7 @@ export function useContractCreator() {
     setIsLoading(true)
     
     try {
-      exportToPDF({
+      exportContractToPDF({
         selector: '.agreement-container',
         filename: `promoter-contract-${contractData.referenceNumber}.pdf`,
         contractData: contractData,
@@ -530,13 +293,8 @@ export function useContractCreator() {
     setOptions,
     showContract,
     isLoading,
-    generateReferenceNumber,
-    formatDate,
-    handleExcelUpload: (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (!e.target.files || e.target.files.length === 0) return;
-      const file = e.target.files[0];
-      processExcelFile(file);
-    },
+    formatDate: formatContractDate,
+    handleExcelUpload,
     handleLetterheadUpload,
     handlePromoterPhotoUpload,
     handleGenerateContract,
