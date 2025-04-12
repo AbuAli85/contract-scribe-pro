@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileText, Upload } from "lucide-react";
 import { generateUniqueId } from "@/lib/utils";
 import { FirstPartySection, SecondPartySection, ContractDetailsSection } from "@/components/contract";
 import { useContractCreator } from "@/hooks/useContractCreator";
 import { useToast } from "@/hooks/use-toast";
+import ExcelUploadSection from "@/components/contract/ExcelUploadSection";
+import EmployerSection from "@/components/contract/EmployerSection";
+import GenerateContractButton from "@/components/contract/GenerateContractButton";
 
 interface ContractFormProps {
   language: "ar" | "en";
@@ -109,6 +110,13 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
         label: language === "ar" ? party.nameAr : party.nameEn
       }));
       setSecondPartyOptions(formattedOptions);
+    }
+    
+    if (options.employers.length > 0) {
+      const formattedOptions = options.employers.map(employer => ({
+        value: JSON.stringify(employer),
+        label: language === "ar" ? employer.nameAr : employer.nameEn
+      }));
       setEmployerOptions(formattedOptions);
     }
 
@@ -233,39 +241,11 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
     <Card>
       <CardContent className="pt-6">
         <div className="grid gap-6">
-          {/* Excel Upload Section */}
-          <div className="border p-4 rounded-lg">
-            <h3 className="text-lg font-medium mb-3">
-              {language === "ar" ? "تحميل بيانات من ملف إكسل" : "Import Data From Excel"}
-            </h3>
-            <div className="flex items-center gap-2">
-              <input
-                type="file"
-                id="excelUpload"
-                accept=".xlsx, .csv"
-                className="hidden"
-                onChange={handleFileUpload}
-              />
-              <label
-                htmlFor="excelUpload"
-                className="cursor-pointer flex items-center gap-2 bg-primary/10 hover:bg-primary/20 transition-colors text-primary px-4 py-2 rounded-md"
-              >
-                <Upload className="h-4 w-4" />
-                {language === "ar" ? "اختر ملف اكسل" : "Choose Excel File"}
-              </label>
-              <span className="text-sm text-muted-foreground">
-                {language === "ar" 
-                  ? "قم بتحميل ملف يحتوي على بيانات العملاء، المشغلين، والمروجين" 
-                  : "Upload a file containing clients, employers, and promoters data"}
-              </span>
-            </div>
-            
-            {isLoading && (
-              <div className="mt-2 text-sm text-muted-foreground">
-                {language === "ar" ? "جاري معالجة الملف..." : "Processing file..."}
-              </div>
-            )}
-          </div>
+          <ExcelUploadSection 
+            language={language}
+            isLoading={isLoading}
+            onFileUpload={handleFileUpload}
+          />
           
           <FirstPartySection
             firstParty={formData.firstParty}
@@ -280,7 +260,14 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
             language={language}
             onChange={handleInputChange}
             promoterOptions={promoterOptions}
-            employerOptions={employerOptions}
+            employerOptions={secondPartyOptions}
+          />
+          
+          <EmployerSection
+            employer={formData.employer}
+            language={language}
+            onChange={handleInputChange}
+            options={employerOptions}
           />
           
           <ContractDetailsSection
@@ -293,13 +280,10 @@ const ContractForm: React.FC<ContractFormProps> = ({ language, onGenerateContrac
             locationOptions={locationOptions}
           />
           
-          <Button 
+          <GenerateContractButton
+            language={language}
             onClick={handleGenerateContract}
-            className="w-full flex items-center gap-2"
-          >
-            <FileText className="h-4 w-4" />
-            {language === "ar" ? "إنشاء العقد" : "Generate Contract"}
-          </Button>
+          />
         </div>
       </CardContent>
     </Card>
