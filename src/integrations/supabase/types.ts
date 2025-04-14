@@ -9,6 +9,69 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_requests: {
+        Row: {
+          clause_type: string
+          created_at: string | null
+          id: string
+          language: string
+          model: string
+          prompt: string
+          user_id: string
+        }
+        Insert: {
+          clause_type: string
+          created_at?: string | null
+          id?: string
+          language: string
+          model: string
+          prompt: string
+          user_id: string
+        }
+        Update: {
+          clause_type?: string
+          created_at?: string | null
+          id?: string
+          language?: string
+          model?: string
+          prompt?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_responses: {
+        Row: {
+          clause_type: string
+          created_at: string | null
+          id: string
+          language: string
+          model: string
+          prompt: string
+          response: string
+          user_id: string
+        }
+        Insert: {
+          clause_type: string
+          created_at?: string | null
+          id?: string
+          language: string
+          model: string
+          prompt: string
+          response: string
+          user_id: string
+        }
+        Update: {
+          clause_type?: string
+          created_at?: string | null
+          id?: string
+          language?: string
+          model?: string
+          prompt?: string
+          response?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       approval_tokens: {
         Row: {
           contract_id: string

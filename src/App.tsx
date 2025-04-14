@@ -9,6 +9,7 @@ import { ThemeProvider } from "./components/ThemeProvider"
 import PrintErrorPage from "./components/contract/PrintErrorPage"
 import { useEffect } from "react"
 import { attachDebuggerToWindow } from "./utils/printDebugger"
+import HomePage from "./pages/Index"
 
 // Apply print styles globally
 import "./styles/contract-global.css"
@@ -74,7 +75,8 @@ function App() {
     <ThemeProvider defaultTheme="light" storageKey="ui-theme">
       <Router>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-contract" element={<CreateContract />} />
           <Route path="/contracts/:contractId" element={<ContractDetail />} />
           <Route path="/print-error" element={<PrintErrorPage />} />
