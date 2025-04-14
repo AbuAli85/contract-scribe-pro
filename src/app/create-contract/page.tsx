@@ -207,7 +207,7 @@ export default function ContractCreator() {
           <select 
             id="firstPartySelect" 
             className="form-control"
-            value={JSON.stringify(contractData.firstParty) !== '{"nameEn":"","nameAr":"","crn":""}' ? 
+            value={JSON.stringify(contractData.firstParty) !== '{"nameEn":"","nameAr":"","crnEn":"","crnAr":""}' ? 
               JSON.stringify(contractData.firstParty) : ''}
             onChange={(e) => {
               if (e.target.value) {
@@ -223,7 +223,7 @@ export default function ContractCreator() {
             </option>
             {options.firstParties.map((party, index) => (
               <option key={index} value={JSON.stringify(party)}>
-                {language === 'ar' ? party.nameAr : party.nameEn} ({party.crn})
+                {language === 'ar' ? party.nameAr : party.nameEn} ({party.crnEn})
               </option>
             ))}
           </select>
@@ -237,7 +237,7 @@ export default function ContractCreator() {
           <select 
             id="secondPartySelect" 
             className="form-control"
-            value={JSON.stringify(contractData.secondParty) !== '{"nameEn":"","nameAr":"","crn":""}' ? 
+            value={JSON.stringify(contractData.secondParty) !== '{"nameEn":"","nameAr":"","crnEn":"","crnAr":""}' ? 
               JSON.stringify(contractData.secondParty) : ''}
             onChange={(e) => {
               if (e.target.value) {
@@ -253,7 +253,7 @@ export default function ContractCreator() {
             </option>
             {options.secondParties.map((party, index) => (
               <option key={index} value={JSON.stringify(party)}>
-                {language === 'ar' ? party.nameAr : party.nameEn} ({party.crn})
+                {language === 'ar' ? party.nameAr : party.nameEn} ({party.crnEn})
               </option>
             ))}
           </select>
@@ -338,8 +338,8 @@ export default function ContractCreator() {
             <div 
               className="letterhead-bg" 
               id="letterheadBg"
-              style={{ backgroundImage: contractData.letterheadImage ? 
-                `url(${contractData.letterheadImage})` : 'none' 
+              style={{ backgroundImage: contractData.letterheadUrl ? 
+                `url(${contractData.letterheadUrl})` : 'none' 
               }}
             ></div>
 
@@ -352,7 +352,7 @@ export default function ContractCreator() {
             <div className="content-block">
               {/* Promoter Photo */}
               <img 
-                src={contractData.promoterPhoto || "https://via.placeholder.com/400x150.png?text=No+Promoter+ID+Selected"} 
+                src={contractData.promoterPhotoUrl || "https://via.placeholder.com/400x150.png?text=No+Promoter+ID+Selected"} 
                 alt="Promoter Photo" 
                 className="promoter-photo" 
                 id="promoterPhotoA4" 
@@ -372,12 +372,12 @@ export default function ContractCreator() {
                     <tr>
                       <td className="english">
                         <p>
-                          This contract is between <strong>{contractData.firstParty.nameEn || "Falcon EYE Management"} (First Party)</strong> having the C.R. No.: <strong>{contractData.firstParty.crn || "1410869"}</strong>
+                          This contract is between <strong>{contractData.firstParty.nameEn || "Falcon EYE Management"} (First Party)</strong> having the C.R. No.: <strong>{contractData.firstParty.crnEn || "1410869"}</strong>
                         </p>
                       </td>
                       <td className="arabic">
                         <p>
-                          هذا العقد بين <strong>{contractData.firstParty.nameAr || "عين الصقر للإدارة و الأعمال"} (الطرف الأول)</strong> التي لديها السجل التجاري: <strong>{contractData.firstParty.crn || "1410869"}</strong>
+                          هذا العقد بين <strong>{contractData.firstParty.nameAr || "عين الصقر للإدارة و الأعمال"} (الطرف الأول)</strong> التي لديها السجل التجاري: <strong>{contractData.firstParty.crnAr || "1410869"}</strong>
                         </p>
                       </td>
                     </tr>
@@ -386,12 +386,12 @@ export default function ContractCreator() {
                     <tr>
                       <td className="english">
                         <p>
-                          <strong>{contractData.secondParty.nameEn || "Second Party Company"} (Second Party)</strong> having the C.R. No.: <strong>{contractData.secondParty.crn || "0000000"}</strong>
+                          <strong>{contractData.secondParty.nameEn || "Second Party Company"} (Second Party)</strong> having the C.R. No.: <strong>{contractData.secondParty.crnEn || "0000000"}</strong>
                         </p>
                       </td>
                       <td className="arabic">
                         <p>
-                          <strong>{contractData.secondParty.nameAr || "الشركة الثانية"} (الطرف الثاني)</strong> التي لديها السجل التجاري: <strong>{contractData.secondParty.crn || "0000000"}</strong>
+                          <strong>{contractData.secondParty.nameAr || "الشركة الثانية"} (الطرف الثاني)</strong> التي لديها السجل التجاري: <strong>{contractData.secondParty.crnAr || "0000000"}</strong>
                         </p>
                       </td>
                     </tr>
@@ -415,17 +415,17 @@ export default function ContractCreator() {
                       <td className="english">
                         <p>
                           <strong>Name:</strong> {contractData.promoter.nameEn || "Promoter Name"}<br/>
-                          <strong>ID NO:</strong> {contractData.promoter.id || "ID Number"}<br/>
+                          <strong>ID NO:</strong> {contractData.promoter.idEn || "ID Number"}<br/>
                           <strong>Nationality:</strong> {contractData.promoter.nationality?.en || "Indian"}<br/>
-                          <strong>From:</strong> {contractData.startDate.en || "Start Date"} <strong>to:</strong> {contractData.endDate.en || "End Date"}
+                          <strong>From:</strong> {contractData.dates.startEn || "Start Date"} <strong>to:</strong> {contractData.dates.endEn || "End Date"}
                         </p>
                       </td>
                       <td className="arabic">
                         <p>
                           <strong>الاسم:</strong> {contractData.promoter.nameAr || "اسم المروج"}<br/>
-                          <strong>رقم الهوية:</strong> {contractData.promoter.id || "رقم الهوية"}<br/>
+                          <strong>رقم الهوية:</strong> {contractData.promoter.idEn || "رقم الهوية"}<br/>
                           <strong>الجنسية:</strong> {contractData.promoter.nationality?.ar || "هندي"}<br/>
-                          <strong>من:</strong> {contractData.startDate.ar || "تاريخ البداية"} <strong>إلى:</strong> {contractData.endDate.ar || "تاريخ النهاية"}
+                          <strong>من:</strong> {contractData.dates.startAr || "تاريخ البداية"} <strong>إلى:</strong> {contractData.dates.endAr || "تاريخ النهاية"}
                         </p>
                       </td>
                     </tr>

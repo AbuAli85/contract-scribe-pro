@@ -20,6 +20,10 @@ export interface ContractData {
     nameAr: string
     idEn: string
     idAr: string
+    nationality?: {
+      en: string
+      ar: string
+    }
   }
   product: {
     nameEn: string
@@ -40,10 +44,16 @@ export interface ContractData {
 }
 
 export interface ContractOptions {
-  firstParties: Array<{ nameEn: string; nameAr: string; crn: string }>
-  secondParties: Array<{ nameEn: string; nameAr: string; crn: string }>
-  employers: Array<{ nameEn: string; nameAr: string; crn: string }>
-  promoters: Array<{ nameEn: string; nameAr: string; id: string; nationality?: { en: string; ar: string } }>
+  firstParties: Array<{ nameEn: string; nameAr: string; crnEn: string; crnAr: string }>
+  secondParties: Array<{ nameEn: string; nameAr: string; crnEn: string; crnAr: string }>
+  employers: Array<{ nameEn: string; nameAr: string; crnEn: string; crnAr: string }>
+  promoters: Array<{ 
+    nameEn: string
+    nameAr: string
+    idEn: string
+    idAr: string
+    nationality?: { en: string; ar: string }
+  }>
   products: Array<{ nameEn: string; nameAr: string }>
   locations: Array<{ nameEn: string; nameAr: string }>
   letterheads: Array<{ name: string; dataUrl: string }>
@@ -56,10 +66,16 @@ export interface FileReadResult {
 }
 
 export interface ExcelProcessingResult {
-  firstParties: Array<{ nameEn: string; nameAr: string; crn: string }>
-  secondParties: Array<{ nameEn: string; nameAr: string; crn: string }>
-  employers: Array<{ nameEn: string; nameAr: string; crn: string }>
-  promoters: Array<{ nameEn: string; nameAr: string; id: string; nationality?: { en: string; ar: string } }>
+  firstParties: Array<{ nameEn: string; nameAr: string; crnEn: string; crnAr: string }>
+  secondParties: Array<{ nameEn: string; nameAr: string; crnEn: string; crnAr: string }>
+  employers: Array<{ nameEn: string; nameAr: string; crnEn: string; crnAr: string }>
+  promoters: Array<{ 
+    nameEn: string
+    nameAr: string
+    idEn: string
+    idAr: string
+    nationality?: { en: string; ar: string }
+  }>
   products: Array<{ nameEn: string; nameAr: string }>
   locations: Array<{ nameEn: string; nameAr: string }>
 }
