@@ -4,12 +4,14 @@ import { generateUniqueId } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { usePrint } from "@/hooks/usePrint";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Edit, Eye } from "lucide-react";
+import { Edit, Eye, History } from "lucide-react";
 import ContractForm from "@/components/ContractForm";
 import ContractHeader from "@/components/contract/ContractHeader";
 import ContractPreviewTab from "@/components/contract/ContractPreviewTab";
 import DocumentsSection from "@/components/contract/DocumentsSection";
 import { printService } from "@/services/print.service";
+import ContractHistory from "@/components/contract/ContractHistory";
+import type { ContractData } from "@/types/contract";
 
 export default function CreateContract() {
   const [contractId] = useState(() => `temp-${generateUniqueId()}`);
@@ -17,7 +19,7 @@ export default function CreateContract() {
   const [useNewDocumentsPanel, setUseNewDocumentsPanel] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
   const [language, setLanguage] = useState<"en" | "ar">("en");
-  const [contractData, setContractData] = useState<any>(null);
+  const [contractData, setContractData] = useState<ContractData | null>(null);
   const { toast } = useToast();
   const { handlePrint, isPrinting } = usePrint({ language, forceDirectPrint: true });
 
@@ -93,6 +95,16 @@ export default function CreateContract() {
     setActiveTab("edit");
   };
 
+  const handleLoadContract = (contract: ContractData) => {
+    setContractData(contract);
+    setActiveTab("preview");
+    
+    toast({
+      title: language === "ar" ? "تم تحميل العقد" : "Contract loaded",
+      description: language === "ar" ? "تم تحميل العقد بنجاح" : "Contract has been loaded successfully"
+    });
+  };
+
   return (
     <div className="container mx-auto px-4 py-6">
       <ContractHeader 
@@ -104,7 +116,7 @@ export default function CreateContract() {
       />
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="mb-6 grid w-full grid-cols-2">
+        <TabsList className="mb-6 grid w-full grid-cols-3">
           <TabsTrigger value="edit" className="flex items-center gap-1">
             <Edit className="h-4 w-4" />
             {language === "ar" ? "تحرير العقد" : "Edit Contract"}
@@ -112,6 +124,10 @@ export default function CreateContract() {
           <TabsTrigger value="preview" className="flex items-center gap-1">
             <Eye className="h-4 w-4" />
             {language === "ar" ? "معاينة العقد" : "Preview Contract"}
+          </TabsTrigger>
+          <TabsTrigger value="history" className="flex items-center gap-1">
+            <History className="h-4 w-4" />
+            {language === "ar" ? "السجل" : "History"}
           </TabsTrigger>
         </TabsList>
         
@@ -138,6 +154,26 @@ export default function CreateContract() {
             isPrinting={isPrinting}
             onEditClick={handleEditClick}
           />
+        </TabsContent>
+        
+        <TabsContent value="history" className="min-h-[600px]">
+          {contractData && (
+            <ContractHistory
+              language={language}
+              currentContract={contractData}
+              onLoadContract={handleLoadContract}
+              onSaveContract={handleSaveContract}
+            />
+          )}
+          {!contractData && (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">
+                {language === "ar" 
+                  ? "يرجى إنشاء عقد أولاً لعرض السجل"
+                  : "Please create a contract first to view history"}
+              </p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
