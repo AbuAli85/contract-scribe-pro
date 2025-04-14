@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import Dashboard from "./pages/Dashboard"
 import CreateContract from "./pages/CreateContract"
@@ -10,6 +9,7 @@ import PrintErrorPage from "./components/contract/PrintErrorPage"
 import { useEffect } from "react"
 import { attachDebuggerToWindow } from "./utils/printDebugger"
 import HomePage from "./pages/Index"
+import SettingsPage from "./pages/Settings"
 
 // Apply print styles globally
 import "./styles/contract-global.css"
@@ -80,6 +80,7 @@ function App() {
           <Route path="/create-contract" element={<CreateContract />} />
           <Route path="/contracts/:contractId" element={<ContractDetail />} />
           <Route path="/print-error" element={<PrintErrorPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

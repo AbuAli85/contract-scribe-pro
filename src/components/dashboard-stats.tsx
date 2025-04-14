@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -6,7 +5,7 @@ import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContaine
 import { Calendar, FileText, Users, BarChart2 } from 'lucide-react';
 
 const DashboardStats = () => {
-  const [contracts, setContracts] = useState([]);
+  const [contracts, setContracts] = useState<any[]>([]);
   const [period, setPeriod] = useState('week');
   
   useEffect(() => {
@@ -43,8 +42,8 @@ const DashboardStats = () => {
     if (period === 'month') timeframeDays = 30;
     if (period === 'year') timeframeDays = 365;
     
-    const labels = [];
-    const data = [];
+    const labels: string[] = [];
+    const data: Array<{name: string, value: number}> = [];
     
     // Create date labels and initialize counts
     for (let i = 0; i < (period === 'week' ? 7 : period === 'month' ? 30 : 12); i++) {
@@ -69,11 +68,15 @@ const DashboardStats = () => {
       const contractDate = new Date(contract.timestamp);
       const today = new Date();
       
-      let index;
+      let index: number | undefined;
       if (period === 'year') {
         // Check if within last 12 months
         if (contractDate > new Date(today.getFullYear() - 1, today.getMonth(), today.getDate())) {
-          index = 11 - (today.getMonth() - contractDate.getMonth() + (today.getFullYear() - contractDate.getFullYear()) * 12);
+          // Calculate difference in months
+          const monthDiff = (today.getMonth() - contractDate.getMonth() + 
+                            (today.getFullYear() - contractDate.getFullYear()) * 12);
+          index = 11 - monthDiff;
+          
           if (index >= 0 && index < 12) {
             data[index].value++;
           }
@@ -97,7 +100,7 @@ const DashboardStats = () => {
   
   // Data for distribution charts
   const getPartyData = () => {
-    const parties = {};
+    const parties: Record<string, number> = {};
     
     contracts.forEach(contract => {
       const firstPartyName = contract.contract?.firstParty?.nameEn;
@@ -117,7 +120,7 @@ const DashboardStats = () => {
   };
   
   const getLocationData = () => {
-    const locations = {};
+    const locations: Record<string, number> = {};
     
     contracts.forEach(contract => {
       const locationName = contract.contract?.location?.nameEn;
