@@ -19,7 +19,18 @@ export default function CreateContract() {
   const [useNewDocumentsPanel, setUseNewDocumentsPanel] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
   const [language, setLanguage] = useState<"en" | "ar">("en");
-  const [contractData, setContractData] = useState<ContractData | null>(null);
+  const [contractData, setContractData] = useState<ContractData>({
+    referenceNumber: "",
+    firstParty: { nameEn: "", nameAr: "", crnEn: "", crnAr: "" },
+    secondParty: { nameEn: "", nameAr: "", crnEn: "", crnAr: "" },
+    promoter: { nameEn: "", nameAr: "", idEn: "", idAr: "" },
+    product: { nameEn: "", nameAr: "" },
+    location: { nameEn: "", nameAr: "" },
+    dates: { startEn: "", startAr: "", endEn: "", endAr: "" },
+    letterheadUrl: "",
+    promoterPhotoUrl: "",
+  });
+  
   const { toast } = useToast();
   const { handlePrint, isPrinting } = usePrint({ language, forceDirectPrint: true });
 
@@ -73,14 +84,39 @@ export default function CreateContract() {
     }
   }, [activeTab, contractData]);
 
-  const handleGenerateContract = (data: any) => {
-    console.log("Contract generated with data:", data);
-    setContractData(data);
+  const handleUpdateContractData = (data: Partial<ContractData>) => {
+    setContractData(prev => ({
+      ...prev,
+      ...data
+    }));
+  };
+
+  const handleGenerateContract = () => {
+    console.log("Contract generated with data:", contractData);
     setActiveTab("preview");
     
     toast({
       title: language === "ar" ? "تم إنشاء العقد بنجاح" : "Contract generated successfully",
       description: language === "ar" ? "يمكنك الآن معاينة العقد وطباعته" : "You can now preview and print the contract",
+    });
+  };
+
+  const handleResetContract = () => {
+    setContractData({
+      referenceNumber: "",
+      firstParty: { nameEn: "", nameAr: "", crnEn: "", crnAr: "" },
+      secondParty: { nameEn: "", nameAr: "", crnEn: "", crnAr: "" },
+      promoter: { nameEn: "", nameAr: "", idEn: "", idAr: "" },
+      product: { nameEn: "", nameAr: "" },
+      location: { nameEn: "", nameAr: "" },
+      dates: { startEn: "", startAr: "", endEn: "", endAr: "" },
+      letterheadUrl: "",
+      promoterPhotoUrl: "",
+    });
+    
+    toast({
+      title: language === "ar" ? "تم إعادة تعيين النموذج" : "Form has been reset",
+      description: language === "ar" ? "تم مسح جميع البيانات" : "All data has been cleared",
     });
   };
 
@@ -134,7 +170,10 @@ export default function CreateContract() {
         <TabsContent value="edit" className="space-y-6">
           <ContractForm
             language={language}
+            contractData={contractData}
+            onUpdateContractData={handleUpdateContractData}
             onGenerateContract={handleGenerateContract}
+            onReset={handleResetContract}
           />
           
           <DocumentsSection 
@@ -157,7 +196,7 @@ export default function CreateContract() {
         </TabsContent>
         
         <TabsContent value="history" className="min-h-[600px]">
-          {contractData && (
+          {contractData && contractData.referenceNumber && (
             <ContractHistory
               language={language}
               currentContract={contractData}
@@ -165,7 +204,7 @@ export default function CreateContract() {
               onSaveContract={handleSaveContract}
             />
           )}
-          {!contractData && (
+          {(!contractData || !contractData.referenceNumber) && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">
                 {language === "ar" 

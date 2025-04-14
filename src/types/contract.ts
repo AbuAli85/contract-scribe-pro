@@ -6,26 +6,20 @@ export interface ContractData {
   firstParty: {
     nameEn: string
     nameAr: string
-    crn: string
+    crnEn: string
+    crnAr: string
   }
   secondParty: {
     nameEn: string
     nameAr: string
-    crn: string
-  }
-  employer: {
-    nameEn: string
-    nameAr: string
-    crn: string
+    crnEn: string
+    crnAr: string
   }
   promoter: {
     nameEn: string
     nameAr: string
-    id: string
-    nationality?: {
-      en: string
-      ar: string
-    }
+    idEn: string
+    idAr: string
   }
   product: {
     nameEn: string
@@ -35,16 +29,14 @@ export interface ContractData {
     nameEn: string
     nameAr: string
   }
-  startDate: {
-    en: string
-    ar: string
+  dates: {
+    startEn: string
+    startAr: string
+    endEn: string
+    endAr: string
   }
-  endDate: {
-    en: string
-    ar: string
-  }
-  letterheadImage: string | null
-  promoterPhoto: string | null
+  letterheadUrl: string
+  promoterPhotoUrl: string
 }
 
 export interface ContractOptions {
