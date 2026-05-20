@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { ContractTemplate } from "@/lib/templates";
 import { Link } from "react-router-dom";
+import { generateTemplatePdf } from "@/utils/pdf/generateTemplatePdf";
 
 interface EmailGateModalProps {
   open: boolean;
@@ -71,15 +72,6 @@ const EmailGateModal = ({
   const isAr = language === "ar";
   const dir = isAr ? "rtl" : "ltr";
 
-  const triggerDownload = (pdfUrl: string, id: string) => {
-    const link = document.createElement("a");
-    link.href = pdfUrl;
-    link.download = `contract-scribe-${id}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!template) return;
@@ -122,7 +114,7 @@ const EmailGateModal = ({
         })
         .catch((err) => console.warn("send-template-email failed:", err));
 
-      triggerDownload(template.pdfUrl, template.id);
+      generateTemplatePdf(template, language);
       setStatus("success");
 
       if (error?.code === "23505") {
