@@ -114,12 +114,15 @@ const EmailGateModal = ({
         })
         .catch((err) => console.warn("send-template-email failed:", err));
 
-      generateTemplatePdf(template, language);
       setStatus("success");
 
       if (error?.code === "23505") {
         toast({ title: t.duplicate });
       }
+
+      // Defer PDF generation so React can paint the success state first.
+      // jsPDF is synchronous and would block the main thread for ~200ms if called inline.
+      setTimeout(() => generateTemplatePdf(template, language), 60);
     } catch (err) {
       console.error("EmailGateModal submit error:", err);
       toast({ title: t.error, variant: "destructive" });
