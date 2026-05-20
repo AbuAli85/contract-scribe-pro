@@ -552,15 +552,19 @@ export const TEMPLATES: ContractTemplate[] = [
   ),
 
   // ───────────── GOVERNMENT & COMPLIANCE (OMAN) ─────────────
-  comingSoon(
-    "noc-rop",
-    "ROP NOC Letter",
-    "خطاب عدم ممانعة لشرطة عُمان السلطانية",
-    "No Objection Certificate addressed to Royal Oman Police for vehicle/visa/permit.",
-    "شهادة عدم ممانعة موجهة إلى شرطة عُمان السلطانية للمركبة/التأشيرة/التصريح.",
-    "Government & Compliance",
-    "BadgeCheck"
-  ),
+  {
+    id: "noc-rop",
+    titleEn: "ROP NOC Letter",
+    titleAr: "خطاب عدم ممانعة لشرطة عُمان السلطانية",
+    descEn:
+      "No Objection Certificate addressed to Royal Oman Police for vehicle, visa, driving licence, travel, or permit matters.",
+    descAr:
+      "شهادة عدم ممانعة موجهة إلى شرطة عُمان السلطانية للمركبة أو التأشيرة أو رخصة القيادة أو السفر أو التصاريح.",
+    category: "Government & Compliance",
+    icon: "BadgeCheck",
+    status: "ready",
+    isPro: false,
+  },
   comingSoon(
     "noc-employment",
     "Employment NOC Letter",
