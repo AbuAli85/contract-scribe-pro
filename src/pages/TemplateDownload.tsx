@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { CheckCircle2, Download, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getTemplateById } from "@/lib/templates";
-import { generateTemplatePdf } from "@/utils/pdf/generateTemplatePdf";
+import { generateTemplateDocx } from "@/utils/docx/generateTemplateDocx";
 
 export default function TemplateDownload() {
   const { templateId } = useParams<{ templateId: string }>();
@@ -16,14 +16,11 @@ export default function TemplateDownload() {
     if (!template || triggered.current) return;
     triggered.current = true;
 
-    // Small delay lets the page paint before jsPDF blocks the thread
+    // Small delay lets the page paint before doc generation starts
     const timer = setTimeout(() => {
-      try {
-        generateTemplatePdf(template, "en");
-        setStatus("done");
-      } catch {
-        setStatus("error");
-      }
+      generateTemplateDocx(template, "en")
+        .then(() => setStatus("done"))
+        .catch(() => setStatus("error"));
     }, 120);
 
     return () => clearTimeout(timer);
@@ -65,7 +62,7 @@ export default function TemplateDownload() {
             <Button asChild>
               <Link to="/create-contract">Customize online — it's free</Link>
             </Button>
-            <Button variant="outline" onClick={() => generateTemplatePdf(template, "en")}>
+            <Button variant="outline" onClick={() => generateTemplateDocx(template, "en")}>
               <Download className="me-2 h-4 w-4" />
               Download again
             </Button>

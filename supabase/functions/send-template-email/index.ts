@@ -51,7 +51,7 @@ function buildEmail(lang: "en" | "ar", templateId: string, appUrl: string) {
       html: `<!DOCTYPE html><html dir="rtl" lang="ar"><body style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111;">
 <h1 style="font-size:22px;margin:0 0 16px;">نموذجك المجاني جاهز</h1>
 <p style="line-height:1.6;">شكراً لتنزيل نموذج <strong>${name.ar}</strong> من Contract Scribe Pro.</p>
-<p style="margin:24px 0;"><a href="${downloadUrl}" style="background:#e11d48;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;display:inline-block;font-weight:bold;">تنزيل النموذج (PDF)</a></p>
+<p style="margin:24px 0;"><a href="${downloadUrl}" style="background:#e11d48;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;display:inline-block;font-weight:bold;">تنزيل النموذج (Word ‏.docx)</a></p>
 <p style="line-height:1.6;color:#555;">هل تريد تخصيص هذا النموذج باسم شركتك وتفاصيلها؟ أنشئ حساباً مجانياً وأنشئ 3 عقود مجاناً بدون الحاجة لبطاقة ائتمان.</p>
 <p style="margin:24px 0;"><a href="${appLink}" style="color:#e11d48;font-weight:bold;text-decoration:none;">→ ابدأ مجاناً على المنصة</a></p>
 <hr style="border:none;border-top:1px solid #eee;margin:32px 0;"/>
@@ -65,7 +65,7 @@ function buildEmail(lang: "en" | "ar", templateId: string, appUrl: string) {
     html: `<!DOCTYPE html><html lang="en"><body style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111;">
 <h1 style="font-size:22px;margin:0 0 16px;">Your free template is ready</h1>
 <p style="line-height:1.6;">Thanks for downloading the <strong>${name.en}</strong> template from Contract Scribe Pro.</p>
-<p style="margin:24px 0;"><a href="${downloadUrl}" style="background:#e11d48;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;display:inline-block;font-weight:bold;">Download template (PDF)</a></p>
+<p style="margin:24px 0;"><a href="${downloadUrl}" style="background:#e11d48;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;display:inline-block;font-weight:bold;">Download template (Word .docx)</a></p>
 <p style="line-height:1.6;color:#555;">Want to customize this template with your company name and details? Create a free account and generate 3 contracts free — no credit card required.</p>
 <p style="margin:24px 0;"><a href="${appLink}" style="color:#e11d48;font-weight:bold;text-decoration:none;">→ Start free on the platform</a></p>
 <hr style="border:none;border-top:1px solid #eee;margin:32px 0;"/>

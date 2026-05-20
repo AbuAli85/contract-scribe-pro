@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { ContractTemplate } from "@/lib/templates";
 import { Link } from "react-router-dom";
-import { generateTemplatePdf } from "@/utils/pdf/generateTemplatePdf";
+import { generateTemplateDocx } from "@/utils/docx/generateTemplateDocx";
 
 interface EmailGateModalProps {
   open: boolean;
@@ -120,9 +120,13 @@ const EmailGateModal = ({
         toast({ title: t.duplicate });
       }
 
-      // Defer PDF generation so React can paint the success state first.
-      // jsPDF is synchronous and would block the main thread for ~200ms if called inline.
-      setTimeout(() => generateTemplatePdf(template, language), 60);
+      // Defer doc generation so React can paint the success state first.
+      // The docx builder is async but blob-packing still costs ~150ms on slow devices.
+      setTimeout(() => {
+        generateTemplateDocx(template, language).catch((err) =>
+          console.error("generateTemplateDocx failed:", err)
+        );
+      }, 60);
     } catch (err) {
       console.error("EmailGateModal submit error:", err);
       toast({ title: t.error, variant: "destructive" });
