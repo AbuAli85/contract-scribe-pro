@@ -2,18 +2,15 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Briefcase,
-  Handshake,
-  Wrench,
-  Laptop,
-  Home,
-  Users,
-  ShoppingCart,
-  Star,
-  Lock,
-  Download,
-  Eye,
-  FileText,
+  Briefcase, Handshake, Wrench, Laptop, Home, Users, ShoppingCart,
+  Star, Lock, Download, Eye, FileText, Bell, Mail, FileX, LogOut,
+  AlertTriangle, TrendingUp, Receipt, Award, Ban, FileStack,
+  ClipboardList, PieChart, Combine, FileSignature, Truck, Store,
+  Package, ListOrdered, Car, Stamp, Gavel, Banknote, Plane,
+  ShieldCheck, Building2, DoorOpen, Key, AlertCircle, OctagonAlert,
+  Check, MessageSquareWarning, Camera, Megaphone, Music, Cloud,
+  Code, BadgeCheck, Building, UserCheck, Heart,
+  Stethoscope, GraduationCap, UserPlus, BookOpen,
   type LucideIcon,
 } from "lucide-react";
 import type { ContractTemplate } from "@/lib/templates";
@@ -23,33 +20,39 @@ interface TemplateCardProps {
   language: "ar" | "en";
   onDownload: (template: ContractTemplate) => void;
   onPreview: (template: ContractTemplate) => void;
+  onRequest: (template: ContractTemplate) => void;
 }
 
 const ICON_MAP: Record<string, LucideIcon> = {
-  Briefcase,
-  Handshake,
-  Wrench,
-  Laptop,
-  Home,
-  Users,
-  ShoppingCart,
-  Star,
+  Briefcase, Handshake, Wrench, Laptop, Home, Users, ShoppingCart,
+  Star, Mail, FileX, LogOut, AlertTriangle, TrendingUp, Receipt,
+  Award, Ban, FileStack, ClipboardList, PieChart, Combine,
+  FileSignature, Truck, Store, Package, ListOrdered, FileText, Car,
+  Stamp, Gavel, Banknote, Plane, ShieldCheck, Building2, DoorOpen,
+  Key, AlertCircle, OctagonAlert, Check, MessageSquareWarning,
+  Camera, Megaphone, Music, Cloud, Lock, Code, BadgeCheck,
+  Building, UserCheck, Heart, Stethoscope, GraduationCap, UserPlus,
+  BookOpen,
 };
 
 const COPY = {
   ar: {
     free: "مجاني",
     pro: "Pro",
+    comingSoon: "قريباً",
     preview: "معاينة",
     download: "تنزيل مجاني",
     unlock: "افتح بـ Pro",
+    request: "اطلب الآن",
   },
   en: {
     free: "Free",
     pro: "Pro",
+    comingSoon: "Coming Soon",
     preview: "Preview",
     download: "Download Free",
     unlock: "Unlock with Pro",
+    request: "Request It",
   },
 } as const;
 
@@ -58,6 +61,7 @@ const TemplateCard = ({
   language,
   onDownload,
   onPreview,
+  onRequest,
 }: TemplateCardProps) => {
   const isAr = language === "ar";
   const t = COPY[language];
@@ -66,79 +70,105 @@ const TemplateCard = ({
   const title = isAr ? template.titleAr : template.titleEn;
   const desc = isAr ? template.descAr : template.descEn;
 
+  const isComingSoon = template.status === "coming-soon";
+  const isPro = template.status === "pro";
+  const isReady = template.status === "ready";
+
   return (
     <Card
-      className={`relative h-full flex flex-col transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ${
-        template.isPro ? "border-primary/30" : ""
-      }`}
+      className={`relative h-full flex flex-col transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
+        isPro ? "border-primary/30" : ""
+      } ${isComingSoon ? "border-dashed" : ""}`}
       dir={isAr ? "rtl" : "ltr"}
     >
-      {template.isPro && (
-        <div className="absolute top-3 end-3 z-10">
+      {/* Status badge — top end */}
+      <div className="absolute top-3 end-3 z-10">
+        {isPro && (
           <Badge variant="default" className="gap-1">
             <Lock className="h-3 w-3" />
             {t.pro}
           </Badge>
-        </div>
-      )}
+        )}
+        {isComingSoon && (
+          <Badge variant="outline" className="gap-1 text-muted-foreground">
+            <Bell className="h-3 w-3" />
+            {t.comingSoon}
+          </Badge>
+        )}
+        {isReady && (
+          <Badge variant="secondary" className="text-xs">
+            {t.free}
+          </Badge>
+        )}
+      </div>
 
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="h-12 w-12 rounded-md bg-primary/10 flex items-center justify-center text-primary">
-            <Icon className="h-6 w-6" />
-          </div>
-          {!template.isPro && (
-            <Badge variant="secondary" className="text-xs">
-              {t.free}
-            </Badge>
-          )}
+        <div className="h-11 w-11 rounded-md bg-primary/10 flex items-center justify-center text-primary mb-2">
+          <Icon className="h-5 w-5" />
         </div>
-        <h3 className={`text-lg font-bold leading-tight pt-2 ${isAr ? "text-right" : ""}`}>
+        <h3
+          className={`text-base font-bold leading-tight pe-12 ${
+            isAr ? "text-right" : ""
+          }`}
+        >
           {title}
         </h3>
-        <Badge variant="outline" className="w-fit text-xs font-normal">
-          {template.category}
-        </Badge>
       </CardHeader>
 
-      <CardContent className="flex flex-col flex-1 gap-4">
+      <CardContent className="flex flex-col flex-1 gap-3">
         <p
-          className={`text-sm text-muted-foreground leading-relaxed flex-1 ${
+          className={`text-xs text-muted-foreground leading-relaxed flex-1 ${
             isAr ? "text-right" : ""
           }`}
         >
           {desc}
         </p>
 
-        <div className="flex gap-2 pt-2 mt-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={() => onPreview(template)}
-            disabled={template.isPro}
-          >
-            <Eye className="me-1.5 h-4 w-4" />
-            {t.preview}
-          </Button>
-          <Button
-            size="sm"
-            className="flex-1"
-            onClick={() => onDownload(template)}
-            variant={template.isPro ? "default" : "default"}
-          >
-            {template.isPro ? (
-              <>
-                <Lock className="me-1.5 h-4 w-4" />
-                {t.unlock}
-              </>
-            ) : (
-              <>
-                <Download className="me-1.5 h-4 w-4" />
+        <div className="flex gap-2 pt-1 mt-auto">
+          {isReady && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => onPreview(template)}
+              >
+                <Eye className="me-1.5 h-3.5 w-3.5" />
+                {t.preview}
+              </Button>
+              <Button
+                size="sm"
+                className="flex-1"
+                onClick={() => onDownload(template)}
+              >
+                <Download className="me-1.5 h-3.5 w-3.5" />
                 {t.download}
-              </>
-            )}
-          </Button>
+              </Button>
+            </>
+          )}
+
+          {isPro && (
+            <Button
+              size="sm"
+              className="w-full"
+              onClick={() => onDownload(template)}
+            >
+              <Lock className="me-1.5 h-3.5 w-3.5" />
+              {t.unlock}
+            </Button>
+          )}
+
+          {isComingSoon && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
+              onClick={() => onRequest(template)}
+            >
+              <Bell className="me-1.5 h-3.5 w-3.5" />
+              {t.request}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { CheckCircle2, Download, AlertCircle } from "lucide-react";
+import { CheckCircle2, Download, AlertCircle, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getTemplateById } from "@/lib/templates";
 import { generateTemplateDocx } from "@/utils/docx/generateTemplateDocx";
@@ -11,9 +11,10 @@ export default function TemplateDownload() {
   const triggered = useRef(false);
 
   const template = templateId ? getTemplateById(templateId) : undefined;
+  const isReady = template?.status === "ready";
 
   useEffect(() => {
-    if (!template || triggered.current) return;
+    if (!template || triggered.current || !isReady) return;
     triggered.current = true;
 
     // Small delay lets the page paint before doc generation starts
@@ -24,7 +25,7 @@ export default function TemplateDownload() {
     }, 120);
 
     return () => clearTimeout(timer);
-  }, [template]);
+  }, [template, isReady]);
 
   if (!template) {
     return (
@@ -33,6 +34,23 @@ export default function TemplateDownload() {
         <h1 className="text-xl font-semibold">Template not found</h1>
         <Button asChild variant="outline">
           <Link to="/templates">Browse templates</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  // Coming-soon templates don't have full content yet
+  if (!isReady) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-8 text-center">
+        <Bell className="h-12 w-12 text-primary" />
+        <h1 className="text-xl font-semibold">{template.titleEn} — coming soon</h1>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          This template is on our roadmap. Request it from the catalog and we'll
+          email you the moment it's ready.
+        </p>
+        <Button asChild>
+          <Link to="/templates">← Back to templates</Link>
         </Button>
       </div>
     );
