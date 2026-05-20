@@ -11,6 +11,7 @@ import { attachDebuggerToWindow } from "./utils/printDebugger"
 import HomePage from "./pages/Index"
 import SettingsPage from "./pages/Settings"
 import Templates from "./pages/Templates"
+import MyTemplates from "./pages/MyTemplates"
 import TemplateDownload from "./pages/TemplateDownload"
 
 // Apply print styles globally
@@ -85,6 +86,7 @@ function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/templates" element={<Templates />} />
           <Route path="/templates/download/:templateId" element={<TemplateDownload />} />
+          <Route path="/my-templates" element={<MyTemplates />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
