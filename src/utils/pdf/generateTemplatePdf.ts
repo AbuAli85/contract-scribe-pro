@@ -1,97 +1,97 @@
 import jsPDF from "jspdf";
 import type { ContractTemplate } from "@/lib/templates";
 
-const SECTIONS: Record<string, { en: string; ar: string }[]> = {
+const SECTIONS: Record<string, { en: string }[]> = {
   employment: [
-    { en: "1. Parties to the Agreement", ar: "١. أطراف الاتفاقية" },
-    { en: "2. Job Title & Duties", ar: "٢. المسمى الوظيفي والمهام" },
-    { en: "3. Commencement Date", ar: "٣. تاريخ البدء" },
-    { en: "4. Probationary Period", ar: "٤. فترة التجربة" },
-    { en: "5. Working Hours", ar: "٥. ساعات العمل" },
-    { en: "6. Remuneration & Benefits", ar: "٦. الراتب والمزايا" },
-    { en: "7. Annual Leave", ar: "٧. الإجازة السنوية" },
-    { en: "8. Overtime", ar: "٨. العمل الإضافي" },
-    { en: "9. Termination & Notice Period", ar: "٩. الإنهاء وفترة الإشعار" },
-    { en: "10. Confidentiality", ar: "١٠. السرية" },
-    { en: "11. Governing Law — Oman Labour Law (RD 35/2003)", ar: "١١. القانون الحاكم — قانون العمل العماني" },
-    { en: "12. Signatures", ar: "١٢. التوقيعات" },
+    { en: "1. Parties to the Agreement" },
+    { en: "2. Job Title & Duties" },
+    { en: "3. Commencement Date" },
+    { en: "4. Probationary Period" },
+    { en: "5. Working Hours" },
+    { en: "6. Remuneration & Benefits" },
+    { en: "7. Annual Leave" },
+    { en: "8. Overtime" },
+    { en: "9. Termination & Notice Period" },
+    { en: "10. Confidentiality" },
+    { en: "11. Governing Law — Oman Labour Law (RD 35/2003)" },
+    { en: "12. Signatures" },
   ],
   nda: [
-    { en: "1. Parties", ar: "١. الأطراف" },
-    { en: "2. Definition of Confidential Information", ar: "٢. تعريف المعلومات السرية" },
-    { en: "3. Obligations of the Receiving Party", ar: "٣. التزامات الطرف المتلقي" },
-    { en: "4. Exclusions from Confidentiality", ar: "٤. استثناءات السرية" },
-    { en: "5. Term of Agreement", ar: "٥. مدة الاتفاقية" },
-    { en: "6. Return / Destruction of Information", ar: "٦. إعادة أو تدمير المعلومات" },
-    { en: "7. Remedies & Injunctive Relief", ar: "٧. سبل الانتصاف" },
-    { en: "8. Governing Law — Omani Commercial Law", ar: "٨. القانون الحاكم — القانون التجاري العماني" },
-    { en: "9. Signatures", ar: "٩. التوقيعات" },
+    { en: "1. Parties" },
+    { en: "2. Definition of Confidential Information" },
+    { en: "3. Obligations of the Receiving Party" },
+    { en: "4. Exclusions from Confidentiality" },
+    { en: "5. Term of Agreement" },
+    { en: "6. Return / Destruction of Information" },
+    { en: "7. Remedies & Injunctive Relief" },
+    { en: "8. Governing Law — Omani Commercial Law" },
+    { en: "9. Signatures" },
   ],
   "service-agreement": [
-    { en: "1. Parties", ar: "١. الأطراف" },
-    { en: "2. Scope of Services", ar: "٢. نطاق الخدمات" },
-    { en: "3. Deliverables & Timeline", ar: "٣. التسليمات والجدول الزمني" },
-    { en: "4. Fees & Payment Terms", ar: "٤. الرسوم وشروط الدفع" },
-    { en: "5. Intellectual Property", ar: "٥. الملكية الفكرية" },
-    { en: "6. Confidentiality", ar: "٦. السرية" },
-    { en: "7. Termination", ar: "٧. إنهاء العقد" },
-    { en: "8. Limitation of Liability", ar: "٨. حد المسؤولية" },
-    { en: "9. Governing Law", ar: "٩. القانون الحاكم" },
-    { en: "10. Signatures", ar: "١٠. التوقيعات" },
+    { en: "1. Parties" },
+    { en: "2. Scope of Services" },
+    { en: "3. Deliverables & Timeline" },
+    { en: "4. Fees & Payment Terms" },
+    { en: "5. Intellectual Property" },
+    { en: "6. Confidentiality" },
+    { en: "7. Termination" },
+    { en: "8. Limitation of Liability" },
+    { en: "9. Governing Law" },
+    { en: "10. Signatures" },
   ],
   freelance: [
-    { en: "1. Parties", ar: "١. الأطراف" },
-    { en: "2. Scope of Work", ar: "٢. نطاق العمل" },
-    { en: "3. Milestones & Deadlines", ar: "٣. المراحل والمواعيد النهائية" },
-    { en: "4. Compensation & Payment", ar: "٤. التعويض والدفع" },
-    { en: "5. Revision Policy", ar: "٥. سياسة المراجعة" },
-    { en: "6. Ownership of Work Product", ar: "٦. ملكية منتج العمل" },
-    { en: "7. Independent Contractor Status", ar: "٧. وضع المتعاقد المستقل" },
-    { en: "8. Termination", ar: "٨. إنهاء العقد" },
-    { en: "9. Governing Law", ar: "٩. القانون الحاكم" },
-    { en: "10. Signatures", ar: "١٠. التوقيعات" },
+    { en: "1. Parties" },
+    { en: "2. Scope of Work" },
+    { en: "3. Milestones & Deadlines" },
+    { en: "4. Compensation & Payment" },
+    { en: "5. Revision Policy" },
+    { en: "6. Ownership of Work Product" },
+    { en: "7. Independent Contractor Status" },
+    { en: "8. Termination" },
+    { en: "9. Governing Law" },
+    { en: "10. Signatures" },
   ],
   tenancy: [
-    { en: "1. Parties (Landlord & Tenant)", ar: "١. الأطراف (المالك والمستأجر)" },
-    { en: "2. Property Description", ar: "٢. وصف العقار" },
-    { en: "3. Term of Tenancy", ar: "٣. مدة الإيجار" },
-    { en: "4. Rent Amount & Payment Schedule", ar: "٤. مبلغ الإيجار وجدول الدفع" },
-    { en: "5. Security Deposit", ar: "٥. وديعة الأمان" },
-    { en: "6. Maintenance & Repairs", ar: "٦. الصيانة والإصلاحات" },
-    { en: "7. Utilities", ar: "٧. الخدمات" },
-    { en: "8. Renewal Terms", ar: "٨. شروط التجديد" },
-    { en: "9. Termination & Eviction", ar: "٩. الإنهاء والإخلاء" },
-    { en: "10. Governing Law — Oman Tenancy Law", ar: "١٠. القانون الحاكم — قانون الإيجار العماني" },
-    { en: "11. Signatures", ar: "١١. التوقيعات" },
+    { en: "1. Parties (Landlord & Tenant)" },
+    { en: "2. Property Description" },
+    { en: "3. Term of Tenancy" },
+    { en: "4. Rent Amount & Payment Schedule" },
+    { en: "5. Security Deposit" },
+    { en: "6. Maintenance & Repairs" },
+    { en: "7. Utilities" },
+    { en: "8. Renewal Terms" },
+    { en: "9. Termination & Eviction" },
+    { en: "10. Governing Law — Oman Tenancy Law" },
+    { en: "11. Signatures" },
   ],
   partnership: [
-    { en: "1. Parties", ar: "١. الأطراف" },
-    { en: "2. Business Name & Purpose", ar: "٢. اسم الشركة والغرض" },
-    { en: "3. Capital Contributions", ar: "٣. مساهمات رأس المال" },
-    { en: "4. Profit & Loss Sharing", ar: "٤. توزيع الأرباح والخسائر" },
-    { en: "5. Management & Decision-Making", ar: "٥. الإدارة وصنع القرار" },
-    { en: "6. Partner Duties & Restrictions", ar: "٦. واجبات الشريك والقيود" },
-    { en: "7. New Partners & Transfers", ar: "٧. الشركاء الجدد والتحويلات" },
-    { en: "8. Dissolution & Exit", ar: "٨. الحل والخروج" },
-    { en: "9. Governing Law — Omani Commercial Companies Law", ar: "٩. القانون الحاكم" },
-    { en: "10. Signatures", ar: "١٠. التوقيعات" },
+    { en: "1. Parties" },
+    { en: "2. Business Name & Purpose" },
+    { en: "3. Capital Contributions" },
+    { en: "4. Profit & Loss Sharing" },
+    { en: "5. Management & Decision-Making" },
+    { en: "6. Partner Duties & Restrictions" },
+    { en: "7. New Partners & Transfers" },
+    { en: "8. Dissolution & Exit" },
+    { en: "9. Governing Law — Omani Commercial Companies Law" },
+    { en: "10. Signatures" },
   ],
   "sales-purchase": [
-    { en: "1. Parties (Seller & Buyer)", ar: "١. الأطراف (البائع والمشتري)" },
-    { en: "2. Description of Goods / Asset", ar: "٢. وصف البضائع / الأصول" },
-    { en: "3. Purchase Price", ar: "٣. سعر الشراء" },
-    { en: "4. Payment Terms", ar: "٤. شروط الدفع" },
-    { en: "5. Delivery & Transfer of Risk", ar: "٥. التسليم ونقل المخاطر" },
-    { en: "6. Warranties & Representations", ar: "٦. الضمانات والإقرارات" },
-    { en: "7. Inspection & Acceptance", ar: "٧. الفحص والقبول" },
-    { en: "8. Default & Remedies", ar: "٨. التخلف وسبل الانتصاف" },
-    { en: "9. Dispute Resolution", ar: "٩. حل النزاعات" },
-    { en: "10. Governing Law", ar: "١٠. القانون الحاكم" },
-    { en: "11. Signatures", ar: "١١. التوقيعات" },
+    { en: "1. Parties (Seller & Buyer)" },
+    { en: "2. Description of Goods / Asset" },
+    { en: "3. Purchase Price" },
+    { en: "4. Payment Terms" },
+    { en: "5. Delivery & Transfer of Risk" },
+    { en: "6. Warranties & Representations" },
+    { en: "7. Inspection & Acceptance" },
+    { en: "8. Default & Remedies" },
+    { en: "9. Dispute Resolution" },
+    { en: "10. Governing Law" },
+    { en: "11. Signatures" },
   ],
 };
 
-export function generateTemplatePdf(template: ContractTemplate, lang: "en" | "ar"): void {
+export function generateTemplatePdf(template: ContractTemplate, _lang: "en" | "ar"): void {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const sections = SECTIONS[template.id] ?? [];
   const pageW = 210;
@@ -114,19 +114,15 @@ export function generateTemplatePdf(template: ContractTemplate, lang: "en" | "ar
   doc.setFont("helvetica", "bold");
   doc.text(template.titleEn.toUpperCase(), margin, 34);
 
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(100, 100, 100);
-  doc.text(`/ ${template.titleAr}`, margin, 42);
-
   // ── Description ─────────────────────────────────────────
   doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
   doc.setTextColor(80, 80, 80);
   const descLines = doc.splitTextToSize(template.descEn, contentW);
-  doc.text(descLines, margin, 51);
+  doc.text(descLines, margin, 42);
 
   // ── Divider ──────────────────────────────────────────────
-  const divY = 51 + descLines.length * 4 + 4;
+  const divY = 42 + descLines.length * 4 + 4;
   doc.setDrawColor(225, 29, 72);
   doc.setLineWidth(0.4);
   doc.line(margin, divY, pageW - margin, divY);
@@ -160,17 +156,11 @@ export function generateTemplatePdf(template: ContractTemplate, lang: "en" | "ar
       y = 20;
     }
 
-    // Section heading (EN)
+    // Section heading
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(17, 17, 17);
     doc.text(section.en, margin, y);
-
-    // Arabic label
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
-    doc.text(`(${section.ar})`, pageW - margin, y, { align: "right" });
 
     y += 6;
 
