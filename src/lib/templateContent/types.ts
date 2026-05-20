@@ -42,6 +42,18 @@ export interface TemplateField {
   /** Optional placeholder text inside the input */
   placeholderEn?: string;
   placeholderAr?: string;
+  /**
+   * If true, the form renders TWO inputs side by side — one for the English
+   * value and one for the Arabic value. The generator then substitutes the
+   * English value into English clauses and the Arabic value into Arabic
+   * clauses. Use this for names, addresses, job titles, and company names
+   * where Latin script in the Arabic column looks unprofessional.
+   *
+   * Values are stored as `${key}_en` and `${key}_ar` in the values map.
+   * Inside clause text, you can still write `{key}` and the engine resolves
+   * to the correct language automatically.
+   */
+  bilingual?: boolean;
 }
 
 /**

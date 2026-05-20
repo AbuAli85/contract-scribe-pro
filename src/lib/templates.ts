@@ -209,8 +209,10 @@ export const TEMPLATES: ContractTemplate[] = [
     descAr: "اتفاقية إطارية تحكم جميع بيانات العمل المستقبلية مع المورد أو العميل.",
     category: "Business Agreements",
     icon: "FileStack",
-    status: "pro",
-    isPro: true,
+    // Free during the audience-building / trial phase. Will move back to "pro"
+    // once Smart Yaro subscription is wired and we have a sizable user base.
+    status: "ready",
+    isPro: false,
   },
   comingSoon(
     "sow",

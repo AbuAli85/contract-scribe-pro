@@ -92,11 +92,17 @@ const FillTemplate = () => {
   const template = templateId ? getTemplateById(templateId) : undefined;
   const content = templateId ? getTemplateContent(templateId) : undefined;
 
-  // Build initial values map from defaults
+  // Build initial values map from defaults.
+  // Bilingual fields get TWO keys: ${key}_en and ${key}_ar.
   const initialValues = useMemo(() => {
     const v: Record<string, string> = {};
     content?.fields.forEach((f) => {
-      v[f.key] = f.defaultValue ?? "";
+      if (f.bilingual) {
+        v[`${f.key}_en`] = f.defaultValue ?? "";
+        v[`${f.key}_ar`] = "";
+      } else {
+        v[f.key] = f.defaultValue ?? "";
+      }
     });
     return v;
   }, [content]);
@@ -194,7 +200,17 @@ const FillTemplate = () => {
 
   const isStepValid = () => {
     const fields = steps[stepIndex]?.fields ?? [];
-    return fields.every((f) => !f.required || (values[f.key] ?? "").trim() !== "");
+    return fields.every((f) => {
+      if (!f.required) return true;
+      if (f.bilingual) {
+        // Bilingual fields require BOTH halves
+        return (
+          (values[`${f.key}_en`] ?? "").trim() !== "" &&
+          (values[`${f.key}_ar`] ?? "").trim() !== ""
+        );
+      }
+      return (values[f.key] ?? "").trim() !== "";
+    });
   };
 
   const handleNext = () => {
@@ -305,15 +321,27 @@ const FillTemplate = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-5">
-                {currentStep?.fields.map((f) => (
-                  <FieldInput
-                    key={f.key}
-                    field={f}
-                    value={values[f.key] ?? ""}
-                    onChange={(v) => setValue(f.key, v)}
-                    language={language}
-                  />
-                ))}
+                {currentStep?.fields.map((f) =>
+                  f.bilingual ? (
+                    <BilingualFieldInput
+                      key={f.key}
+                      field={f}
+                      valueEn={values[`${f.key}_en`] ?? ""}
+                      valueAr={values[`${f.key}_ar`] ?? ""}
+                      onChangeEn={(v) => setValue(`${f.key}_en`, v)}
+                      onChangeAr={(v) => setValue(`${f.key}_ar`, v)}
+                      language={language}
+                    />
+                  ) : (
+                    <FieldInput
+                      key={f.key}
+                      field={f}
+                      value={values[f.key] ?? ""}
+                      onChange={(v) => setValue(f.key, v)}
+                      language={language}
+                    />
+                  )
+                )}
 
                 <Separator />
 
@@ -420,6 +448,112 @@ const FieldInput = ({ field, value, onChange, language }: FieldInputProps) => {
           required={field.required}
         />
       )}
+
+      {helper && (
+        <p className={`text-xs text-muted-foreground ${isAr ? "text-right" : ""}`}>
+          {helper}
+        </p>
+      )}
+    </div>
+  );
+};
+
+// ── Bilingual paired input ─────────────────────────────────────
+// Renders an English input and an Arabic input side by side, so the
+// final document shows the right script in each language column.
+interface BilingualFieldInputProps {
+  field: TemplateField;
+  valueEn: string;
+  valueAr: string;
+  onChangeEn: (v: string) => void;
+  onChangeAr: (v: string) => void;
+  language: "ar" | "en";
+}
+
+const BilingualFieldInput = ({
+  field,
+  valueEn,
+  valueAr,
+  onChangeEn,
+  onChangeAr,
+  language,
+}: BilingualFieldInputProps) => {
+  const isAr = language === "ar";
+  const label = isAr ? field.labelAr : field.labelEn;
+  const helper = isAr ? field.helperAr : field.helperEn;
+  const idEn = `field-${field.key}-en`;
+  const idAr = `field-${field.key}-ar`;
+  const isLong = field.type === "textarea";
+
+  return (
+    <div className="space-y-2">
+      <Label className={`flex items-center gap-2 ${isAr ? "flex-row-reverse text-right" : ""}`}>
+        <span>{label}</span>
+        {field.required && <span className="text-destructive">*</span>}
+        <span className="text-[10px] font-normal px-1.5 py-0.5 rounded bg-primary/10 text-primary ms-1">
+          {isAr ? "ثنائي اللغة" : "Bilingual"}
+        </span>
+      </Label>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {/* English half */}
+        <div className="space-y-1">
+          <Label htmlFor={idEn} className="text-xs text-muted-foreground font-normal">
+            English
+          </Label>
+          {isLong ? (
+            <Textarea
+              id={idEn}
+              value={valueEn}
+              onChange={(e) => onChangeEn(e.target.value)}
+              placeholder={field.placeholderEn}
+              rows={2}
+              required={field.required}
+              dir="ltr"
+            />
+          ) : (
+            <Input
+              id={idEn}
+              type="text"
+              value={valueEn}
+              onChange={(e) => onChangeEn(e.target.value)}
+              placeholder={field.placeholderEn}
+              required={field.required}
+              dir="ltr"
+            />
+          )}
+        </div>
+
+        {/* Arabic half */}
+        <div className="space-y-1">
+          <Label htmlFor={idAr} className="text-xs text-muted-foreground font-normal block text-right">
+            العربية
+          </Label>
+          {isLong ? (
+            <Textarea
+              id={idAr}
+              value={valueAr}
+              onChange={(e) => onChangeAr(e.target.value)}
+              placeholder={field.placeholderAr}
+              rows={2}
+              required={field.required}
+              dir="rtl"
+              className="text-right"
+            />
+          ) : (
+            <Input
+              id={idAr}
+              type="text"
+              value={valueAr}
+              onChange={(e) => onChangeAr(e.target.value)}
+              placeholder={field.placeholderAr}
+              required={field.required}
+              dir="rtl"
+              className="text-right"
+            />
+          )}
+        </div>
+      </div>
 
       {helper && (
         <p className={`text-xs text-muted-foreground ${isAr ? "text-right" : ""}`}>

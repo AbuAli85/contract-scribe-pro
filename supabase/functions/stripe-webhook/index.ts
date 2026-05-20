@@ -1,101 +1,83 @@
-// Edge Function: stripe-webhook
-// Receives Stripe webhook events and updates the profiles table.
+// Edge Function: thawani-webhook (file kept as stripe-webhook for URL compat)
+// Receives Thawani Pay webhook events and updates the profiles table.
 //
-// Events handled:
-//   checkout.session.completed      → set is_pro = true
-//   customer.subscription.deleted   → set is_pro = false
-//   customer.subscription.updated   → sync active/inactive status
+// Thawani sends a POST to this URL when a payment succeeds or fails.
+// We verify the signature, then set is_pro on the matching user.
 //
 // Required secrets:
-//   STRIPE_WEBHOOK_SECRET   — whsec_... (from Stripe Dashboard → Webhooks)
-//   SUPABASE_SERVICE_ROLE_KEY — needed to bypass RLS for admin writes
+//   THAWANI_SECRET_KEY         — used to verify the webhook signature
+//   SUPABASE_SERVICE_ROLE_KEY  — bypasses RLS for admin profile writes
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import Stripe from "https://esm.sh/stripe@14?target=deno";
 
 serve(async (req) => {
-  const signature = req.headers.get("stripe-signature");
-  if (!signature) {
-    return new Response("Missing stripe-signature", { status: 400 });
-  }
-
+  // Thawani sends the signature in thawani-signature header
+  const signature = req.headers.get("thawani-signature") ?? "";
   const body = await req.text();
-  const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
-    apiVersion: "2023-10-16",
-  });
 
-  let event: Stripe.Event;
-  try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      Deno.env.get("STRIPE_WEBHOOK_SECRET")!
-    );
-  } catch (err) {
-    console.error("Webhook signature verification failed:", err);
-    return new Response(`Webhook error: ${err}`, { status: 400 });
+  // Verify HMAC-SHA256 signature
+  const secretKey = Deno.env.get("THAWANI_SECRET_KEY") ?? "";
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secretKey);
+  const msgData = encoder.encode(body);
+
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+  );
+  const signatureBytes = await crypto.subtle.sign("HMAC", cryptoKey, msgData);
+  const expectedSig = Array.from(new Uint8Array(signatureBytes))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  if (signature && expectedSig !== signature) {
+    console.warn("Thawani webhook signature mismatch — ignoring");
+    return new Response("Invalid signature", { status: 400 });
   }
 
-  // Use service-role key to bypass RLS for admin writes
+  let payload: Record<string, unknown>;
+  try {
+    payload = JSON.parse(body);
+  } catch {
+    return new Response("Invalid JSON", { status: 400 });
+  }
+
+  // Thawani webhook payload shape:
+  // { session_id, payment_status, client_reference_id, metadata: { supabase_uid } }
+  const paymentStatus    = String(payload.payment_status ?? "").toLowerCase();
+  const supabaseUid      = (payload.metadata as Record<string, string>)?.supabase_uid
+                        ?? String(payload.client_reference_id ?? "");
+
+  if (!supabaseUid) {
+    console.warn("No supabase_uid in webhook payload — skipping");
+    return new Response(JSON.stringify({ ok: true, skipped: true }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  async function setProStatus(supabaseUid: string, isPro: boolean) {
-    const { error } = await supabase
-      .from("profiles")
-      .update({ is_pro: isPro, updated_at: new Date().toISOString() })
-      .eq("id", supabaseUid);
-    if (error) console.error("Failed to update profile:", error);
+  const isPro = paymentStatus === "paid";
+
+  // Set pro_until to 32 days from now (covers monthly billing with buffer)
+  const proUntil = isPro
+    ? new Date(Date.now() + 32 * 24 * 60 * 60 * 1000).toISOString()
+    : null;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ is_pro: isPro, pro_until: proUntil, updated_at: new Date().toISOString() })
+    .eq("id", supabaseUid);
+
+  if (error) {
+    console.error("Failed to update profile:", error);
+    return new Response("DB error", { status: 500 });
   }
 
-  function getUid(obj: { metadata?: Stripe.Metadata | null }): string | null {
-    return obj.metadata?.supabase_uid ?? null;
-  }
-
-  try {
-    switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const uid = getUid(session);
-        if (uid && session.payment_status === "paid") {
-          await setProStatus(uid, true);
-          console.log(`Activated Pro for user ${uid}`);
-        }
-        break;
-      }
-
-      case "customer.subscription.updated": {
-        const sub = event.data.object as Stripe.Subscription;
-        const uid = getUid(sub);
-        if (uid) {
-          const isActive = ["active", "trialing"].includes(sub.status);
-          await setProStatus(uid, isActive);
-          console.log(`Subscription updated for ${uid}: status=${sub.status}, is_pro=${isActive}`);
-        }
-        break;
-      }
-
-      case "customer.subscription.deleted": {
-        const sub = event.data.object as Stripe.Subscription;
-        const uid = getUid(sub);
-        if (uid) {
-          await setProStatus(uid, false);
-          console.log(`Deactivated Pro for user ${uid}`);
-        }
-        break;
-      }
-
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
-    }
-  } catch (err) {
-    console.error("Error processing webhook event:", err);
-    return new Response("Internal error", { status: 500 });
-  }
-
+  console.log(`Thawani webhook: uid=${supabaseUid} payment_status=${paymentStatus} is_pro=${isPro}`);
   return new Response(JSON.stringify({ received: true }), {
     headers: { "Content-Type": "application/json" },
   });

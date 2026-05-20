@@ -121,8 +121,26 @@ function substitute(
   lang: "en" | "ar"
 ): string {
   return text.replace(/\{([a-zA-Z0-9_]+)\}/g, (full, key) => {
-    const field = fields.find((f) => f.key === key);
-    const raw = values[key] ?? "";
+    // Allow explicit {key_en} or {key_ar} to override automatic language selection
+    const explicitEn = key.endsWith("_en");
+    const explicitAr = key.endsWith("_ar");
+    const baseKey = explicitEn || explicitAr ? key.slice(0, -3) : key;
+
+    const field = fields.find((f) => f.key === baseKey);
+
+    // Bilingual fields: pick the language-specific value
+    if (field?.bilingual) {
+      const enKey = `${baseKey}_en`;
+      const arKey = `${baseKey}_ar`;
+      const wantsAr = explicitAr || (!explicitEn && lang === "ar");
+      const langKey = wantsAr ? arKey : enKey;
+      const fallbackKey = wantsAr ? enKey : arKey; // fall back to the other language if missing
+      const raw = values[langKey] || values[fallbackKey] || "";
+      return (wantsAr ? formatValueAr : formatValue)(field, raw);
+    }
+
+    // Non-bilingual: single value used in both languages
+    const raw = values[baseKey] ?? "";
     if (!field) return raw || full;
     return (lang === "ar" ? formatValueAr : formatValue)(field, raw);
   });
