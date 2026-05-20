@@ -130,7 +130,7 @@ const Templates = () => {
 
   const handlePreview = (template: ContractTemplate) => {
     if (template.isPro) return;
-    window.open(template.previewUrl ?? template.pdfUrl, "_blank", "noopener");
+    window.open(template.previewUrl ?? `/templates/download/${template.id}`, "_blank", "noopener");
   };
 
   return (
