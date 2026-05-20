@@ -9,6 +9,7 @@ import { TENANCY_CONTENT } from "./tenancy";
 import { NOC_ROP_CONTENT } from "./noc-rop";
 import { PARTNERSHIP_CONTENT } from "./partnership";
 import { FREELANCE_CONTENT } from "./freelance";
+import { MSA_CONTENT } from "./msa";
 
 const REGISTRY: Record<string, TemplateContent> = {
   [EMPLOYMENT_CONTENT.id]: EMPLOYMENT_CONTENT,
@@ -18,6 +19,7 @@ const REGISTRY: Record<string, TemplateContent> = {
   [NOC_ROP_CONTENT.id]: NOC_ROP_CONTENT,
   [PARTNERSHIP_CONTENT.id]: PARTNERSHIP_CONTENT,
   [FREELANCE_CONTENT.id]: FREELANCE_CONTENT,
+  [MSA_CONTENT.id]: MSA_CONTENT,
 };
 
 export const getTemplateContent = (

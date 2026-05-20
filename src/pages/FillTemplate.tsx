@@ -136,21 +136,12 @@ const FillTemplate = () => {
   }, [isAr, language]);
 
   // ── Guards ─────────────────────────────────────────────────
+  // Order matters: Pro check must fire BEFORE the content-missing check.
+  // Otherwise a Pro template with no content yet shows "not ready" instead
+  // of "upgrade to Pro" — sending the wrong upgrade signal to free users.
   if (!template) {
     return (
       <Empty icon={AlertCircle} title={t.notFound} ctaTo="/templates" ctaText={t.back} isAr={isAr} />
-    );
-  }
-  if (!content) {
-    return (
-      <Empty
-        icon={FileText}
-        title={t.notReady}
-        sub={t.notReadySub}
-        ctaTo="/templates"
-        ctaText={t.back}
-        isAr={isAr}
-      />
     );
   }
   // Pro gate: template is Pro and user is not subscribed
@@ -179,6 +170,21 @@ const FillTemplate = () => {
           </Button>
         </div>
       </div>
+    );
+  }
+  // Content not yet authored — show the "not ready, request it" empty state.
+  // Runs AFTER the Pro check so a Pro user without content still sees the
+  // right message rather than "not ready".
+  if (!content) {
+    return (
+      <Empty
+        icon={FileText}
+        title={t.notReady}
+        sub={t.notReadySub}
+        ctaTo="/templates"
+        ctaText={t.back}
+        isAr={isAr}
+      />
     );
   }
 
