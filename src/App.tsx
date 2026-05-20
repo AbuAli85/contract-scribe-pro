@@ -14,6 +14,8 @@ import Templates from "./pages/Templates"
 import MyTemplates from "./pages/MyTemplates"
 import TemplateDownload from "./pages/TemplateDownload"
 import FillTemplate from "./pages/FillTemplate"
+import Auth from "./pages/Auth"
+import Upgrade from "./pages/Upgrade"
 
 // Apply print styles globally
 import "./styles/contract-global.css"
@@ -89,6 +91,8 @@ function App() {
           <Route path="/templates/fill/:templateId" element={<FillTemplate />} />
           <Route path="/templates/download/:templateId" element={<TemplateDownload />} />
           <Route path="/my-templates" element={<MyTemplates />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/upgrade" element={<Upgrade />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

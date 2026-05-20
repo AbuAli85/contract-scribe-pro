@@ -12,13 +12,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft, ArrowRight, FileText, Download, Loader2, CheckCircle2,
-  AlertCircle, ShieldCheck,
+  AlertCircle, ShieldCheck, Lock,
 } from "lucide-react";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useToast } from "@/hooks/use-toast";
 import { getTemplateById } from "@/lib/templates";
 import { getTemplateContent, type TemplateField } from "@/lib/templateContent";
 import { downloadFilledContract } from "@/utils/docx/generateFilledContract";
+import { useAuth } from "@/hooks/useAuth";
 
 const COPY = {
   en: {
@@ -26,6 +27,10 @@ const COPY = {
     notReady: "This template isn't ready yet",
     notReadySub: "Request it from the catalog and we'll email you when it's authored.",
     notFound: "Template not found",
+    proRequired: "Pro template",
+    proSub: "Sign in and upgrade to Pro to generate this contract.",
+    signIn: "Sign in",
+    upgrade: "Upgrade to Pro",
     fillTitle: "Fill in your contract details",
     fillSub: "These values will be inserted into the final document. Arabic and English will both update.",
     required: "Required",
@@ -48,6 +53,10 @@ const COPY = {
     notReady: "هذا النموذج غير جاهز بعد",
     notReadySub: "اطلبه من القائمة وسنرسل لك إيميل عند جاهزيته.",
     notFound: "النموذج غير موجود",
+    proRequired: "نموذج Pro",
+    proSub: "سجّل دخولك وارقَ إلى Pro لإنشاء هذا العقد.",
+    signIn: "تسجيل الدخول",
+    upgrade: "الترقية إلى Pro",
     fillTitle: "أدخل تفاصيل العقد",
     fillSub: "ستُدرج هذه القيم في المستند النهائي. كلتا النسختين العربية والإنجليزية ستُحدّثان.",
     required: "إلزامي",
@@ -79,6 +88,7 @@ const FillTemplate = () => {
   const t = COPY[language];
   const isAr = language === "ar";
 
+  const { user, profile, loading: authLoading } = useAuth();
   const template = templateId ? getTemplateById(templateId) : undefined;
   const content = templateId ? getTemplateContent(templateId) : undefined;
 
@@ -141,6 +151,34 @@ const FillTemplate = () => {
         ctaText={t.back}
         isAr={isAr}
       />
+    );
+  }
+  // Pro gate: template is Pro and user is not subscribed
+  const isPro = template.status === "pro";
+  if (!authLoading && isPro && (!user || !profile?.is_pro)) {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center gap-5 p-8 text-center"
+        dir={isAr ? "rtl" : "ltr"}
+      >
+        <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+          <Lock className="h-6 w-6 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-xl font-bold mb-1">{t.proRequired}</h1>
+          <p className="text-sm text-muted-foreground max-w-sm">{t.proSub}</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          {!user && (
+            <Button asChild variant="outline">
+              <a href={`/auth?mode=login&redirect=/templates/fill/${templateId}`}>{t.signIn}</a>
+            </Button>
+          )}
+          <Button asChild>
+            <a href="/upgrade">{t.upgrade}</a>
+          </Button>
+        </div>
+      </div>
     );
   }
 

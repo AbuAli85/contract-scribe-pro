@@ -131,14 +131,8 @@ const Templates = () => {
 
   const handleDownload = (template: ContractTemplate) => {
     setSelected(template);
-    if (template.status === "pro") {
-      toast({ title: t.upgradeTitle, description: t.upgradeBody });
-      return;
-    }
-    // If we have full clause content authored, send the user through the
-    // guided fill form so they get a fully-populated bilingual contract.
-    // Otherwise fall back to the email-gate quick download.
-    if (hasTemplateContent(template.id)) {
+    // Pro templates route to fill form — the Pro gate is enforced there
+    if (template.status === "pro" || hasTemplateContent(template.id)) {
       navigate(`/templates/fill/${template.id}`);
       return;
     }

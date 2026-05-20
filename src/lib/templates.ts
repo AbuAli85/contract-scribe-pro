@@ -201,15 +201,17 @@ export const TEMPLATES: ContractTemplate[] = [
     status: "ready",
     isPro: false,
   },
-  comingSoon(
-    "msa",
-    "Master Services Agreement (MSA)",
-    "اتفاقية الخدمات الرئيسية",
-    "Umbrella agreement governing all future SOWs and engagements with a vendor or client.",
-    "اتفاقية إطارية تحكم جميع بيانات العمل المستقبلية مع المورد أو العميل.",
-    "Business Agreements",
-    "FileStack"
-  ),
+  {
+    id: "msa",
+    titleEn: "Master Services Agreement (MSA)",
+    titleAr: "اتفاقية الخدمات الرئيسية",
+    descEn: "Umbrella agreement governing all future SOWs and engagements with a vendor or client.",
+    descAr: "اتفاقية إطارية تحكم جميع بيانات العمل المستقبلية مع المورد أو العميل.",
+    category: "Business Agreements",
+    icon: "FileStack",
+    status: "pro",
+    isPro: true,
+  },
   comingSoon(
     "sow",
     "Statement of Work (SOW)",
@@ -378,15 +380,17 @@ export const TEMPLATES: ContractTemplate[] = [
     isPro: false,
     demand: "High demand in Muscat",
   },
-  comingSoon(
-    "commercial-lease",
-    "Commercial Lease Agreement",
-    "عقد إيجار تجاري",
-    "Commercial property lease: rent, term, use restrictions, fit-out, renewal.",
-    "إيجار عقار تجاري: الإيجار، المدة، قيود الاستخدام، التجهيزات، التجديد.",
-    "Real Estate",
-    "Building2"
-  ),
+  {
+    id: "commercial-lease",
+    titleEn: "Commercial Lease Agreement",
+    titleAr: "عقد إيجار تجاري",
+    descEn: "Commercial property lease: rent, term, use restrictions, fit-out, renewal.",
+    descAr: "إيجار عقار تجاري: الإيجار، المدة، قيود الاستخدام، التجهيزات، التجديد.",
+    category: "Real Estate",
+    icon: "Building2",
+    status: "pro",
+    isPro: true,
+  },
   comingSoon(
     "sublease",
     "Sublease Agreement",
@@ -396,15 +400,17 @@ export const TEMPLATES: ContractTemplate[] = [
     "Real Estate",
     "DoorOpen"
   ),
-  comingSoon(
-    "property-sale",
-    "Property Sale Agreement",
-    "اتفاقية بيع عقار",
-    "Sale of real estate: price, deposit, transfer of title, conditions precedent.",
-    "بيع العقارات: السعر، الوديعة، نقل الملكية، الشروط الأولية.",
-    "Real Estate",
-    "Key"
-  ),
+  {
+    id: "property-sale",
+    titleEn: "Property Sale Agreement",
+    titleAr: "اتفاقية بيع عقار",
+    descEn: "Sale of real estate: price, deposit, transfer of title, conditions precedent.",
+    descAr: "بيع العقارات: السعر، الوديعة، نقل الملكية، الشروط الأولية.",
+    category: "Real Estate",
+    icon: "Key",
+    status: "pro",
+    isPro: true,
+  },
   comingSoon(
     "property-management",
     "Property Management Agreement",
