@@ -3,11 +3,12 @@
 
 import type { TemplateContent } from "./types";
 import { EMPLOYMENT_CONTENT } from "./employment";
+import { NDA_CONTENT } from "./nda";
 
 const REGISTRY: Record<string, TemplateContent> = {
   [EMPLOYMENT_CONTENT.id]: EMPLOYMENT_CONTENT,
+  [NDA_CONTENT.id]: NDA_CONTENT,
   // Add other templates here as authored:
-  //   [NDA_CONTENT.id]: NDA_CONTENT,
   //   [SERVICE_AGREEMENT_CONTENT.id]: SERVICE_AGREEMENT_CONTENT,
 };
 
