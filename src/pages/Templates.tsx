@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, FileText, Sparkles, Users2, Globe, ShieldCheck, Edit3 } from "lucide-react";
 import LanguageToggle from "@/components/LanguageToggle";
 import TemplateCard from "@/components/templates/TemplateCard";
-import EmailGateModal from "@/components/templates/EmailGateModal";
-import RequestTemplateModal from "@/components/templates/RequestTemplateModal";
+const EmailGateModal = lazy(() => import("@/components/templates/EmailGateModal"));
+const RequestTemplateModal = lazy(() => import("@/components/templates/RequestTemplateModal"));
 import {
   TEMPLATES_BY_CATEGORY,
   CATALOG_STATS,
@@ -309,18 +309,20 @@ const Templates = () => {
         </div>
       </footer>
 
-      <EmailGateModal
-        open={downloadModalOpen}
-        onOpenChange={setDownloadModalOpen}
-        template={selected}
-        language={language}
-      />
-      <RequestTemplateModal
-        open={requestModalOpen}
-        onOpenChange={setRequestModalOpen}
-        template={selected}
-        language={language}
-      />
+      <Suspense fallback={null}>
+        <EmailGateModal
+          open={downloadModalOpen}
+          onOpenChange={setDownloadModalOpen}
+          template={selected}
+          language={language}
+        />
+        <RequestTemplateModal
+          open={requestModalOpen}
+          onOpenChange={setRequestModalOpen}
+          template={selected}
+          language={language}
+        />
+      </Suspense>
     </div>
   );
 };
