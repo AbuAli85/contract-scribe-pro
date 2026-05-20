@@ -42,7 +42,7 @@ const CORS = {
 
 function buildEmail(lang: "en" | "ar", templateId: string, appUrl: string) {
   const name = TEMPLATE_NAMES[templateId] ?? { en: templateId, ar: templateId };
-  const downloadUrl = `${appUrl}/templates/${templateId}.pdf`;
+  const downloadUrl = `${appUrl}/templates/download/${templateId}`;
   const appLink = `${appUrl}/create-contract`;
 
   if (lang === "ar") {

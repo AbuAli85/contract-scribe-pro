@@ -11,6 +11,7 @@ import { attachDebuggerToWindow } from "./utils/printDebugger"
 import HomePage from "./pages/Index"
 import SettingsPage from "./pages/Settings"
 import Templates from "./pages/Templates"
+import TemplateDownload from "./pages/TemplateDownload"
 
 // Apply print styles globally
 import "./styles/contract-global.css"
@@ -83,6 +84,7 @@ function App() {
           <Route path="/print-error" element={<PrintErrorPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/templates" element={<Templates />} />
+          <Route path="/templates/download/:templateId" element={<TemplateDownload />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
