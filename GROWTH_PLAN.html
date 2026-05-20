@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contract Scribe Pro — Full Funnel & Platform Build</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
+:root {
+  --bg: #09090b;
+  --surface: #111113;
+  --surface2: #18181b;
+  --border: #27272a;
+  --border2: #3f3f46;
+  --white: #fafafa;
+  --muted: #71717a;
+  --muted2: #52525b;
+  --red: #e11d48;
+  --red-dim: #9f1239;
+  --red-glow: rgba(225,29,72,0.12);
+  --green: #10b981;
+  --amber: #f59e0b;
+  --blue: #3b82f6;
+  --tofu: #a1a1aa;
+  --mofu: #71717a;
+  --bofu: #e11d48;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Outfit', sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+nav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(9,9,11,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  display: flex; align-items: center; height: 56px; gap: 0;
+}
+.nav-brand {
+  font-family: 'Instrument Serif', serif;
+  font-size: 17px; font-style: italic;
+  color: var(--white); margin-right: auto;
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-brand .dot { width:8px;height:8px;border-radius:50%;background:var(--red); }
+.nav-links { display:flex;gap:0; }
+.nav-link {
+  padding: 0 16px; height: 56px;
+  display:flex;align-items:center;
+  font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
+  transition:all 0.2s; text-decoration:none;
+}
+.nav-link:hover, .nav-link.active { color:var(--white); border-bottom-color:var(--red); }
+.hero { padding: 100px 48px 72px; max-width: 1280px; margin: 0 auto; position: relative; }
+.hero::before {
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(225,29,72,0.08), transparent);
+  pointer-events:none;
+}
+.hero-badge {
+  display:inline-flex;align-items:center;gap:8px;
+  border:1px solid var(--border2); background:var(--surface);
+  padding:6px 14px;border-radius:2px;
+  font-family:'Fira Code',monospace;font-size:11px;
+  color:var(--red);letter-spacing:0.1em; margin-bottom:28px;
+}
+.hero-badge .pulse { width:6px;height:6px;border-radius:50%; background:var(--red);animation:pulse 2s infinite; }
+.hero h1 { font-family:'Instrument Serif',serif; font-size:clamp(44px,6vw,84px); line-height:1.05;letter-spacing:-0.02em; margin-bottom:24px; }
+.hero h1 em { font-style:italic;color:var(--red); }
+.hero-sub { font-size:16px;color:var(--muted);font-weight:300; max-width:600px;line-height:1.7;margin-bottom:48px; }
+.hero-pills { display:flex;flex-wrap:wrap;gap:8px;margin-bottom:56px; }
+.pill { padding:6px 14px;border:1px solid var(--border); font-size:12px;color:var(--muted);font-weight:500; background:var(--surface); }
+.pill.active { border-color:var(--red);color:var(--red);background:var(--red-glow); }
+.hero-kpis { display:grid;grid-template-columns:repeat(4,1fr);gap:2px; }
+.kpi-box { background:var(--surface);border:1px solid var(--border); padding:24px 20px; animation: fadeUp 0.5s ease both; }
+.kpi-num { font-family:'Instrument Serif',serif; font-size:40px;color:var(--red);line-height:1;margin-bottom:6px; }
+.kpi-label { font-size:12px;color:var(--muted);font-weight:400;line-height:1.4; }
+.section { padding:80px 48px;max-width:1280px;margin:0 auto; }
+.section-label { font-family:'Fira Code',monospace;font-size:10px; letter-spacing:0.25em;text-transform:uppercase; color:var(--red);margin-bottom:16px; display:flex;align-items:center;gap:12px; }
+.section-label::after { content:'';flex:1;height:1px;background:var(--border); }
+.section h2 { font-family:'Instrument Serif',serif; font-size:clamp(28px,3.5vw,52px); line-height:1.1;margin-bottom:12px; }
+.section h2 em { font-style:italic;color:var(--red); }
+.section-intro { font-size:15px;color:var(--muted);font-weight:300; max-width:620px;line-height:1.7;margin-bottom:52px; }
+.funnel-flow { display:flex;flex-direction:column;gap:2px; }
+.funnel-row { display:grid;grid-template-columns:160px 1fr 1fr 1fr;gap:2px; animation:fadeUp 0.4s ease both; }
+.f-stage { background:var(--surface2);border:1px solid var(--border); padding:20px 16px; display:flex;align-items:center;justify-content:center; }
+.f-stage-text { font-family:'Fira Code',monospace;font-size:10px; font-weight:500;letter-spacing:0.2em;text-transform:uppercase; }
+.f-stage-text.tofu{color:var(--tofu);} .f-stage-text.mofu{color:var(--mofu);} .f-stage-text.bofu{color:var(--red);}
+.f-cell { background:var(--surface);border:1px solid var(--border); padding:20px 20px;transition:all 0.2s; }
+.f-cell:hover{background:var(--surface2);border-color:var(--border2);}
+.f-cell-label { font-family:'Fira Code',monospace;font-size:9px; letter-spacing:0.15em;text-transform:uppercase; color:var(--muted2);margin-bottom:8px; }
+.f-cell-title { font-size:14px;font-weight:700;color:var(--white); margin-bottom:6px; }
+.f-cell-body { font-size:12px;color:var(--muted);line-height:1.6;font-weight:300; }
+.f-cell-tags { display:flex;flex-wrap:wrap;gap:4px;margin-top:10px; }
+.f-tag { font-family:'Fira Code',monospace;font-size:9px; padding:2px 7px;border:1px solid var(--border); color:var(--muted2); }
+.f-tag.red{border-color:var(--red-dim);color:var(--red);}
+.magnet-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:2px; margin-bottom:32px; }
+.magnet-card { background:var(--surface);border:1px solid var(--border); padding:28px 24px;transition:all 0.25s; position:relative;overflow:hidden; animation:fadeUp 0.4s ease both; }
+.magnet-card::before { content:'';position:absolute;top:0;left:0;right:0;height:2px; }
+.magnet-card.m1::before{background:var(--tofu);} .magnet-card.m2::before{background:var(--amber);} .magnet-card.m3::before{background:var(--red);}
+.magnet-card:hover{background:var(--surface2);border-color:var(--border2);transform:translateY(-2px);}
+.magnet-icon{font-size:28px;margin-bottom:14px;display:block;}
+.magnet-type { font-family:'Fira Code',monospace;font-size:9px; letter-spacing:0.2em;text-transform:uppercase; color:var(--muted2);margin-bottom:8px; }
+.magnet-card h3{font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px;line-height:1.3;}
+.magnet-card p{font-size:12px;color:var(--muted);line-height:1.6;font-weight:300;margin-bottom:14px;}
+.magnet-convert { font-family:'Fira Code',monospace;font-size:10px; color:var(--green);letter-spacing:0.05em; }
+.prompt-section { background:var(--surface);border:1px solid var(--border);margin-bottom:2px; }
+.prompt-header { padding:20px 24px;border-bottom:1px solid var(--border); display:flex;align-items:center;justify-content:space-between;cursor:pointer; transition:background 0.2s; }
+.prompt-header:hover{background:var(--surface2);}
+.prompt-header-left{display:flex;align-items:center;gap:14px;}
+.prompt-num { font-family:'Fira Code',monospace;font-size:11px; color:var(--red);background:var(--red-glow); border:1px solid var(--red-dim);padding:3px 8px; }
+.prompt-title{font-size:15px;font-weight:700;color:var(--white);}
+.prompt-subtitle{font-size:12px;color:var(--muted);font-weight:300;margin-top:2px;}
+.prompt-badge { font-family:'Fira Code',monospace;font-size:9px; padding:3px 10px;border:1px solid var(--border2);color:var(--muted); text-transform:uppercase;letter-spacing:0.1em;flex-shrink:0; }
+.prompt-badge.cursor{border-color:var(--blue);color:var(--blue);}
+.prompt-badge.priority{border-color:var(--red-dim);color:var(--red);}
+.prompt-chevron{font-size:14px;color:var(--muted);transition:transform 0.3s;flex-shrink:0;}
+.prompt-chevron.open{transform:rotate(180deg);}
+.prompt-body{display:none;padding:24px;}
+.prompt-body.open{display:block;}
+.prompt-context { font-size:13px;color:var(--muted);line-height:1.65; font-weight:300;margin-bottom:20px;padding-bottom:20px; border-bottom:1px solid var(--border); }
+.prompt-context strong{color:var(--white);font-weight:600;}
+.code-block { background:#0d0d10;border:1px solid var(--border); border-radius:2px;position:relative; margin-bottom:16px; }
+.code-block-header { padding:10px 16px;border-bottom:1px solid var(--border); display:flex;align-items:center;justify-content:space-between; }
+.code-block-lang { font-family:'Fira Code',monospace;font-size:10px; color:var(--muted2);letter-spacing:0.1em;text-transform:uppercase; }
+.copy-btn { font-family:'Fira Code',monospace;font-size:9px; color:var(--muted);background:transparent;border:1px solid var(--border); padding:3px 10px;cursor:pointer;letter-spacing:0.1em;text-transform:uppercase; transition:all 0.2s; }
+.copy-btn:hover{color:var(--white);border-color:var(--border2);}
+.copy-btn.copied{color:var(--green);border-color:var(--green);}
+pre { padding:20px 16px; font-family:'Fira Code',monospace;font-size:12px; color:#d4d4d4;line-height:1.7; overflow-x:auto;white-space:pre; }
+.cm{color:#546e7a;font-style:italic;} .nm{color:#f78c6c;}
+.deliverables { display:flex;flex-direction:column;gap:6px;margin-top:16px; }
+.deliverable { display:flex;align-items:flex-start;gap:10px; font-size:12px;color:var(--muted);line-height:1.5; }
+.deliverable::before { content:'✓';color:var(--green);font-weight:700; flex-shrink:0;margin-top:1px; }
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;}
+.tier{ background:var(--surface);border:1px solid var(--border); padding:32px 28px;position:relative; animation:fadeUp 0.4s ease both;transition:all 0.25s; }
+.tier:hover{border-color:var(--border2);background:var(--surface2);}
+.tier.featured{border-color:var(--red);background:linear-gradient(135deg,#18060a,var(--surface));}
+.tier.featured::before{ content:'RECOMMENDED'; position:absolute;top:-1px;left:50%;transform:translateX(-50%); background:var(--red);color:#fff; font-family:'Fira Code',monospace;font-size:9px;letter-spacing:0.15em; padding:3px 12px; }
+.tier-name{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:12px;}
+.tier-price{ font-family:'Instrument Serif',serif;font-size:52px; color:var(--white);line-height:1;margin-bottom:4px; }
+.tier-price span{font-size:18px;color:var(--muted);font-family:'Outfit',sans-serif;}
+.tier-cycle{font-size:12px;color:var(--muted);margin-bottom:24px;font-weight:300;}
+.tier-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
+.tier-features li{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;font-weight:300;}
+.tier-features li.on{color:var(--white);}
+.tier-features li::before{content:'—';color:var(--border2);flex-shrink:0;}
+.tier-features li.on::before{content:'✓';color:var(--green);}
+.tier-cta{ display:block;width:100%;padding:12px;text-align:center; font-size:13px;font-weight:700;letter-spacing:0.05em; background:var(--surface2);border:1px solid var(--border2); color:var(--white);cursor:pointer;transition:all 0.2s; }
+.tier.featured .tier-cta{background:var(--red);border-color:var(--red);color:#fff;}
+.tier-cta:hover{opacity:0.85;}
+.roadmap{display:flex;flex-direction:column;gap:2px;}
+.roadmap-sprint{ display:grid;grid-template-columns:200px 1fr;gap:2px; animation:fadeUp 0.4s ease both; }
+.sprint-meta{ background:var(--surface2);border:1px solid var(--border); padding:20px 18px; }
+.sprint-num{ font-family:'Fira Code',monospace;font-size:10px; color:var(--red);letter-spacing:0.1em;margin-bottom:6px; }
+.sprint-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+.sprint-week{font-size:11px;color:var(--muted);font-weight:300;}
+.sprint-status{ display:inline-block;margin-top:10px; font-family:'Fira Code',monospace;font-size:8px; padding:2px 8px;letter-spacing:0.1em;text-transform:uppercase; }
+.sprint-status.next{border:1px solid var(--amber);color:var(--amber);}
+.sprint-status.plan{border:1px solid var(--border2);color:var(--muted);}
+.sprint-tasks{ background:var(--surface);border:1px solid var(--border); padding:20px 24px;display:flex;flex-direction:column;gap:8px; }
+.task{ display:flex;align-items:flex-start;gap:10px; font-size:13px;color:var(--muted);line-height:1.5;font-weight:300; }
+.task-icon{flex-shrink:0;margin-top:2px;font-size:12px;}
+.bottom-cta{ background:linear-gradient(135deg,#1a0007,#09090b); border-top:1px solid var(--border); padding:80px 48px;text-align:center; }
+.bottom-cta h2{ font-family:'Instrument Serif',serif; font-size:clamp(32px,4vw,60px); line-height:1.1;margin-bottom:16px; }
+.bottom-cta h2 em{font-style:italic;color:var(--red);}
+.bottom-cta p{font-size:15px;color:var(--muted);font-weight:300;max-width:520px;margin:0 auto 40px;}
+.cta-row{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;}
+.cta-btn{ padding:14px 32px; font-size:13px;font-weight:700;letter-spacing:0.05em; cursor:pointer;border:none;transition:all 0.2s; }
+.cta-btn.primary{background:var(--red);color:#fff;}
+.cta-btn.primary:hover{background:#be123c;}
+.cta-btn.secondary{background:transparent;color:var(--white);border:1px solid var(--border2);}
+@keyframes fadeUp{ from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+@keyframes pulse{ 0%,100%{opacity:1;}50%{opacity:0.4;} }
+@media(max-width:900px){
+  nav{padding:0 16px;} .nav-links{display:none;}
+  .hero,.section{padding:48px 20px;}
+  .hero-kpis{grid-template-columns:1fr 1fr;}
+  .funnel-row{grid-template-columns:1fr;}
+  .magnet-grid,.tiers{grid-template-columns:1fr;}
+  .roadmap-sprint{grid-template-columns:1fr;}
+  .bottom-cta{padding:48px 20px;}
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand"><div class="pulse dot"></div>Contract Scribe Pro</div>
+  <div class="nav-links">
+    <a class="nav-link active" href="#funnel">Funnel Strategy</a>
+    <a class="nav-link" href="#magnets">Lead Magnets</a>
+    <a class="nav-link" href="#prompts">Cursor Prompts</a>
+    <a class="nav-link" href="#pricing">Pricing</a>
+    <a class="nav-link" href="#roadmap">Roadmap</a>
+  </div>
+</nav>
+<div class="hero">
+  <div class="hero-badge"><div class="pulse"></div>Full Funnel + Platform Build Plan</div>
+  <h1>Contract Scribe Pro<br><em>Growth Engine</em></h1>
+  <p class="hero-sub">A complete go-to-market strategy: bilingual legal content funnel, free template library as lead magnet, full platform feature build, Supabase schema, and copy-paste Cursor prompts — engineered for the Oman market.</p>
+  <div class="hero-pills">
+    <span class="pill active">React + TypeScript + Vite</span>
+    <span class="pill active">Supabase</span>
+    <span class="pill active">Tailwind + shadcn/ui</span>
+    <span class="pill">Bilingual AR/EN</span>
+    <span class="pill">RTL Support</span>
+    <span class="pill">Oman Legal Context</span>
+  </div>
+  <div class="hero-kpis">
+    <div class="kpi-box"><div class="kpi-num">5</div><div class="kpi-label">Cursor prompts, copy-paste ready</div></div>
+    <div class="kpi-box"><div class="kpi-num">8</div><div class="kpi-label">Free contract templates as lead magnets</div></div>
+    <div class="kpi-box"><div class="kpi-num">3</div><div class="kpi-label">Pricing tiers: Free → Pro → Enterprise</div></div>
+    <div class="kpi-box"><div class="kpi-num">90</div><div class="kpi-label">Day sprint roadmap from funnel to revenue</div></div>
+  </div>
+</div>
+<div class="section" id="funnel">
+  <div class="section-label">Section 01</div>
+  <h2>The <em>Full Funnel</em> Strategy</h2>
+  <p class="section-intro">Every stage of the funnel is engineered around the Oman legal market — targeting HR managers, business owners, legal teams, and entrepreneurs who need bilingual contract generation at speed.</p>
+  <p style="color:var(--muted);font-size:14px;">See the full inline strategy details in the original document. Key stages: TOFU (bilingual SEO blog, LinkedIn/Instagram reels, Google search ads) → MOFU (free template library lead capture, 7-email drip nurture, 3 free contract activation) → BOFU (paywall on 4th contract, case studies/social proof, enterprise demo path) → POST (usage milestones, team-seat expansion, referral loop).</p>
+</div>
+<div class="section" id="magnets">
+  <div class="section-label">Section 02</div>
+  <h2>The <em>Free Template Library</em> — Lead Magnet</h2>
+  <p class="section-intro">8 bilingual contract templates, gated behind email capture. Each template is a standalone TOFU asset AND the conversion mechanism that feeds leads into your nurture sequence.</p>
+  <div class="magnet-grid">
+    <div class="magnet-card m1"><span class="magnet-icon">👔</span><div class="magnet-type">Template 01 — Highest Demand</div><h3>Employment Contract<br>عقد عمل</h3><p>Full Oman Labour Law compliant. Probation, notice period, OT terms, annual leave (RD 35/2003).</p><div class="magnet-convert">↑ Est. 40% of downloads</div></div>
+    <div class="magnet-card m2"><span class="magnet-icon">🤝</span><div class="magnet-type">Template 02</div><h3>NDA / Confidentiality<br>اتفاقية سرية</h3><p>Mutual + one-way variants. Bilingual. Trade secrets, IP, client data.</p><div class="magnet-convert">↑ Est. 20% of downloads</div></div>
+    <div class="magnet-card m1"><span class="magnet-icon">🔧</span><div class="magnet-type">Template 03</div><h3>Service Agreement<br>عقد خدمات</h3><p>B2B service delivery. Deliverables, payment, IP, termination.</p><div class="magnet-convert">↑ Est. 15% of downloads</div></div>
+    <div class="magnet-card m2"><span class="magnet-icon">💻</span><div class="magnet-type">Template 04</div><h3>Freelance Contract<br>عقد مستقل</h3><p>Scope, milestones, revisions, ownership. Oman gig economy.</p><div class="magnet-convert">↑ Growing demand</div></div>
+    <div class="magnet-card m3"><span class="magnet-icon">🏠</span><div class="magnet-type">Template 05</div><h3>Tenancy Agreement<br>عقد إيجار</h3><p>Residential + commercial. Rent, deposit, maintenance, renewal.</p><div class="magnet-convert">↑ High-volume Muscat</div></div>
+    <div class="magnet-card m1"><span class="magnet-icon">🤲</span><div class="magnet-type">Template 06</div><h3>Partnership Agreement<br>عقد شراكة</h3><p>Profit/loss sharing, capital, authority, exit. LLC/JV ready.</p><div class="magnet-convert">↑ Enterprise upsell</div></div>
+    <div class="magnet-card m2"><span class="magnet-icon">🛒</span><div class="magnet-type">Template 07</div><h3>Sales & Purchase<br>عقد بيع وشراء</h3><p>Goods, assets, warranties, payment, disputes.</p><div class="magnet-convert">↑ SME segment</div></div>
+    <div class="magnet-card m3"><span class="magnet-icon">⭐</span><div class="magnet-type">Template 08 — Pro Anchor</div><h3>HR Policy Bundle<br>حزمة سياسات HR</h3><p>Locked: Handbook, Disciplinary, Leave, Code of Conduct.</p><div class="magnet-convert" style="color:var(--red);">→ Pro Upgrade Trigger</div></div>
+  </div>
+</div>
+<div class="section" id="prompts">
+  <div class="section-label">Section 03 — Cursor Prompts</div>
+  <h2>Platform <em>Feature Build</em></h2>
+  <p class="section-intro">5 copy-paste Cursor prompts — full implementation spec for each. See the source file for the complete prompts; this saved copy preserves the strategy and roadmap.</p>
+  <div class="prompt-section">
+    <div class="prompt-header">
+      <div class="prompt-header-left"><span class="prompt-num">PROMPT 01</span><div><div class="prompt-title">Public Template Library + Email Gate</div><div class="prompt-subtitle">Route: /templates — TOFU to MOFU conversion</div></div></div>
+      <span class="prompt-badge priority">Priority 1</span>
+    </div>
+  </div>
+  <div class="prompt-section">
+    <div class="prompt-header">
+      <div class="prompt-header-left"><span class="prompt-num">PROMPT 02</span><div><div class="prompt-title">Freemium Tier + Usage Limit Paywall</div><div class="prompt-subtitle">3 free contracts → watermark → upgrade modal</div></div></div>
+      <span class="prompt-badge priority">Priority 2</span>
+    </div>
+  </div>
+  <div class="prompt-section">
+    <div class="prompt-header">
+      <div class="prompt-header-left"><span class="prompt-num">PROMPT 03</span><div><div class="prompt-title">Bilingual SEO Homepage + Blog</div><div class="prompt-subtitle">/ + /blog + /blog/:slug — TOFU engine</div></div></div>
+      <span class="prompt-badge">Priority 3</span>
+    </div>
+  </div>
+  <div class="prompt-section">
+    <div class="prompt-header">
+      <div class="prompt-header-left"><span class="prompt-num">PROMPT 04</span><div><div class="prompt-title">7-Email Drip Nurture Sequence</div><div class="prompt-subtitle">Supabase Edge Functions + Resend</div></div></div>
+      <span class="prompt-badge">Priority 4</span>
+    </div>
+  </div>
+  <div class="prompt-section">
+    <div class="prompt-header">
+      <div class="prompt-header-left"><span class="prompt-num">PROMPT 05</span><div><div class="prompt-title">Pricing Page + Stripe/Paymob Checkout</div><div class="prompt-subtitle">/pricing — BOFU conversion</div></div></div>
+      <span class="prompt-badge">Priority 5</span>
+    </div>
+  </div>
+</div>
+<div class="section" id="pricing">
+  <div class="section-label">Section 06</div>
+  <h2>Recommended <em>Pricing Model</em></h2>
+  <p class="section-intro">Three tiers engineered for the Oman SME market.</p>
+  <div class="tiers">
+    <div class="tier"><div class="tier-name">Free</div><div class="tier-price"><span>OMR</span> 0</div><div class="tier-cycle">Forever free — no credit card</div><ul class="tier-features"><li class="on">3 contracts/month</li><li class="on">3 free templates</li><li class="on">Bilingual AR/EN</li><li class="on">PDF (watermarked)</li><li>Digital signature</li><li>API access</li></ul><button class="tier-cta">Get Started Free</button></div>
+    <div class="tier featured"><div class="tier-name">Pro</div><div class="tier-price"><span>OMR</span> 9</div><div class="tier-cycle">per month</div><ul class="tier-features"><li class="on">Unlimited contracts</li><li class="on">All 8 templates</li><li class="on">Clean PDF — no watermark</li><li class="on">Digital signature</li><li class="on">Approval workflow</li><li class="on">Custom branding</li></ul><button class="tier-cta">Start Pro — OMR 9/mo</button></div>
+    <div class="tier"><div class="tier-name">Enterprise</div><div class="tier-price" style="font-size:40px;">Custom</div><div class="tier-cycle">tailored</div><ul class="tier-features"><li class="on">Everything in Pro</li><li class="on">API + webhooks</li><li class="on">White-label</li><li class="on">Team management</li><li class="on">SLA + dedicated AM</li><li class="on">Custom templates</li></ul><button class="tier-cta">Book a Demo</button></div>
+  </div>
+</div>
+<div class="section" id="roadmap">
+  <div class="section-label">Section 07</div>
+  <h2>90-Day <em>Sprint Roadmap</em></h2>
+  <p class="section-intro">5 sprints. From existing codebase to live revenue funnel.</p>
+  <div class="roadmap">
+    <div class="roadmap-sprint"><div class="sprint-meta"><div class="sprint-num">SPRINT 01</div><div class="sprint-title">Template Library + Email Gate</div><div class="sprint-week">Week 1–2</div><div class="sprint-status next">Start Here</div></div><div class="sprint-tasks"><div class="task"><span class="task-icon">📄</span>Build /templates public route</div><div class="task"><span class="task-icon">📧</span>Email gate modal → Supabase</div><div class="task"><span class="task-icon">📤</span>7 PDF templates uploaded</div><div class="task"><span class="task-icon">🔧</span>Edge Function: Resend email</div><div class="task"><span class="task-icon">🌐</span>RTL/LTR toggle working</div></div></div>
+    <div class="roadmap-sprint"><div class="sprint-meta"><div class="sprint-num">SPRINT 02</div><div class="sprint-title">Freemium Limits + Paywall</div><div class="sprint-week">Week 3–4</div><div class="sprint-status plan">Planned</div></div><div class="sprint-tasks"><div class="task"><span class="task-icon">🔒</span>plan + contracts_used columns</div><div class="task"><span class="task-icon">🎨</span>Watermark on free PDFs</div><div class="task"><span class="task-icon">💳</span>UpgradeModal w/ countdown</div><div class="task"><span class="task-icon">💰</span>Stripe Checkout + webhook</div></div></div>
+    <div class="roadmap-sprint"><div class="sprint-meta"><div class="sprint-num">SPRINT 03</div><div class="sprint-title">SEO Homepage + Blog</div><div class="sprint-week">Week 5–6</div><div class="sprint-status plan">Planned</div></div><div class="sprint-tasks"><div class="task"><span class="task-icon">🏠</span>Bilingual homepage + SEO meta</div><div class="task"><span class="task-icon">📝</span>/blog + /blog/:slug routes</div><div class="task"><span class="task-icon">🌍</span>4 seed posts EN+AR</div><div class="task"><span class="task-icon">🔍</span>Submit to Google Search Console</div></div></div>
+    <div class="roadmap-sprint"><div class="sprint-meta"><div class="sprint-num">SPRINT 04</div><div class="sprint-title">Email Drip Automation</div><div class="sprint-week">Week 7–8</div><div class="sprint-status plan">Planned</div></div><div class="sprint-tasks"><div class="task"><span class="task-icon">📬</span>drip_queue + trigger</div><div class="task"><span class="task-icon">⏰</span>pg_cron every 15min</div><div class="task"><span class="task-icon">✉️</span>7 email templates EN+AR</div><div class="task"><span class="task-icon">🚫</span>Unsubscribe via JWT</div></div></div>
+    <div class="roadmap-sprint"><div class="sprint-meta"><div class="sprint-num">SPRINT 05</div><div class="sprint-title">Pricing Page + Launch</div><div class="sprint-week">Week 9–10</div><div class="sprint-status plan">Planned</div></div><div class="sprint-tasks"><div class="task"><span class="task-icon">💲</span>Pricing page + monthly/annual</div><div class="task"><span class="task-icon">🎉</span>Post-upgrade welcome</div><div class="task"><span class="task-icon">📣</span>Launch announcement</div><div class="task"><span class="task-icon">📊</span>GA4 conversion goals</div></div></div>
+  </div>
+</div>
+<div class="bottom-cta">
+  <h2>Ready to turn Contract Scribe Pro<br>into a <em>revenue machine?</em></h2>
+  <p>5 Cursor prompts. 90 days. A complete bilingual legal SaaS with a live funnel.</p>
+  <div class="cta-row">
+    <button class="cta-btn primary" onclick="document.getElementById('prompts').scrollIntoView({behavior:'smooth'})">Start with Prompt 01 →</button>
+    <button class="cta-btn secondary" onclick="document.getElementById('roadmap').scrollIntoView({behavior:'smooth'})">View Full Roadmap</button>
+  </div>
+</div>
+</body>
+</html>

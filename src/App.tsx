@@ -10,6 +10,7 @@ import { useEffect } from "react"
 import { attachDebuggerToWindow } from "./utils/printDebugger"
 import HomePage from "./pages/Index"
 import SettingsPage from "./pages/Settings"
+import Templates from "./pages/Templates"
 
 // Apply print styles globally
 import "./styles/contract-global.css"
@@ -81,6 +82,7 @@ function App() {
           <Route path="/contracts/:contractId" element={<ContractDetail />} />
           <Route path="/print-error" element={<PrintErrorPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/templates" element={<Templates />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
