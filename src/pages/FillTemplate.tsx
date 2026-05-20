@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { translateText } from "@/lib/translate";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,13 +13,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft, ArrowRight, FileText, Download, Loader2, CheckCircle2,
-  AlertCircle, ShieldCheck, Lock,
+  AlertCircle, ShieldCheck, Lock, Wand2, MessageCircle, FileSignature,
 } from "lucide-react";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useToast } from "@/hooks/use-toast";
 import { getTemplateById } from "@/lib/templates";
 import { getTemplateContent, type TemplateField } from "@/lib/templateContent";
-import { downloadFilledContract } from "@/utils/docx/generateFilledContract";
+import { downloadFilledContract, generateFilledContract } from "@/utils/docx/generateFilledContract";
+import { sendForSignature, sendViaWhatsApp, type Signer } from "@/lib/signAndShare";
 import { useAuth } from "@/hooks/useAuth";
 
 const COPY = {
@@ -268,26 +270,18 @@ const FillTemplate = () => {
         </div>
 
         {status === "done" ? (
-          <Card>
-            <CardContent className="pt-6 text-center space-y-4">
-              <CheckCircle2 className="h-14 w-14 mx-auto text-green-600" />
-              <div>
-                <h2 className="text-xl font-bold">{t.successTitle}</h2>
-                <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto leading-relaxed">
-                  {t.successSub}
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto pt-2">
-                <Button variant="outline" className="flex-1" onClick={handleGenerate}>
-                  <Download className="me-2 h-4 w-4" />
-                  {t.downloadAgain}
-                </Button>
-                <Button className="flex-1" onClick={() => navigate("/templates")}>
-                  {t.fillAnother}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <SuccessActions
+            template={template!}
+            content={content!}
+            values={values}
+            language={language}
+            onDownloadAgain={handleGenerate}
+            onFillAnother={() => navigate("/templates")}
+            tDownloadAgain={t.downloadAgain}
+            tFillAnother={t.fillAnother}
+            tSuccessTitle={t.successTitle}
+            tSuccessSub={t.successSub}
+          />
         ) : (
           <>
             {/* Progress strip */}
@@ -485,6 +479,36 @@ const BilingualFieldInput = ({
   const idAr = `field-${field.key}-ar`;
   const isLong = field.type === "textarea";
 
+  // Auto-translate state — the user clicks ⇄ to fill the opposite-language
+  // half via DeepL when only one half has content.
+  const [translating, setTranslating] = useState<null | "to_ar" | "to_en">(null);
+
+  const handleAutoFillAr = async () => {
+    if (!valueEn.trim() || translating) return;
+    setTranslating("to_ar");
+    try {
+      const out = await translateText(valueEn, "en", "ar");
+      if (out) onChangeAr(out);
+    } catch (err) {
+      console.warn("translate failed:", err);
+    } finally {
+      setTranslating(null);
+    }
+  };
+
+  const handleAutoFillEn = async () => {
+    if (!valueAr.trim() || translating) return;
+    setTranslating("to_en");
+    try {
+      const out = await translateText(valueAr, "ar", "en");
+      if (out) onChangeEn(out);
+    } catch (err) {
+      console.warn("translate failed:", err);
+    } finally {
+      setTranslating(null);
+    }
+  };
+
   return (
     <div className="space-y-2">
       <Label className={`flex items-center gap-2 ${isAr ? "flex-row-reverse text-right" : ""}`}>
@@ -498,9 +522,26 @@ const BilingualFieldInput = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {/* English half */}
         <div className="space-y-1">
-          <Label htmlFor={idEn} className="text-xs text-muted-foreground font-normal">
-            English
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor={idEn} className="text-xs text-muted-foreground font-normal">
+              English
+            </Label>
+            {valueAr && !valueEn && (
+              <button
+                type="button"
+                onClick={handleAutoFillEn}
+                disabled={translating !== null}
+                className="text-[10px] inline-flex items-center gap-1 text-primary hover:underline disabled:opacity-50"
+              >
+                {translating === "to_en" ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Wand2 className="h-3 w-3" />
+                )}
+                {isAr ? "ترجمة من العربية" : "Auto from Arabic"}
+              </button>
+            )}
+          </div>
           {isLong ? (
             <Textarea
               id={idEn}
@@ -526,9 +567,26 @@ const BilingualFieldInput = ({
 
         {/* Arabic half */}
         <div className="space-y-1">
-          <Label htmlFor={idAr} className="text-xs text-muted-foreground font-normal block text-right">
-            العربية
-          </Label>
+          <div className="flex items-center justify-between flex-row-reverse">
+            <Label htmlFor={idAr} className="text-xs text-muted-foreground font-normal block">
+              العربية
+            </Label>
+            {valueEn && !valueAr && (
+              <button
+                type="button"
+                onClick={handleAutoFillAr}
+                disabled={translating !== null}
+                className="text-[10px] inline-flex items-center gap-1 text-primary hover:underline disabled:opacity-50"
+              >
+                {translating === "to_ar" ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Wand2 className="h-3 w-3" />
+                )}
+                {isAr ? "ترجمة تلقائية" : "Auto from English"}
+              </button>
+            )}
+          </div>
           {isLong ? (
             <Textarea
               id={idAr}
@@ -586,5 +644,148 @@ const Empty = ({ icon: Icon, title, sub, ctaTo, ctaText, isAr }: EmptyProps) => 
     </Button>
   </div>
 );
+
+
+// ── Success actions: download, e-sign, WhatsApp share ─────────────
+interface SuccessActionsProps {
+  template: NonNullable<ReturnType<typeof getTemplateById>>;
+  content: NonNullable<ReturnType<typeof getTemplateContent>>;
+  values: Record<string, string>;
+  language: "ar" | "en";
+  onDownloadAgain: () => void;
+  onFillAnother: () => void;
+  tDownloadAgain: string;
+  tFillAnother: string;
+  tSuccessTitle: string;
+  tSuccessSub: string;
+}
+
+const SuccessActions = ({
+  template, content, values, language,
+  onDownloadAgain, onFillAnother,
+  tDownloadAgain, tFillAnother, tSuccessTitle, tSuccessSub,
+}: SuccessActionsProps) => {
+  const isAr = language === "ar";
+  const { toast } = useToast();
+
+  const [signOpen, setSignOpen] = useState(false);
+  const [waOpen, setWaOpen] = useState(false);
+  const [signing, setSigning] = useState(false);
+  const [whatsapping, setWhatsapping] = useState(false);
+  const [signResult, setSignResult] = useState<null | { detailsUrl: string; testMode: boolean }>(null);
+
+  const [signerName, setSignerName] = useState("");
+  const [signerEmail, setSignerEmail] = useState("");
+  const [phone, setPhone] = useState("");
+
+  const handleSignSubmit = async () => {
+    if (!signerName.trim() || !signerEmail.trim()) {
+      toast({ title: isAr ? "Enter signer name and email" : "Enter signer name and email", variant: "destructive" });
+      return;
+    }
+    setSigning(true);
+    try {
+      const blob = await generateFilledContract(template, content, values);
+      const result = await sendForSignature({
+        blob,
+        filename: `${template.id}.docx`,
+        title: template.titleEn,
+        message: `Please review and sign: ${content.subtitleEn ?? template.titleEn}`,
+        signers: [{ email: signerEmail, name: signerName }],
+        testMode: true,
+      });
+      setSignResult({ detailsUrl: result.detailsUrl, testMode: result.testMode });
+      toast({ title: "Signature request sent", description: result.testMode ? "(test mode)" : undefined });
+    } catch (err) {
+      console.error("sign failed:", err);
+      toast({ title: "Could not send signature request", variant: "destructive" });
+    } finally {
+      setSigning(false);
+    }
+  };
+
+  const handleWhatsAppSubmit = async () => {
+    if (!phone.trim()) {
+      toast({ title: "Enter WhatsApp number", variant: "destructive" });
+      return;
+    }
+    if (!signResult?.detailsUrl) {
+      toast({ title: "Send for signature first", description: "We need a signing link before sharing.", variant: "destructive" });
+      return;
+    }
+    setWhatsapping(true);
+    try {
+      const message = `Please review and sign the ${template.titleEn} at the link below`;
+      await sendViaWhatsApp({ to: phone, message, link: signResult.detailsUrl });
+      toast({ title: "Sent via WhatsApp" });
+      setWaOpen(false);
+    } catch (err) {
+      console.error("whatsapp failed:", err);
+      toast({ title: "WhatsApp send failed", variant: "destructive" });
+    } finally {
+      setWhatsapping(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardContent className="pt-6 text-center space-y-4">
+        <CheckCircle2 className="h-14 w-14 mx-auto text-green-600" />
+        <div>
+          <h2 className="text-xl font-bold">{tSuccessTitle}</h2>
+          <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto leading-relaxed">{tSuccessSub}</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto pt-2">
+          <Button variant="outline" className="flex-1" onClick={onDownloadAgain}>
+            <Download className="me-2 h-4 w-4" />{tDownloadAgain}
+          </Button>
+          <Button className="flex-1" onClick={onFillAnother}>{tFillAnother}</Button>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto pt-1">
+          <Button variant="ghost" size="sm" className="flex-1" onClick={() => setSignOpen(true)}>
+            <FileSignature className="me-2 h-4 w-4" />{isAr ? "Send for signature" : "Send for signature"}
+          </Button>
+          <Button variant="ghost" size="sm" className="flex-1" onClick={() => setWaOpen(true)} disabled={!signResult}>
+            <MessageCircle className="me-2 h-4 w-4" />{isAr ? "Share via WhatsApp" : "Share via WhatsApp"}
+          </Button>
+        </div>
+        {signOpen && (
+          <div className="rounded-lg border p-4 text-start space-y-3 max-w-md mx-auto">
+            <div className="text-sm font-medium">Send for e-signature</div>
+            <Input placeholder="Signer name" value={signerName} onChange={(e) => setSignerName(e.target.value)} />
+            <Input type="email" placeholder="Signer email" value={signerEmail} onChange={(e) => setSignerEmail(e.target.value)} />
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setSignOpen(false)}>Cancel</Button>
+              <Button size="sm" className="flex-1" onClick={handleSignSubmit} disabled={signing}>
+                {signing ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <FileSignature className="me-2 h-4 w-4" />}
+                Send
+              </Button>
+            </div>
+            {signResult && (
+              <div className="text-xs text-muted-foreground">
+                Sent. {signResult.testMode && (<span className="text-amber-600">(test mode)</span>)} {" "}
+                <a href={signResult.detailsUrl} target="_blank" rel="noreferrer" className="text-primary underline">Status page</a>
+              </div>
+            )}
+          </div>
+        )}
+        {waOpen && (
+          <div className="rounded-lg border p-4 text-start space-y-3 max-w-md mx-auto">
+            <div className="text-sm font-medium">Send signing link via WhatsApp</div>
+            <Input type="tel" placeholder="+96891234567" value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" />
+            <p className="text-xs text-muted-foreground">International format with country code (+968 for Oman)</p>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setWaOpen(false)}>Cancel</Button>
+              <Button size="sm" className="flex-1" onClick={handleWhatsAppSubmit} disabled={whatsapping}>
+                {whatsapping ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <MessageCircle className="me-2 h-4 w-4" />}
+                Send
+              </Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 export default FillTemplate;
