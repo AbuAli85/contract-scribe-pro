@@ -16,6 +16,7 @@
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import { saveAs } from "file-saver";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface PlaceholderField {
   /** machine key — e.g. "employee_name" */
@@ -170,6 +171,120 @@ export async function mergeTemplate(
   }
 
   return blob;
+}
+
+// ─── AI Smart Detection (calls Supabase Edge Function) ──────────
+/**
+ * Extracts plain readable text from a .docx by unzipping it and stripping
+ * XML markup from document.xml + any headers/footers. Used as the input
+ * to Claude when doing AI-powered field detection.
+ */
+export async function extractTextFromDocx(
+  file: File | Blob
+): Promise<string> {
+  const buf = await file.arrayBuffer();
+  const zip = new PizZip(buf);
+  const sources = [
+    "word/document.xml",
+    "word/header1.xml",
+    "word/header2.xml",
+    "word/header3.xml",
+    "word/footer1.xml",
+    "word/footer2.xml",
+    "word/footer3.xml",
+  ];
+  let combined = "";
+  for (const path of sources) {
+    const entry = zip.file(path);
+    if (entry) {
+      // Replace paragraph closes with newlines so the output reads as paragraphs
+      const raw = entry
+        .asText()
+        .replace(/<\/w:p>/g, "</w:p>\n")
+        .replace(/<w:br[^>]*\/?>/g, "\n");
+      combined += raw.replace(/<[^>]+>/g, "") + "\n";
+    }
+  }
+  // Collapse runs of whitespace, preserve paragraph breaks
+  return combined
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .join("\n");
+}
+
+export interface AiDetectedField {
+  key: string;
+  labelEn: string;
+  labelAr: string;
+  type:
+    | "text"
+    | "textarea"
+    | "number"
+    | "currency-omr"
+    | "date"
+    | "select"
+    | "email"
+    | "phone";
+  required: boolean;
+  group: string;
+  groupAr: string;
+  options?: { value: string; labelEn: string; labelAr: string }[];
+  sourceSnippet?: string;
+}
+
+export interface AiSuggestion {
+  type: "missing_clause" | "ambiguous_language" | "compliance_issue";
+  severity: "low" | "medium" | "high";
+  messageEn: string;
+  messageAr: string;
+}
+
+export interface AiScanResult {
+  fields: AiDetectedField[];
+  clauses: { headingEn: string; headingAr: string; body: string }[];
+  suggestions: AiSuggestion[];
+  detectedCategory: string;
+  detectedLanguage: "en" | "ar" | "bilingual";
+  confidence: number;
+  usage?: { inputTokens: number | null; outputTokens: number | null };
+}
+
+/**
+ * AI-powered template scan. Sends the extracted document text to the
+ * detect-template-fields Supabase Edge Function (which calls Claude),
+ * returns a fully structured analysis: detected fields, clauses,
+ * missing-clause suggestions, and language detection.
+ *
+ * Use this for documents that DON'T have manual {placeholder} tokens.
+ * For docs with explicit tokens, the regex scanTemplate() is faster
+ * and free.
+ */
+export async function scanTemplateWithAi(
+  file: File | Blob,
+  options: { category?: string; lang?: "en" | "ar" | "bilingual" } = {}
+): Promise<AiScanResult> {
+  const text = await extractTextFromDocx(file);
+  if (text.length < 50) {
+    throw new Error(
+      "Document text too short to analyze. Make sure the file contains readable text (not just images)."
+    );
+  }
+
+  const { data, error } = await supabase.functions.invoke(
+    "detect-template-fields",
+    {
+      body: { text, category: options.category, lang: options.lang },
+    }
+  );
+
+  if (error) throw new Error(error.message ?? "AI scan failed");
+  if (!data?.ok) {
+    throw new Error(
+      data?.error ?? "AI returned an error. Please try again or use manual scan."
+    );
+  }
+  return { ...data.result, usage: data.usage };
 }
 
 // ─── Helper: convert form values to docxtemplater-friendly format ──

@@ -16,15 +16,19 @@ import {
   AlertCircle,
   ArrowLeft,
   Loader2,
+  Wand2,
+  Info,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import LanguageToggle from "@/components/LanguageToggle";
 import {
   scanTemplate,
+  scanTemplateWithAi,
   mergeTemplate,
   normalizeValuesForMerge,
   type PlaceholderField,
   type ScanResult,
+  type AiScanResult,
 } from "@/lib/templateEngine";
 
 type Stage = "upload" | "review" | "fill" | "done";
@@ -96,11 +100,16 @@ const COPY = {
   },
 } as const;
 
+type ScanMode = "manual" | "ai";
+
 const MyTemplates = () => {
   const [language, setLanguage] = useState<"ar" | "en">("en");
   const [stage, setStage] = useState<Stage>("upload");
   const [file, setFile] = useState<File | null>(null);
   const [scan, setScan] = useState<ScanResult | null>(null);
+  const [aiResult, setAiResult] = useState<AiScanResult | null>(null);
+  const [scanMode, setScanMode] = useState<ScanMode>("ai");
+  const [scanning, setScanning] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
   const [generating, setGenerating] = useState(false);
   const [lastBlob, setLastBlob] = useState<Blob | null>(null);
@@ -115,21 +124,62 @@ const MyTemplates = () => {
         return;
       }
       setFile(f);
+      setScanning(true);
       setStage("review");
+
       try {
-        const result = await scanTemplate(f);
-        setScan(result);
-        // Seed empty values for every detected field
-        const seed: Record<string, string> = {};
-        result.fields.forEach((field) => (seed[field.key] = ""));
-        setValues(seed);
+        if (scanMode === "ai") {
+          // AI smart scan — reads the doc semantically via Claude
+          const ai = await scanTemplateWithAi(f);
+          setAiResult(ai);
+          // Convert AI fields into the legacy ScanResult shape so the
+          // existing review table + fill flow keep working unchanged.
+          const compatFields: PlaceholderField[] = ai.fields.map((af) => ({
+            key: af.key,
+            label: isAr ? af.labelAr : af.labelEn,
+            type:
+              af.type === "currency-omr" || af.type === "number"
+                ? "number"
+                : af.type === "phone"
+                ? "text"
+                : af.type === "select"
+                ? "text"
+                : (af.type as PlaceholderField["type"]),
+            required: af.required,
+          }));
+          setScan({
+            fields: compatFields,
+            rawTokens: ai.fields.map((af) => af.key),
+            totalTokens: ai.fields.length,
+          });
+          const seed: Record<string, string> = {};
+          compatFields.forEach((field) => (seed[field.key] = ""));
+          setValues(seed);
+        } else {
+          // Manual {placeholder} regex scan (free, instant)
+          const result = await scanTemplate(f);
+          setScan(result);
+          setAiResult(null);
+          const seed: Record<string, string> = {};
+          result.fields.forEach((field) => (seed[field.key] = ""));
+          setValues(seed);
+        }
       } catch (err) {
-        console.error("scanTemplate failed:", err);
-        toast({ title: t.error, variant: "destructive" });
+        console.error("scan failed:", err);
+        toast({
+          title: scanMode === "ai" ? "AI scan failed" : t.error,
+          description:
+            scanMode === "ai"
+              ? "Falling back to manual mode. Try again or add {placeholder} tokens to your file."
+              : undefined,
+          variant: "destructive",
+        });
         setStage("upload");
+      } finally {
+        setScanning(false);
       }
     },
-    [t, toast]
+    [scanMode, isAr, t, toast]
   );
 
   const handleGenerate = async () => {
@@ -218,28 +268,116 @@ const MyTemplates = () => {
               <CardDescription
                 className={`leading-relaxed ${isAr ? "text-right" : ""}`}
               >
-                {t.uploadHint}
+                {scanMode === "ai"
+                  ? isAr
+                    ? "حمّل أي مستند Word — سيقرأ الذكاء الاصطناعي محتواه ويحدد الحقول القابلة للتعبئة تلقائياً."
+                    : "Upload any Word document — our AI reads the content and identifies the fillable fields automatically."
+                  : t.uploadHint}
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              {/* Scan-mode picker */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setScanMode("ai")}
+                  className={`text-start p-3 border rounded-lg transition-colors ${
+                    scanMode === "ai"
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-border/80"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Wand2 className="h-4 w-4 text-primary" />
+                    <span className="font-medium text-sm">
+                      {isAr ? "فحص ذكي بالذكاء الاصطناعي" : "Smart AI scan"}
+                    </span>
+                    <Badge variant="default" className="text-[10px] px-1.5 py-0">
+                      {isAr ? "موصى" : "Recommended"}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {isAr
+                      ? "لا حاجة لأي رموز. الذكاء الاصطناعي يقرأ المستند ويحدد الحقول."
+                      : "No tokens needed. AI reads the document and detects fields."}
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setScanMode("manual")}
+                  className={`text-start p-3 border rounded-lg transition-colors ${
+                    scanMode === "manual"
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-border/80"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <FileText className="h-4 w-4 text-foreground" />
+                    <span className="font-medium text-sm">
+                      {isAr ? "صيغة العناصر النائبة" : "Manual {placeholder}"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {isAr
+                      ? "إذا كنت قد أدرجت رموز {token} يدوياً. سريع ومجاني."
+                      : "For docs where you've already added {token} markers. Free and instant."}
+                  </p>
+                </button>
+              </div>
+
+              {/* Upload dropzone */}
               <label
                 htmlFor="docx-upload"
-                className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-12 cursor-pointer hover:border-primary hover:bg-muted/40 transition-colors"
+                className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-10 cursor-pointer hover:border-primary hover:bg-muted/40 transition-colors"
               >
-                <Upload className="h-10 w-10 text-muted-foreground mb-3" />
-                <div className="font-medium">{t.uploadCta}</div>
-                <div className="text-xs text-muted-foreground mt-1">.docx</div>
+                {scanning ? (
+                  <>
+                    <Loader2 className="h-10 w-10 text-primary mb-3 animate-spin" />
+                    <div className="font-medium">
+                      {scanMode === "ai"
+                        ? isAr
+                          ? "يقرأ الذكاء الاصطناعي مستندك..."
+                          : "AI is reading your document..."
+                        : t.scanning}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {scanMode === "ai" ? "~5-10 seconds" : "instant"}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {scanMode === "ai" ? (
+                      <Wand2 className="h-10 w-10 text-primary mb-3" />
+                    ) : (
+                      <Upload className="h-10 w-10 text-muted-foreground mb-3" />
+                    )}
+                    <div className="font-medium">{t.uploadCta}</div>
+                    <div className="text-xs text-muted-foreground mt-1">.docx</div>
+                  </>
+                )}
                 <Input
                   id="docx-upload"
                   type="file"
                   accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   className="hidden"
+                  disabled={scanning}
                   onChange={(e) => {
                     const f = e.target.files?.[0];
                     if (f) handleFile(f);
                   }}
                 />
               </label>
+
+              {scanMode === "ai" && (
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground">
+                  <Info className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                  <p className="leading-relaxed">
+                    {isAr
+                      ? "يستخدم النظام Claude AI لتحليل المستند. لا تُحفظ بيانات مستندك. التحليل يستغرق 5-10 ثوانٍ."
+                      : "Powered by Claude AI. Your document is analyzed in-memory and not stored. Analysis takes 5-10 seconds."}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -251,15 +389,61 @@ const MyTemplates = () => {
               <CardTitle className={`flex items-center gap-2 ${isAr ? "flex-row-reverse text-right" : ""}`}>
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
                 {t.reviewTitle}
+                {aiResult && (
+                  <Badge variant="default" className="gap-1 text-[10px]">
+                    <Wand2 className="h-3 w-3" />
+                    {isAr ? "تحليل ذكي" : "AI analyzed"}
+                  </Badge>
+                )}
               </CardTitle>
               <CardDescription className={isAr ? "text-right" : ""}>
                 {t.reviewSubtitle}{" "}
                 <Badge variant="secondary" className="ms-1">
                   {scan.fields.length} {t.foundCount}
                 </Badge>
+                {aiResult && (
+                  <span className="ms-2 text-xs">
+                    · {isAr ? "ثقة" : "Confidence"}:{" "}
+                    <strong>{Math.round(aiResult.confidence * 100)}%</strong>
+                    {" · "}
+                    {isAr ? "اللغة" : "Language"}:{" "}
+                    <strong>{aiResult.detectedLanguage}</strong>
+                  </span>
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* AI Suggestions panel (only when AI scan returned issues) */}
+              {aiResult && aiResult.suggestions.length > 0 && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-900/40 p-3 space-y-2">
+                  <div className={`flex items-center gap-2 text-amber-900 dark:text-amber-200 font-medium text-sm ${isAr ? "flex-row-reverse" : ""}`}>
+                    <Wand2 className="h-4 w-4" />
+                    {isAr ? "اقتراحات الذكاء الاصطناعي" : "AI suggestions"}
+                  </div>
+                  <ul className="space-y-1.5">
+                    {aiResult.suggestions.map((s, i) => (
+                      <li
+                        key={i}
+                        className={`text-xs flex items-start gap-2 text-amber-900 dark:text-amber-200 ${isAr ? "flex-row-reverse text-right" : ""}`}
+                      >
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] mt-0.5 flex-shrink-0 ${
+                            s.severity === "high"
+                              ? "border-red-500 text-red-600"
+                              : s.severity === "medium"
+                              ? "border-amber-500 text-amber-700"
+                              : "border-amber-300 text-amber-600"
+                          }`}
+                        >
+                          {s.severity}
+                        </Badge>
+                        <span>{isAr ? s.messageAr : s.messageEn}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {scan.fields.length === 0 ? (
                 <div className="flex items-center gap-3 p-4 rounded-lg border border-amber-200 bg-amber-50 text-amber-900 dark:bg-amber-900/10 dark:border-amber-900/40 dark:text-amber-200">
                   <AlertCircle className="h-5 w-5 flex-shrink-0" />
