@@ -13,6 +13,7 @@ import SettingsPage from "./pages/Settings"
 import Templates from "./pages/Templates"
 import MyTemplates from "./pages/MyTemplates"
 import TemplateDownload from "./pages/TemplateDownload"
+import FillTemplate from "./pages/FillTemplate"
 
 // Apply print styles globally
 import "./styles/contract-global.css"
@@ -85,6 +86,7 @@ function App() {
           <Route path="/print-error" element={<PrintErrorPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/templates" element={<Templates />} />
+          <Route path="/templates/fill/:templateId" element={<FillTemplate />} />
           <Route path="/templates/download/:templateId" element={<TemplateDownload />} />
           <Route path="/my-templates" element={<MyTemplates />} />
           <Route path="*" element={<NotFound />} />

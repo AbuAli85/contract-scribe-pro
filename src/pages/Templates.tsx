@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { hasTemplateContent } from "@/lib/templateContent";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, FileText, Sparkles, Users2, Globe, ShieldCheck, Edit3 } from "lucide-react";
@@ -88,6 +89,7 @@ const Templates = () => {
   const [selected, setSelected] = useState<ContractTemplate | null>(null);
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
   const [requestModalOpen, setRequestModalOpen] = useState(false);
+  const navigate = useNavigate();
   const { toast } = useToast();
   const t = COPY[language];
   const isAr = language === "ar";
@@ -131,6 +133,13 @@ const Templates = () => {
     setSelected(template);
     if (template.status === "pro") {
       toast({ title: t.upgradeTitle, description: t.upgradeBody });
+      return;
+    }
+    // If we have full clause content authored, send the user through the
+    // guided fill form so they get a fully-populated bilingual contract.
+    // Otherwise fall back to the email-gate quick download.
+    if (hasTemplateContent(template.id)) {
+      navigate(`/templates/fill/${template.id}`);
       return;
     }
     setDownloadModalOpen(true);
