@@ -1,0 +1,501 @@
+// =============================================================
+// Partnership Agreement — Bilingual, Oman Law
+// Authority: Commercial Companies Law (Royal Decree 18/2019)
+//            Civil Transactions Law (Royal Decree 29/2013)
+//            Income Tax Law (Royal Decree 28/2009)
+//
+// Governs a general business partnership between two or more
+// parties: capital contributions, profit/loss sharing,
+// management roles, decision-making thresholds, banking,
+// partner duties, new partners, exit mechanisms, dissolution.
+//
+// 20 fields across 5 steps · 14 clauses
+// =============================================================
+
+import type { TemplateContent } from "./types";
+
+export const PARTNERSHIP_CONTENT: TemplateContent = {
+  id: "partnership",
+  subtitleEn: "Business Partnership Agreement — Sultanate of Oman",
+  subtitleAr: "عقد شراكة تجارية — سلطنة عُمان",
+
+  fields: [
+    // — Partner A
+    {
+      key: "partner_a_name",
+      group: "Partner A",
+      groupAr: "الشريك الأول",
+      labelEn: "Partner A — Full Legal Name",
+      labelAr: "الشريك الأول — الاسم القانوني الكامل",
+      type: "text",
+      required: true,
+      placeholderEn: "Mohammed Ali Al-Busaidi",
+      placeholderAr: "محمد علي البوسعيدي",
+    },
+    {
+      key: "partner_a_id",
+      group: "Partner A",
+      groupAr: "الشريك الأول",
+      labelEn: "Partner A — Civil ID / CR No.",
+      labelAr: "الشريك الأول — رقم الهوية / السجل التجاري",
+      type: "text",
+      required: true,
+      placeholderEn: "12345678",
+    },
+    {
+      key: "partner_a_address",
+      group: "Partner A",
+      groupAr: "الشريك الأول",
+      labelEn: "Partner A — Address",
+      labelAr: "الشريك الأول — العنوان",
+      type: "textarea",
+      required: true,
+      placeholderEn: "Al Qurum, Muscat, Sultanate of Oman",
+      placeholderAr: "القرم، مسقط، سلطنة عُمان",
+    },
+    {
+      key: "partner_a_share",
+      group: "Partner A",
+      groupAr: "الشريك الأول",
+      labelEn: "Partner A — Ownership Share (%)",
+      labelAr: "الشريك الأول — حصة الملكية (%)",
+      type: "select",
+      required: true,
+      defaultValue: "50",
+      options: [
+        { value: "25", labelEn: "25%", labelAr: "25%" },
+        { value: "30", labelEn: "30%", labelAr: "30%" },
+        { value: "33", labelEn: "33.33%", labelAr: "33.33%" },
+        { value: "40", labelEn: "40%", labelAr: "40%" },
+        { value: "50", labelEn: "50%", labelAr: "50%" },
+        { value: "60", labelEn: "60%", labelAr: "60%" },
+        { value: "70", labelEn: "70%", labelAr: "70%" },
+        { value: "75", labelEn: "75%", labelAr: "75%" },
+      ],
+      helperEn: "Partner B's share will be 100% minus Partner A's share.",
+      helperAr: "حصة الشريك الثاني = 100% ناقص حصة الشريك الأول.",
+    },
+
+    // — Partner B
+    {
+      key: "partner_b_name",
+      group: "Partner B",
+      groupAr: "الشريك الثاني",
+      labelEn: "Partner B — Full Legal Name",
+      labelAr: "الشريك الثاني — الاسم القانوني الكامل",
+      type: "text",
+      required: true,
+      placeholderEn: "Sara Ahmed Al-Harthi",
+      placeholderAr: "سارة أحمد الحارثي",
+    },
+    {
+      key: "partner_b_id",
+      group: "Partner B",
+      groupAr: "الشريك الثاني",
+      labelEn: "Partner B — Civil ID / CR No.",
+      labelAr: "الشريك الثاني — رقم الهوية / السجل التجاري",
+      type: "text",
+      required: true,
+      placeholderEn: "87654321",
+    },
+    {
+      key: "partner_b_address",
+      group: "Partner B",
+      groupAr: "الشريك الثاني",
+      labelEn: "Partner B — Address",
+      labelAr: "الشريك الثاني — العنوان",
+      type: "textarea",
+      required: true,
+      placeholderEn: "Madinat Al Sultan Qaboos, Muscat, Sultanate of Oman",
+      placeholderAr: "مدينة السلطان قابوس، مسقط، سلطنة عُمان",
+    },
+
+    // — Business
+    {
+      key: "business_name",
+      group: "Business",
+      groupAr: "المشروع التجاري",
+      labelEn: "Partnership / Business Name",
+      labelAr: "اسم الشراكة / المشروع التجاري",
+      type: "text",
+      required: true,
+      placeholderEn: "Al-Busaidi & Al-Harthi Trading",
+      placeholderAr: "مؤسسة البوسعيدي والحارثي للتجارة",
+    },
+    {
+      key: "business_activity",
+      group: "Business",
+      groupAr: "المشروع التجاري",
+      labelEn: "Principal Business Activity",
+      labelAr: "النشاط التجاري الرئيسي",
+      type: "textarea",
+      required: true,
+      placeholderEn:
+        "Import, export, and distribution of consumer electronics and technology products in the Sultanate of Oman.",
+      placeholderAr:
+        "استيراد وتصدير وتوزيع الإلكترونيات الاستهلاكية ومنتجات التقنية في سلطنة عُمان.",
+    },
+    {
+      key: "business_address",
+      group: "Business",
+      groupAr: "المشروع التجاري",
+      labelEn: "Principal Place of Business",
+      labelAr: "المقر الرئيسي للمشروع",
+      type: "textarea",
+      required: true,
+      placeholderEn: "Ruwi Commercial District, Muscat, Sultanate of Oman",
+      placeholderAr: "المنطقة التجارية بالروي، مسقط، سلطنة عُمان",
+    },
+    {
+      key: "commencement_date",
+      group: "Business",
+      groupAr: "المشروع التجاري",
+      labelEn: "Partnership Commencement Date",
+      labelAr: "تاريخ بدء الشراكة",
+      type: "date",
+      required: true,
+    },
+
+    // — Capital & Finance
+    {
+      key: "total_capital",
+      group: "Capital & Finance",
+      groupAr: "رأس المال والشؤون المالية",
+      labelEn: "Total Initial Capital (OMR)",
+      labelAr: "إجمالي رأس المال الابتدائي (ر.ع)",
+      type: "currency-omr",
+      required: true,
+      placeholderEn: "10000.000",
+      helperEn: "Combined contribution from all partners at formation.",
+      helperAr: "مجموع مساهمات الشركاء عند التأسيس.",
+    },
+    {
+      key: "profit_loss_basis",
+      group: "Capital & Finance",
+      groupAr: "رأس المال والشؤون المالية",
+      labelEn: "Profit & Loss Sharing Basis",
+      labelAr: "أساس توزيع الأرباح والخسائر",
+      type: "select",
+      required: true,
+      defaultValue: "ownership",
+      options: [
+        {
+          value: "ownership",
+          labelEn: "Pro-rata to ownership share",
+          labelAr: "بالتناسب مع حصة الملكية",
+        },
+        {
+          value: "equal",
+          labelEn: "Equally (50/50 regardless of share)",
+          labelAr: "بالتساوي (50/50 بغض النظر عن الحصة)",
+        },
+        {
+          value: "custom",
+          labelEn: "Custom split (specify in management clause)",
+          labelAr: "توزيع مخصص (يُحدد في بند الإدارة)",
+        },
+      ],
+    },
+    {
+      key: "accounting_period",
+      group: "Capital & Finance",
+      groupAr: "رأس المال والشؤون المالية",
+      labelEn: "Financial Year End (Month)",
+      labelAr: "نهاية السنة المالية (الشهر)",
+      type: "select",
+      required: true,
+      defaultValue: "December",
+      options: [
+        { value: "March",    labelEn: "31 March",    labelAr: "31 مارس" },
+        { value: "June",     labelEn: "30 June",     labelAr: "30 يونيو" },
+        { value: "September",labelEn: "30 September",labelAr: "30 سبتمبر" },
+        { value: "December", labelEn: "31 December", labelAr: "31 ديسمبر" },
+      ],
+    },
+
+    // — Exit
+    {
+      key: "notice_exit_days",
+      group: "Exit & Dissolution",
+      groupAr: "الخروج والتصفية",
+      labelEn: "Notice Period to Withdraw (days)",
+      labelAr: "فترة الإشعار للانسحاب (أيام)",
+      type: "select",
+      required: true,
+      defaultValue: "90",
+      options: [
+        { value: "30", labelEn: "30 days", labelAr: "30 يوماً" },
+        { value: "60", labelEn: "60 days", labelAr: "60 يوماً" },
+        { value: "90", labelEn: "90 days (recommended)", labelAr: "90 يوماً (موصى به)" },
+        { value: "180",labelEn: "180 days", labelAr: "180 يوماً" },
+      ],
+      helperEn: "Minimum notice a partner must give before withdrawing.",
+      helperAr: "الحد الأدنى للإشعار الذي يجب أن يقدمه الشريك قبل الانسحاب.",
+    },
+    {
+      key: "buyout_valuation",
+      group: "Exit & Dissolution",
+      groupAr: "الخروج والتصفية",
+      labelEn: "Buyout Valuation Method",
+      labelAr: "طريقة تقييم حصة الانسحاب",
+      type: "select",
+      required: true,
+      defaultValue: "book",
+      options: [
+        {
+          value: "book",
+          labelEn: "Book value of net assets at exit date",
+          labelAr: "القيمة الدفترية لصافي الأصول عند تاريخ الخروج",
+        },
+        {
+          value: "agreed",
+          labelEn: "Mutually agreed valuation by independent accountant",
+          labelAr: "تقييم متفق عليه من قِبل محاسب مستقل",
+        },
+      ],
+    },
+  ],
+
+  clauses: [
+    {
+      headingEn: "1. Formation and Parties",
+      headingAr: "1. التأسيس والأطراف",
+      paragraphsEn: [
+        "This Partnership Agreement (\"Agreement\") is entered into on {commencement_date} by and between:",
+        "{partner_a_name}, holder of Civil ID / CR No. {partner_a_id}, residing / registered at {partner_a_address} (\"Partner A\"); and",
+        "{partner_b_name}, holder of Civil ID / CR No. {partner_b_id}, residing / registered at {partner_b_address} (\"Partner B\").",
+        "Together, Partner A and Partner B are referred to as the \"Partners.\" The Partners hereby agree to carry on business together in accordance with the terms of this Agreement and the applicable provisions of the Commercial Companies Law of the Sultanate of Oman (Royal Decree 18/2019).",
+      ],
+      paragraphsAr: [
+        "تم إبرام عقد الشراكة هذا (\"العقد\") بتاريخ {commencement_date} بين:",
+        "{partner_a_name}، حامل الهوية الشخصية / السجل التجاري رقم {partner_a_id}، المقيم / المسجل في {partner_a_address} (\"الشريك الأول\")؛ و",
+        "{partner_b_name}، حامل الهوية الشخصية / السجل التجاري رقم {partner_b_id}، المقيم / المسجل في {partner_b_address} (\"الشريك الثاني\").",
+        "يُشار إلى الشريك الأول والشريك الثاني مجتمعَين بـ\"الشركاء\". يتفق الشركاء بموجب هذا على ممارسة الأعمال التجارية معاً وفقاً لشروط هذا العقد والأحكام المنطبقة من قانون الشركات التجارية لسلطنة عُمان (المرسوم السلطاني 18/2019).",
+      ],
+    },
+    {
+      headingEn: "2. Partnership Name and Business",
+      headingAr: "2. اسم الشراكة والنشاط التجاري",
+      paragraphsEn: [
+        "The Partnership shall carry on business under the name \"{business_name}\" (\"Partnership\").",
+        "The principal business activity of the Partnership shall be: {business_activity}.",
+        "The principal place of business shall be: {business_address}. The Partners may by unanimous written consent open additional offices or change the principal place of business.",
+      ],
+      paragraphsAr: [
+        "تمارس الشراكة أعمالها تحت اسم \"{business_name}\" (\"الشراكة\").",
+        "النشاط التجاري الرئيسي للشراكة هو: {business_activity}.",
+        "المقر الرئيسي للشراكة هو: {business_address}. يجوز للشركاء بموافقة خطية بالإجماع فتح مكاتب إضافية أو تغيير المقر الرئيسي.",
+      ],
+    },
+    {
+      headingEn: "3. Capital Contributions",
+      headingAr: "3. مساهمات رأس المال",
+      paragraphsEn: [
+        "The total initial capital of the Partnership shall be {total_capital} Omani Rials (OMR), contributed by the Partners as follows:",
+        "  • Partner A ({partner_a_name}): {partner_a_share}% of total capital",
+        "  • Partner B ({partner_b_name}): the remaining balance of total capital",
+        "Capital contributions shall be paid in cash by bank transfer to the Partnership's designated business account within fourteen (14) days of the date of this Agreement.",
+        "No Partner may withdraw capital from the Partnership without the prior written consent of all other Partners. Additional capital calls may be made by unanimous written resolution.",
+      ],
+      paragraphsAr: [
+        "يبلغ إجمالي رأس المال الابتدائي للشراكة {total_capital} ريال عماني (ر.ع)، يُساهم فيه الشركاء على النحو التالي:",
+        "  • الشريك الأول ({partner_a_name}): {partner_a_share}% من إجمالي رأس المال",
+        "  • الشريك الثاني ({partner_b_name}): الرصيد المتبقي من إجمالي رأس المال",
+        "تُسدَّد مساهمات رأس المال نقداً عن طريق التحويل البنكي إلى الحساب التجاري المخصص للشراكة خلال أربعة عشر (14) يوماً من تاريخ هذا العقد.",
+        "لا يجوز لأي شريك سحب رأس المال من الشراكة دون الحصول على موافقة خطية مسبقة من جميع الشركاء الآخرين. يجوز إجراء طلبات رأس مال إضافية بقرار خطي بالإجماع.",
+      ],
+    },
+    {
+      headingEn: "4. Profit and Loss Sharing",
+      headingAr: "4. توزيع الأرباح والخسائر",
+      paragraphsEn: [
+        "The net profits and net losses of the Partnership shall be shared among the Partners on the following basis: {profit_loss_basis}.",
+        "For the avoidance of doubt, where profit/loss is shared pro-rata to ownership, Partner A shall receive {partner_a_share}% and Partner B shall receive the remainder.",
+        "Profits shall be distributed only from realised net income after all Partnership expenses, liabilities, and adequate reserves have been provided for, as determined by the Partners at the annual accounts review.",
+        "No Partner shall be entitled to interest on their capital contribution. Salary drawings by any Partner shall be treated as a Partnership expense and approved by unanimous written resolution.",
+      ],
+      paragraphsAr: [
+        "تُوزَّع صافي الأرباح وصافي الخسائر للشراكة بين الشركاء على الأساس التالي: {profit_loss_basis}.",
+        "تجنباً لأي لبس، في حالة التوزيع بالتناسب مع حصة الملكية، يحصل الشريك الأول على {partner_a_share}% والشريك الثاني على الرصيد المتبقي.",
+        "تُوزَّع الأرباح من صافي الدخل المحقق فقط بعد تغطية جميع مصاريف الشراكة والتزاماتها والاحتياطيات الكافية، وذلك حسبما يقرره الشركاء عند المراجعة السنوية للحسابات.",
+        "لا يحق لأي شريك الحصول على فوائد على مساهمته في رأس المال. تُعامَل المسحوبات بصفة راتب لأي شريك كمصروف للشراكة وتتطلب موافقة خطية بالإجماع.",
+      ],
+    },
+    {
+      headingEn: "5. Management and Decision-Making",
+      headingAr: "5. الإدارة وصنع القرار",
+      paragraphsEn: [
+        "The Partners shall jointly manage the Partnership. Day-to-day operational decisions may be made by either Partner acting alone, provided they do not exceed their individual spending authority of five hundred (500) OMR per transaction without the consent of the other Partner.",
+        "The following decisions require the prior written consent of ALL Partners (unanimous):",
+        "  (a) Entering into any contract, commitment, or liability exceeding 5,000 OMR;",
+        "  (b) Borrowing money or granting security over Partnership assets;",
+        "  (c) Admitting a new partner;",
+        "  (d) Changing the principal business activity;",
+        "  (e) Amending this Agreement;",
+        "  (f) Dissolving the Partnership.",
+        "Each Partner owes a fiduciary duty to act in the best interests of the Partnership and shall not engage in any competing business without the prior written consent of the other Partners.",
+      ],
+      paragraphsAr: [
+        "يتولى الشركاء الإدارة المشتركة للشراكة. يجوز اتخاذ القرارات التشغيلية اليومية من قِبَل أي شريك منفرداً، شريطة ألا تتجاوز صلاحيته الفردية في الإنفاق خمسمائة (500) ر.ع لكل معاملة دون موافقة الشريك الآخر.",
+        "تستوجب القرارات التالية الحصول على موافقة خطية مسبقة من جميع الشركاء (بالإجماع):",
+        "  (أ) إبرام أي عقد أو تعهد أو التزام يتجاوز 5,000 ر.ع؛",
+        "  (ب) الاقتراض أو منح ضمانات على أصول الشراكة؛",
+        "  (ج) قبول شريك جديد؛",
+        "  (د) تغيير النشاط التجاري الرئيسي؛",
+        "  (هـ) تعديل هذا العقد؛",
+        "  (و) تصفية الشراكة.",
+        "يلتزم كل شريك بواجب الأمانة والتصرف بما يخدم مصالح الشراكة، ولا يجوز له ممارسة أي نشاط منافس دون الحصول على موافقة خطية مسبقة من الشركاء الآخرين.",
+      ],
+    },
+    {
+      headingEn: "6. Banking and Accounts",
+      headingAr: "6. الخدمات المصرفية والحسابات",
+      paragraphsEn: [
+        "The Partnership shall maintain a dedicated business bank account in the name of the Partnership. All Partnership revenues shall be deposited into this account and all expenses paid from it.",
+        "Cheques and bank transfers shall require the signatures of both Partners for amounts exceeding two thousand (2,000) OMR. Below this threshold, either Partner may authorise payments individually.",
+        "Proper accounting records shall be kept at the principal place of business. Each Partner has the right to inspect all books of account and financial records at any reasonable time.",
+      ],
+      paragraphsAr: [
+        "تحتفظ الشراكة بحساب مصرفي تجاري مخصص باسمها. تُودَع جميع إيرادات الشراكة في هذا الحساب وتُسدَّد منه جميع المصاريف.",
+        "تستلزم الشيكات والتحويلات البنكية توقيع كلا الشريكين للمبالغ التي تتجاوز ألفين (2,000) ر.ع. وفيما دون هذا الحد، يجوز لأي شريك منفرداً تفويض المدفوعات.",
+        "تُحفظ سجلات محاسبية سليمة في المقر الرئيسي. لكل شريك الحق في الاطلاع على جميع دفاتر الحسابات والسجلات المالية في أي وقت معقول.",
+      ],
+    },
+    {
+      headingEn: "7. Financial Year and Accounts",
+      headingAr: "7. السنة المالية والحسابات",
+      paragraphsEn: [
+        "The financial year of the Partnership shall end on 31 {accounting_period} of each year. The first financial year shall commence on the date of this Agreement and end on the first 31 {accounting_period} thereafter.",
+        "The Partners shall prepare or commission annual financial statements within sixty (60) days of each financial year end. The statements shall be reviewed and approved by all Partners.",
+        "Each Partner's capital account and current account shall be maintained separately in the accounts, reflecting contributions, drawings, share of profits/losses, and any other agreed adjustments.",
+      ],
+      paragraphsAr: [
+        "تنتهي السنة المالية للشراكة في 31 {accounting_period} من كل عام. تبدأ السنة المالية الأولى من تاريخ هذا العقد وتنتهي في أول 31 {accounting_period} يليه.",
+        "يعدّ الشركاء أو يستعينون بمن يعدّ القوائم المالية السنوية خلال ستين (60) يوماً من نهاية كل سنة مالية. تُراجَع هذه القوائم ويوافق عليها جميع الشركاء.",
+        "يُحتفظ بحساب رأس مال وحساب جارٍ منفصلَين لكل شريك في الحسابات، يعكسان المساهمات والمسحوبات ونصيب الأرباح/الخسائر وأي تعديلات متفق عليها.",
+      ],
+    },
+    {
+      headingEn: "8. Partner Duties and Non-Compete",
+      headingAr: "8. واجبات الشركاء وعدم المنافسة",
+      paragraphsEn: [
+        "Each Partner shall:",
+        "  (a) devote reasonable time and effort to the business of the Partnership;",
+        "  (b) act honestly and in good faith in all dealings on behalf of the Partnership;",
+        "  (c) promptly disclose to the other Partners any conflict of interest or material matter affecting the Partnership;",
+        "  (d) not enter into any agreement, transaction, or business activity that competes directly with the Partnership's principal activity without prior written consent of all other Partners;",
+        "  (e) maintain confidentiality of all Partnership information, trade secrets, and client data, both during and for two (2) years after the term of the Partnership.",
+      ],
+      paragraphsAr: [
+        "يلتزم كل شريك بـ:",
+        "  (أ) تخصيص الوقت والجهد المعقولَين لأعمال الشراكة؛",
+        "  (ب) التصرف بأمانة وحسن نية في جميع المعاملات نيابةً عن الشراكة؛",
+        "  (ج) الإفصاح الفوري للشركاء الآخرين عن أي تعارض في المصالح أو أي أمر جوهري يؤثر على الشراكة؛",
+        "  (د) عدم الدخول في أي اتفاقية أو معاملة أو نشاط تجاري يتنافس مباشرة مع النشاط الرئيسي للشراكة دون موافقة خطية مسبقة من جميع الشركاء الآخرين؛",
+        "  (هـ) الحفاظ على سرية جميع معلومات الشراكة والأسرار التجارية وبيانات العملاء خلال مدة الشراكة ولمدة سنتين (2) بعد انتهائها.",
+      ],
+    },
+    {
+      headingEn: "9. Admission of New Partners",
+      headingAr: "9. قبول شركاء جدد",
+      paragraphsEn: [
+        "No new partner may be admitted to the Partnership except by unanimous written consent of all existing Partners. The terms of any new partner's admission, including their capital contribution, ownership share, and profit/loss allocation, shall be agreed in writing and incorporated as an amendment to this Agreement.",
+        "The admission of a new partner shall not release any existing Partner from obligations accrued prior to the date of admission.",
+      ],
+      paragraphsAr: [
+        "لا يجوز قبول شريك جديد في الشراكة إلا بموافقة خطية بالإجماع من جميع الشركاء الحاليين. تُحدَّد شروط قبول أي شريك جديد، بما يشمل مساهمته في رأس المال وحصته في الملكية وتوزيع الأرباح/الخسائر، كتابةً وتُدرَج كتعديل على هذا العقد.",
+        "لا يُعفي قبول شريك جديد أي شريك حالي من الالتزامات المستحقة قبل تاريخ القبول.",
+      ],
+    },
+    {
+      headingEn: "10. Transfer of Partnership Interest",
+      headingAr: "10. نقل حصة الشراكة",
+      paragraphsEn: [
+        "No Partner may sell, assign, transfer, pledge, or otherwise dispose of their interest in the Partnership without first offering it to the other Partners by written notice (\"Right of First Refusal\"). The existing Partners shall have thirty (30) days to exercise the Right of First Refusal at the price and on the terms specified in the notice.",
+        "If the existing Partners do not exercise their right, the selling Partner may transfer their interest to the proposed buyer, subject to the prior written consent of the remaining Partners, which shall not be unreasonably withheld.",
+      ],
+      paragraphsAr: [
+        "لا يجوز لأي شريك بيع حصته في الشراكة أو التنازل عنها أو نقلها أو رهنها أو التصرف فيها بأي طريقة أخرى دون عرضها أولاً على الشركاء الآخرين بإشعار خطي (\"حق الأولوية في الشراء\"). يحق للشركاء الحاليين ممارسة حق الأولوية خلال ثلاثين (30) يوماً بالسعر والشروط المحددة في الإشعار.",
+        "إذا لم يمارس الشركاء الحاليون حقهم، جاز للشريك البائع نقل حصته إلى المشتري المقترح، رهناً بالحصول على موافقة خطية مسبقة من الشركاء المتبقين، التي لا يجوز حجبها بدون مبرر معقول.",
+      ],
+    },
+    {
+      headingEn: "11. Voluntary Withdrawal",
+      headingAr: "11. الانسحاب الطوعي",
+      paragraphsEn: [
+        "Any Partner wishing to withdraw from the Partnership must give {notice_exit_days} days' prior written notice to all other Partners.",
+        "Upon withdrawal, the withdrawing Partner's interest shall be valued on the basis of: {buyout_valuation}. The remaining Partners shall pay the agreed or determined value within sixty (60) days of the valuation date, either from Partnership funds or from personal funds.",
+        "A withdrawing Partner remains liable for all Partnership obligations arising before their effective withdrawal date.",
+      ],
+      paragraphsAr: [
+        "يجب على أي شريك يرغب في الانسحاب من الشراكة تقديم إشعار خطي مسبق مدته {notice_exit_days} يوماً لجميع الشركاء الآخرين.",
+        "عند الانسحاب، تُقيَّم حصة الشريك المنسحب على أساس: {buyout_valuation}. يدفع الشركاء المتبقون القيمة المتفق عليها أو المحددة خلال ستين (60) يوماً من تاريخ التقييم، سواء من أموال الشراكة أو من أموالهم الشخصية.",
+        "يبقى الشريك المنسحب مسؤولاً عن جميع التزامات الشراكة الناشئة قبل تاريخ انسحابه الفعلي.",
+      ],
+    },
+    {
+      headingEn: "12. Death or Incapacity of a Partner",
+      headingAr: "12. وفاة الشريك أو عجزه",
+      paragraphsEn: [
+        "Upon the death or permanent incapacity of a Partner, the Partnership shall not automatically dissolve. The remaining Partners shall have the option to:",
+        "  (a) purchase the deceased/incapacitated Partner's interest from their estate or legal representative at the valuation determined under Clause 11; or",
+        "  (b) admit the estate's nominated representative as a Partner by unanimous consent; or",
+        "  (c) dissolve the Partnership in accordance with Clause 13.",
+        "The remaining Partners must notify the estate or legal representative of their chosen option within sixty (60) days of the death or declaration of permanent incapacity.",
+      ],
+      paragraphsAr: [
+        "لا تنحل الشراكة تلقائياً عند وفاة أحد الشركاء أو عجزه الدائم. يحق للشركاء المتبقين:",
+        "  (أ) شراء حصة الشريك المتوفى / العاجز من تركته أو ممثله القانوني بالتقييم المحدد بموجب البند 11؛ أو",
+        "  (ب) قبول الممثل المرشح من قِبَل التركة شريكاً بالإجماع؛ أو",
+        "  (ج) تصفية الشراكة وفقاً للبند 13.",
+        "يجب على الشركاء المتبقين إخطار التركة أو الممثل القانوني بالخيار المختار خلال ستين (60) يوماً من تاريخ الوفاة أو الإعلان عن العجز الدائم.",
+      ],
+    },
+    {
+      headingEn: "13. Dissolution and Winding Up",
+      headingAr: "13. التصفية والإنهاء",
+      paragraphsEn: [
+        "The Partnership may be dissolved by unanimous written agreement of all Partners at any time.",
+        "Upon dissolution: (a) Partnership affairs shall be wound up in an orderly manner; (b) Partnership assets shall first be applied to discharge all liabilities and creditors; (c) any surplus shall be distributed to Partners in proportion to their ownership shares after repayment of capital contributions.",
+        "The Partners shall appoint a liquidator by unanimous agreement. If no agreement is reached, a liquidator shall be appointed by the competent Omani court. The liquidation shall be conducted in accordance with the Commercial Companies Law (Royal Decree 18/2019).",
+      ],
+      paragraphsAr: [
+        "يجوز تصفية الشراكة بموافقة خطية بالإجماع من جميع الشركاء في أي وقت.",
+        "عند التصفية: (أ) تُصفَّى شؤون الشراكة بصورة منظمة؛ (ب) تُخصَّص أصول الشراكة أولاً لسداد جميع الالتزامات والدائنين؛ (ج) يُوزَّع أي فائض على الشركاء بنسبة حصصهم في الملكية بعد استرداد مساهمات رأس المال.",
+        "يعيّن الشركاء مصفياً بالإجماع. وإن لم يُتوصَّل إلى اتفاق، عيّنت المحكمة العمانية المختصة مصفياً. تُجرى عملية التصفية وفقاً لقانون الشركات التجارية (المرسوم السلطاني 18/2019).",
+      ],
+    },
+    {
+      headingEn: "14. Governing Law and Signatures",
+      headingAr: "14. القانون الحاكم والتوقيعات",
+      paragraphsEn: [
+        "This Agreement shall be governed by the laws of the Sultanate of Oman, in particular the Commercial Companies Law (Royal Decree 18/2019) and the Civil Transactions Law (Royal Decree 29/2013). Any dispute shall be referred to the competent courts of the Sultanate of Oman.",
+        "This Agreement has been executed in two original bilingual copies, one retained by each Party. In case of any discrepancy between the Arabic and English versions, the Arabic version shall prevail.",
+        " ",
+        "PARTNER A",
+        "Name: {partner_a_name}",
+        "Civil ID / CR: {partner_a_id}",
+        "Signature: _________________________   Date: _________________",
+        " ",
+        "PARTNER B",
+        "Name: {partner_b_name}",
+        "Civil ID / CR: {partner_b_id}",
+        "Signature: _________________________   Date: _________________",
+      ],
+      paragraphsAr: [
+        "يخضع هذا العقد لقوانين سلطنة عُمان، وعلى وجه الخصوص قانون الشركات التجارية (المرسوم السلطاني 18/2019) وقانون المعاملات المدنية (المرسوم السلطاني 29/2013). يُحال أي نزاع إلى المحاكم المختصة في سلطنة عُمان.",
+        "تم تحرير هذا العقد من نسختين أصليتين ثنائيتي اللغة، يحتفظ كل طرف بنسخة. في حال وجود أي تعارض بين النسختين العربية والإنجليزية، تكون النسخة العربية هي السائدة.",
+        " ",
+        "الشريك الأول",
+        "الاسم: {partner_a_name}",
+        "الهوية / السجل التجاري: {partner_a_id}",
+        "التوقيع: _________________________   التاريخ: _________________",
+        " ",
+        "الشريك الثاني",
+        "الاسم: {partner_b_name}",
+        "الهوية / السجل التجاري: {partner_b_id}",
+        "التوقيع: _________________________   التاريخ: _________________",
+      ],
+    },
+  ],
+};

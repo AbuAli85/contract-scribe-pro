@@ -7,6 +7,8 @@ import { NDA_CONTENT } from "./nda";
 import { SERVICE_AGREEMENT_CONTENT } from "./service-agreement";
 import { TENANCY_CONTENT } from "./tenancy";
 import { NOC_ROP_CONTENT } from "./noc-rop";
+import { PARTNERSHIP_CONTENT } from "./partnership";
+import { FREELANCE_CONTENT } from "./freelance";
 
 const REGISTRY: Record<string, TemplateContent> = {
   [EMPLOYMENT_CONTENT.id]: EMPLOYMENT_CONTENT,
@@ -14,7 +16,8 @@ const REGISTRY: Record<string, TemplateContent> = {
   [SERVICE_AGREEMENT_CONTENT.id]: SERVICE_AGREEMENT_CONTENT,
   [TENANCY_CONTENT.id]: TENANCY_CONTENT,
   [NOC_ROP_CONTENT.id]: NOC_ROP_CONTENT,
-  // Add other templates here as authored:
+  [PARTNERSHIP_CONTENT.id]: PARTNERSHIP_CONTENT,
+  [FREELANCE_CONTENT.id]: FREELANCE_CONTENT,
 };
 
 export const getTemplateContent = (
