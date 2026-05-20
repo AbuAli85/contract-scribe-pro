@@ -1,0 +1,541 @@
+// =============================================================
+// Residential Tenancy Agreement — Bilingual, Oman Law
+// Authority: Tenancy Law (Royal Decree 6/1989) and amendments
+//            Civil Transactions Law (Royal Decree 29/2013)
+//            Municipality regulations for rental registration
+//
+// Standard residential tenancy used across Oman. Covers rent,
+// deposit, maintenance obligations, utility responsibilities,
+// permitted use, alterations, sub-letting prohibition,
+// renewal options, and eviction grounds.
+//
+// 22 fields across 6 steps · 14 clauses
+// =============================================================
+
+import type { TemplateContent } from "./types";
+
+export const TENANCY_CONTENT: TemplateContent = {
+  id: "tenancy",
+  subtitleEn: "Residential Tenancy Agreement — Sultanate of Oman",
+  subtitleAr: "عقد إيجار سكني — سلطنة عُمان",
+
+  fields: [
+    // — Landlord
+    {
+      key: "landlord_name",
+      group: "Landlord",
+      groupAr: "المؤجر",
+      labelEn: "Landlord Full Name",
+      labelAr: "الاسم الكامل للمؤجر",
+      type: "text",
+      required: true,
+      placeholderEn: "Mohammed Saif Al-Busaidi",
+      placeholderAr: "محمد سيف البوسعيدي",
+    },
+    {
+      key: "landlord_id",
+      group: "Landlord",
+      groupAr: "المؤجر",
+      labelEn: "Landlord Civil ID / CR No.",
+      labelAr: "رقم الهوية الشخصية / السجل التجاري للمؤجر",
+      type: "text",
+      required: true,
+      placeholderEn: "12345678",
+    },
+    {
+      key: "landlord_address",
+      group: "Landlord",
+      groupAr: "المؤجر",
+      labelEn: "Landlord Correspondence Address",
+      labelAr: "عنوان المراسلة للمؤجر",
+      type: "textarea",
+      required: true,
+      placeholderEn: "P.O. Box 123, Al Qurum, Muscat, Sultanate of Oman",
+      placeholderAr: "ص.ب 123، القرم، مسقط، سلطنة عُمان",
+    },
+    {
+      key: "landlord_phone",
+      group: "Landlord",
+      groupAr: "المؤجر",
+      labelEn: "Landlord Phone Number",
+      labelAr: "رقم هاتف المؤجر",
+      type: "phone",
+      required: true,
+      placeholderEn: "+968 9X XXX XXX",
+    },
+
+    // — Tenant
+    {
+      key: "tenant_name",
+      group: "Tenant",
+      groupAr: "المستأجر",
+      labelEn: "Tenant Full Name",
+      labelAr: "الاسم الكامل للمستأجر",
+      type: "text",
+      required: true,
+      placeholderEn: "Ahmed Yusuf Al-Harthi",
+      placeholderAr: "أحمد يوسف الحارثي",
+    },
+    {
+      key: "tenant_nationality",
+      group: "Tenant",
+      groupAr: "المستأجر",
+      labelEn: "Tenant Nationality",
+      labelAr: "جنسية المستأجر",
+      type: "text",
+      required: true,
+      placeholderEn: "Omani",
+      placeholderAr: "عُماني",
+    },
+    {
+      key: "tenant_id",
+      group: "Tenant",
+      groupAr: "المستأجر",
+      labelEn: "Tenant Civil ID / Passport No.",
+      labelAr: "رقم الهوية / جواز السفر للمستأجر",
+      type: "text",
+      required: true,
+    },
+    {
+      key: "tenant_phone",
+      group: "Tenant",
+      groupAr: "المستأجر",
+      labelEn: "Tenant Phone Number",
+      labelAr: "رقم هاتف المستأجر",
+      type: "phone",
+      required: true,
+      placeholderEn: "+968 9X XXX XXX",
+    },
+
+    // — Property
+    {
+      key: "property_address",
+      group: "Property",
+      groupAr: "العقار",
+      labelEn: "Property Full Address",
+      labelAr: "العنوان الكامل للعقار",
+      type: "textarea",
+      required: true,
+      placeholderEn:
+        "Villa No. 45, Way 3210, Al Khuwair 33, Muscat, Sultanate of Oman",
+      placeholderAr:
+        "فيلا رقم 45، طريق 3210، الخوير 33، مسقط، سلطنة عُمان",
+    },
+    {
+      key: "property_type",
+      group: "Property",
+      groupAr: "العقار",
+      labelEn: "Property Type",
+      labelAr: "نوع العقار",
+      type: "select",
+      required: true,
+      defaultValue: "villa",
+      options: [
+        { value: "villa",     labelEn: "Villa",           labelAr: "فيلا" },
+        { value: "apartment", labelEn: "Apartment / Flat", labelAr: "شقة" },
+        { value: "townhouse", labelEn: "Townhouse",        labelAr: "تاون هاوس" },
+        { value: "studio",    labelEn: "Studio",           labelAr: "استوديو" },
+      ],
+    },
+    {
+      key: "property_bedrooms",
+      group: "Property",
+      groupAr: "العقار",
+      labelEn: "Number of Bedrooms",
+      labelAr: "عدد غرف النوم",
+      type: "select",
+      required: true,
+      defaultValue: "2",
+      options: [
+        { value: "studio", labelEn: "Studio / 0 BR", labelAr: "استوديو / 0 غرف" },
+        { value: "1",      labelEn: "1 Bedroom",     labelAr: "غرفة نوم واحدة" },
+        { value: "2",      labelEn: "2 Bedrooms",    labelAr: "غرفتا نوم" },
+        { value: "3",      labelEn: "3 Bedrooms",    labelAr: "3 غرف نوم" },
+        { value: "4+",     labelEn: "4+ Bedrooms",   labelAr: "4 غرف نوم أو أكثر" },
+      ],
+    },
+
+    // — Lease Terms
+    {
+      key: "start_date",
+      group: "Lease Terms",
+      groupAr: "شروط الإيجار",
+      labelEn: "Tenancy Start Date",
+      labelAr: "تاريخ بدء الإيجار",
+      type: "date",
+      required: true,
+    },
+    {
+      key: "lease_duration",
+      group: "Lease Terms",
+      groupAr: "شروط الإيجار",
+      labelEn: "Lease Duration",
+      labelAr: "مدة عقد الإيجار",
+      type: "select",
+      required: true,
+      defaultValue: "12",
+      options: [
+        { value: "6",  labelEn: "6 months",  labelAr: "6 أشهر" },
+        { value: "12", labelEn: "1 year",     labelAr: "سنة واحدة" },
+        { value: "24", labelEn: "2 years",    labelAr: "سنتان" },
+        { value: "36", labelEn: "3 years",    labelAr: "ثلاث سنوات" },
+      ],
+      helperEn: "Most common: 1 year with option to renew.",
+      helperAr: "الأكثر شيوعاً: سنة واحدة مع خيار التجديد.",
+    },
+    {
+      key: "annual_rent",
+      group: "Lease Terms",
+      groupAr: "شروط الإيجار",
+      labelEn: "Annual Rent (OMR)",
+      labelAr: "الإيجار السنوي (ر.ع)",
+      type: "currency-omr",
+      required: true,
+      placeholderEn: "3600.000",
+      helperEn: "Enter the total annual amount (not monthly).",
+      helperAr: "أدخل المبلغ السنوي الإجمالي (وليس الشهري).",
+    },
+    {
+      key: "payment_frequency",
+      group: "Lease Terms",
+      groupAr: "شروط الإيجار",
+      labelEn: "Rent Payment Frequency",
+      labelAr: "دورية دفع الإيجار",
+      type: "select",
+      required: true,
+      defaultValue: "quarterly",
+      options: [
+        { value: "monthly",   labelEn: "Monthly",    labelAr: "شهرياً" },
+        { value: "quarterly", labelEn: "Quarterly",  labelAr: "ربع سنوياً" },
+        { value: "biannual",  labelEn: "Bi-annual",  labelAr: "نصف سنوياً" },
+        { value: "annual",    labelEn: "Annual lump sum", labelAr: "دفعة واحدة سنوياً" },
+      ],
+    },
+    {
+      key: "payment_method",
+      group: "Lease Terms",
+      groupAr: "شروط الإيجار",
+      labelEn: "Payment Method",
+      labelAr: "طريقة الدفع",
+      type: "select",
+      required: true,
+      defaultValue: "bank_transfer",
+      options: [
+        { value: "bank_transfer", labelEn: "Bank transfer", labelAr: "تحويل بنكي" },
+        { value: "cheque",        labelEn: "Cheque",         labelAr: "شيك" },
+        { value: "cash",          labelEn: "Cash (receipt required)", labelAr: "نقداً (يُشترط إيصال)" },
+      ],
+    },
+
+    // — Deposit & Utilities
+    {
+      key: "security_deposit",
+      group: "Deposit & Utilities",
+      groupAr: "الوديعة والخدمات",
+      labelEn: "Security Deposit (OMR)",
+      labelAr: "مبلغ التأمين (ر.ع)",
+      type: "currency-omr",
+      required: true,
+      placeholderEn: "300.000",
+      helperEn: "Typically one month's rent. Refundable minus deductions.",
+      helperAr: "عادةً ما يعادل إيجار شهر واحد. قابل للاسترداد بعد خصم أي استقطاعات.",
+    },
+    {
+      key: "utilities_responsibility",
+      group: "Deposit & Utilities",
+      groupAr: "الوديعة والخدمات",
+      labelEn: "Utilities (MEDC/OTASCO, water, internet)",
+      labelAr: "الخدمات (كهرباء/ماء/إنترنت)",
+      type: "select",
+      required: true,
+      defaultValue: "tenant",
+      options: [
+        {
+          value: "tenant",
+          labelEn: "Tenant pays all utilities",
+          labelAr: "المستأجر يدفع جميع الخدمات",
+        },
+        {
+          value: "landlord",
+          labelEn: "Landlord pays all utilities (included in rent)",
+          labelAr: "المؤجر يدفع جميع الخدمات (مشمولة في الإيجار)",
+        },
+        {
+          value: "split",
+          labelEn: "Tenant pays electricity & water; Landlord pays service charges",
+          labelAr: "المستأجر يدفع الكهرباء والماء؛ المؤجر يدفع رسوم الخدمات",
+        },
+      ],
+    },
+
+    // — Termination & Renewal
+    {
+      key: "notice_days",
+      group: "Termination & Renewal",
+      groupAr: "الإنهاء والتجديد",
+      labelEn: "Notice Period to Vacate (days)",
+      labelAr: "فترة الإشعار للإخلاء (أيام)",
+      type: "select",
+      required: true,
+      defaultValue: "60",
+      options: [
+        { value: "30", labelEn: "30 days", labelAr: "30 يوماً" },
+        { value: "60", labelEn: "60 days (recommended)", labelAr: "60 يوماً (موصى به)" },
+        { value: "90", labelEn: "90 days", labelAr: "90 يوماً" },
+      ],
+      helperEn: "Notice required from either party to end the tenancy.",
+      helperAr: "الإشعار المطلوب من أي من الطرفين لإنهاء الإيجار.",
+    },
+    {
+      key: "renewal_option",
+      group: "Termination & Renewal",
+      groupAr: "الإنهاء والتجديد",
+      labelEn: "Renewal Option",
+      labelAr: "خيار التجديد",
+      type: "select",
+      required: true,
+      defaultValue: "mutual",
+      options: [
+        {
+          value: "mutual",
+          labelEn: "Renew by mutual written agreement",
+          labelAr: "التجديد باتفاق خطي متبادل",
+        },
+        {
+          value: "auto",
+          labelEn: "Auto-renew for same term if no notice given",
+          labelAr: "تجديد تلقائي لنفس المدة إن لم يُعطَ إشعار",
+        },
+      ],
+    },
+  ],
+
+  clauses: [
+    {
+      headingEn: "1. Parties",
+      headingAr: "1. الأطراف",
+      paragraphsEn: [
+        "This Residential Tenancy Agreement (\"Agreement\") is entered into between:",
+        "{landlord_name}, holder of Civil ID / CR No. {landlord_id}, with correspondence address at {landlord_address}, contact: {landlord_phone} (\"Landlord\"); and",
+        "{tenant_name}, a {tenant_nationality} national, holder of Civil ID / Passport No. {tenant_id}, contact: {tenant_phone} (\"Tenant\").",
+        "The Landlord hereby leases the Property described herein to the Tenant on the terms and conditions set out below.",
+      ],
+      paragraphsAr: [
+        "تم إبرام عقد الإيجار السكني هذا (\"العقد\") بين:",
+        "{landlord_name}، حامل الهوية الشخصية / السجل التجاري رقم {landlord_id}، عنوان المراسلة: {landlord_address}، للتواصل: {landlord_phone} (\"المؤجر\")؛ و",
+        "{tenant_name}، {tenant_nationality} الجنسية، حامل الهوية الشخصية / جواز السفر رقم {tenant_id}، للتواصل: {tenant_phone} (\"المستأجر\").",
+        "يؤجر المؤجر بموجب هذا العقار الموصوف أدناه للمستأجر وفق الشروط والأحكام المنصوص عليها.",
+      ],
+    },
+    {
+      headingEn: "2. Property",
+      headingAr: "2. العقار",
+      paragraphsEn: [
+        "The Landlord agrees to let to the Tenant the following property (\"Property\"):",
+        "Address: {property_address}",
+        "Type: {property_type} | Bedrooms: {property_bedrooms}",
+        "The Property is let for residential use only. The Tenant shall occupy the Property as a private residence and shall not conduct any commercial, industrial, or professional activities therein without the prior written consent of the Landlord.",
+      ],
+      paragraphsAr: [
+        "يوافق المؤجر على تأجير العقار التالي (\"العقار\") للمستأجر:",
+        "العنوان: {property_address}",
+        "النوع: {property_type} | غرف النوم: {property_bedrooms}",
+        "يُؤجَّر العقار للاستخدام السكني فقط. يلتزم المستأجر بسكن العقار كمسكن خاص ولا يجوز له ممارسة أي نشاط تجاري أو صناعي أو مهني فيه دون الحصول على موافقة خطية مسبقة من المؤجر.",
+      ],
+    },
+    {
+      headingEn: "3. Term",
+      headingAr: "3. مدة العقد",
+      paragraphsEn: [
+        "The tenancy shall commence on {start_date} and shall continue for a fixed term of {lease_duration} month(s) (\"Initial Term\"), unless sooner terminated in accordance with this Agreement.",
+        "Upon expiry of the Initial Term, the tenancy shall be governed by the renewal provisions in Clause 13.",
+      ],
+      paragraphsAr: [
+        "يبدأ عقد الإيجار في {start_date} ويستمر لمدة ثابتة قدرها {lease_duration} شهراً (\"المدة الابتدائية\")، ما لم يُنهَ قبل ذلك وفقاً لهذا العقد.",
+        "عند انتهاء المدة الابتدائية، يخضع عقد الإيجار لأحكام التجديد الواردة في البند 13.",
+      ],
+    },
+    {
+      headingEn: "4. Rent",
+      headingAr: "4. الإيجار",
+      paragraphsEn: [
+        "The Tenant agrees to pay the Landlord an annual rent of {annual_rent} Omani Rials (OMR).",
+        "Rent shall be paid {payment_frequency}, by {payment_method}. Each instalment shall be due on the first day of the relevant payment period. Rent shall be paid without set-off, deduction, or counterclaim.",
+        "If the Tenant fails to pay rent within seven (7) days of the due date, the Landlord may serve a written notice to remedy. Persistent non-payment constitutes grounds for termination under Clause 12.",
+      ],
+      paragraphsAr: [
+        "يوافق المستأجر على دفع إيجار سنوي للمؤجر بمبلغ {annual_rent} ريال عماني (ر.ع).",
+        "يُدفع الإيجار {payment_frequency} عن طريق {payment_method}. يستحق كل قسط في اليوم الأول من فترة الدفع المعنية. يُدفع الإيجار دون أي مقاصة أو استقطاع أو مطالبة مضادة.",
+        "إذا أخفق المستأجر في دفع الإيجار خلال سبعة (7) أيام من تاريخ الاستحقاق، جاز للمؤجر توجيه إشعار خطي للتصحيح. يُعدّ التأخر المتكرر في الدفع سبباً للإنهاء بموجب البند 12.",
+      ],
+    },
+    {
+      headingEn: "5. Security Deposit",
+      headingAr: "5. مبلغ التأمين",
+      paragraphsEn: [
+        "The Tenant shall pay a refundable security deposit of {security_deposit} OMR upon signing this Agreement. The deposit shall be held by the Landlord as security against: (a) unpaid rent; (b) damage to the Property beyond fair wear and tear; (c) unpaid utility bills registered to the Tenant; and (d) any breach of this Agreement.",
+        "Within thirty (30) days of the Tenant vacating the Property and returning the keys, the Landlord shall refund the deposit in full or provide an itemised written statement of deductions. The Landlord may not retain the deposit for fair wear and tear resulting from normal residential use.",
+      ],
+      paragraphsAr: [
+        "يدفع المستأجر مبلغ تأمين قابلاً للاسترداد بقيمة {security_deposit} ر.ع عند توقيع هذا العقد. يحتفظ المؤجر بمبلغ التأمين ضماناً لـ: (أ) الإيجار غير المدفوع؛ (ب) الأضرار التي تلحق بالعقار تتجاوز الاهتراء الطبيعي المعقول؛ (ج) فواتير الخدمات غير المسددة المسجلة باسم المستأجر؛ و(د) أي انتهاك لهذا العقد.",
+        "خلال ثلاثين (30) يوماً من إخلاء المستأجر للعقار وتسليم المفاتيح، يُعيد المؤجر مبلغ التأمين كاملاً أو يقدم بيان خطي مفصّل بالاستقطاعات. لا يجوز للمؤجر الاحتفاظ بمبلغ التأمين جراء الاهتراء الطبيعي الناتج عن الاستخدام السكني الاعتيادي.",
+      ],
+    },
+    {
+      headingEn: "6. Utilities and Services",
+      headingAr: "6. الخدمات والمرافق",
+      paragraphsEn: [
+        "Responsibility for utilities: {utilities_responsibility}.",
+        "The Tenant shall ensure that electricity and water accounts (MEDC / OTASCO / Oman Water) are transferred to the Tenant's name within fourteen (14) days of the commencement date, unless the Landlord has agreed to retain them.",
+        "The Tenant shall not allow any utility account to fall into arrears. Upon vacating, the Tenant shall provide final meter readings and settlement receipts to the Landlord.",
+      ],
+      paragraphsAr: [
+        "مسؤولية الخدمات والمرافق: {utilities_responsibility}.",
+        "يلتزم المستأجر بنقل حسابات الكهرباء والمياه (شركة MEDC / الطاقة والماء / مياه عُمان) إلى اسمه خلال أربعة عشر (14) يوماً من تاريخ بدء العقد، ما لم يتفق المؤجر على الاحتفاظ بها.",
+        "لا يجوز للمستأجر السماح بتراكم متأخرات على أي حساب خدمة. عند الإخلاء، يُقدم المستأجر للمؤجر قراءات العداد النهائية وإيصالات التسوية.",
+      ],
+    },
+    {
+      headingEn: "7. Tenant Obligations",
+      headingAr: "7. التزامات المستأجر",
+      paragraphsEn: [
+        "The Tenant shall:",
+        "(a) keep the Property in a clean and tidy condition and free from rubbish;",
+        "(b) promptly report to the Landlord any defect, damage, or required repair;",
+        "(c) not carry out any structural alterations, additions, or installations without the prior written consent of the Landlord;",
+        "(d) not sub-let, assign, or part with possession of the Property or any part thereof without the prior written consent of the Landlord;",
+        "(e) not use the Property for any unlawful purpose or in any manner that causes nuisance to neighbours;",
+        "(f) comply with all applicable laws, regulations, and Municipality rules relating to the use and occupation of the Property;",
+        "(g) permit the Landlord, upon reasonable notice (minimum 48 hours except in emergency), to enter and inspect the Property.",
+      ],
+      paragraphsAr: [
+        "يلتزم المستأجر بـ:",
+        "(أ) المحافظة على نظافة العقار وترتيبه وخلوّه من القمامة؛",
+        "(ب) الإبلاغ الفوري للمؤجر عن أي عيب أو ضرر أو صيانة مطلوبة؛",
+        "(ج) عدم إجراء أي تعديلات هيكلية أو إضافات أو تركيبات دون الحصول على موافقة خطية مسبقة من المؤجر؛",
+        "(د) عدم التأجير من الباطن أو التنازل عن حيازة العقار أو أي جزء منه دون الحصول على موافقة خطية مسبقة من المؤجر؛",
+        "(هـ) عدم استخدام العقار لأي غرض غير مشروع أو بأي طريقة تُزعج الجيران؛",
+        "(و) الامتثال لجميع القوانين واللوائح وقواعد البلدية المتعلقة باستخدام العقار والإقامة فيه؛",
+        "(ز) السماح للمؤجر، بعد إشعار معقول (لا يقل عن 48 ساعة إلا في حالات الطوارئ)، بدخول العقار وتفتيشه.",
+      ],
+    },
+    {
+      headingEn: "8. Landlord Obligations",
+      headingAr: "8. التزامات المؤجر",
+      paragraphsEn: [
+        "The Landlord shall:",
+        "(a) deliver the Property to the Tenant in a clean, habitable condition on the commencement date;",
+        "(b) be responsible for structural repairs and maintenance of the roof, external walls, foundations, and major building systems (plumbing mains, electrical mains, central AC if provided);",
+        "(c) ensure the Property complies with all applicable building and safety regulations at the commencement of the tenancy;",
+        "(d) not interfere with the Tenant's peaceful enjoyment of the Property during the tenancy, provided the Tenant complies with this Agreement;",
+        "(e) register this Agreement with the competent Municipality in accordance with applicable tenancy registration requirements.",
+      ],
+      paragraphsAr: [
+        "يلتزم المؤجر بـ:",
+        "(أ) تسليم العقار للمستأجر في حالة نظيفة وصالحة للسكن في تاريخ بدء العقد؛",
+        "(ب) تحمّل مسؤولية الإصلاحات الهيكلية وصيانة السقف والجدران الخارجية والأساسات والأنظمة الرئيسية للمبنى (الصرف الصحي الرئيسي، الكهرباء الرئيسية، نظام التكييف المركزي إن وُجد)؛",
+        "(ج) التأكد من امتثال العقار لجميع لوائح البناء والسلامة المعمول بها عند بدء عقد الإيجار؛",
+        "(د) عدم التدخل في التمتع الهادئ للمستأجر بالعقار طوال مدة الإيجار، شريطة امتثال المستأجر لهذا العقد؛",
+        "(هـ) تسجيل هذا العقد لدى البلدية المختصة وفقاً للمتطلبات المعمول بها لتسجيل عقود الإيجار.",
+      ],
+    },
+    {
+      headingEn: "9. Maintenance and Repairs",
+      headingAr: "9. الصيانة والإصلاحات",
+      paragraphsEn: [
+        "Day-to-day maintenance and minor repairs (individual plumbing fixtures, internal paintwork, appliance maintenance, broken glass, door locks) shall be the responsibility of the Tenant.",
+        "Structural repairs and major system failures shall be the responsibility of the Landlord and must be addressed within fourteen (14) days of written notification. In urgent cases affecting habitability, the Landlord must respond within forty-eight (48) hours.",
+        "If the Landlord fails to carry out required repairs within the prescribed period, the Tenant may arrange the repairs and deduct the reasonable cost from the next rent instalment, provided the Tenant first serves written notice and the Landlord fails to act.",
+      ],
+      paragraphsAr: [
+        "الصيانة اليومية والإصلاحات الطفيفة (أدوات السباكة الفردية، الدهانات الداخلية، صيانة الأجهزة، الزجاج المكسور، أقفال الأبواب) من مسؤولية المستأجر.",
+        "الإصلاحات الهيكلية وأعطال الأنظمة الرئيسية من مسؤولية المؤجر ويجب معالجتها خلال أربعة عشر (14) يوماً من الإخطار الخطي. في الحالات الطارئة التي تؤثر على الصلاحية للسكن، يجب على المؤجر الاستجابة خلال ثمانية وأربعين (48) ساعة.",
+        "إذا أخفق المؤجر في إجراء الإصلاحات المطلوبة خلال المهلة المحددة، جاز للمستأجر ترتيب الإصلاحات وخصم التكلفة المعقولة من قسط الإيجار التالي، شريطة أن يُوجّه المستأجر إشعاراً خطياً أولاً ويُخفق المؤجر في التحرك.",
+      ],
+    },
+    {
+      headingEn: "10. Alterations",
+      headingAr: "10. التعديلات",
+      paragraphsEn: [
+        "The Tenant shall not make any structural or permanent alterations, additions, or improvements to the Property without the prior written consent of the Landlord. Minor cosmetic changes (hanging pictures, installing curtain rails) are permitted provided no structural damage is caused.",
+        "Any approved alterations shall, at the Landlord's option exercised at the end of the tenancy, either remain as improvements to the Property or be removed by the Tenant at the Tenant's cost with the Property restored to its original condition.",
+      ],
+      paragraphsAr: [
+        "لا يجوز للمستأجر إجراء أي تعديلات هيكلية أو دائمة أو إضافات أو تحسينات على العقار دون الحصول على موافقة خطية مسبقة من المؤجر. يُسمح بالتغييرات التجميلية الطفيفة (تعليق الصور، تركيب قضبان الستائر) شريطة ألا تتسبب في أي ضرر هيكلي.",
+        "أي تعديلات معتمدة يجوز للمؤجر، وفق اختياره عند نهاية الإيجار، إما الإبقاء عليها كتحسينات للعقار أو إزالتها من قِبَل المستأجر على نفقته مع استعادة العقار لحالته الأصلية.",
+      ],
+    },
+    {
+      headingEn: "11. Insurance",
+      headingAr: "11. التأمين",
+      paragraphsEn: [
+        "The Landlord shall maintain adequate building insurance for the structure of the Property. Such insurance does not cover the Tenant's personal contents or belongings.",
+        "The Tenant is strongly advised to obtain contents and personal liability insurance to protect their personal possessions and against third-party claims arising from their occupation of the Property.",
+      ],
+      paragraphsAr: [
+        "يلتزم المؤجر بالحفاظ على تأمين كافٍ على المبنى يشمل هيكل العقار. ولا يغطي هذا التأمين محتويات المستأجر أو ممتلكاته الشخصية.",
+        "يُنصح المستأجر بشدة بالحصول على تأمين على المحتويات والمسؤولية الشخصية لحماية ممتلكاته الشخصية وضد المطالبات من الأطراف الثالثة الناشئة عن إقامته في العقار.",
+      ],
+    },
+    {
+      headingEn: "12. Termination",
+      headingAr: "12. الإنهاء",
+      paragraphsEn: [
+        "Either party may terminate this Agreement at the end of the Initial Term or any renewal period by giving {notice_days} days' prior written notice to the other party.",
+        "The Landlord may terminate this Agreement immediately, without notice, if the Tenant: (a) fails to pay rent for thirty (30) or more consecutive days; (b) sub-lets the Property without consent; (c) uses the Property for unlawful purposes; (d) causes serious or wilful damage to the Property; or (e) is convicted of a criminal offence at or related to the Property.",
+        "Upon termination, the Tenant shall vacate the Property, remove all personal belongings, and return all keys in good condition. The Property shall be returned in the same condition as received, subject to fair wear and tear.",
+      ],
+      paragraphsAr: [
+        "يحق لأي من الطرفين إنهاء هذا العقد عند انتهاء المدة الابتدائية أو أي فترة تجديد بتقديم إشعار خطي مسبق مدته {notice_days} يوماً للطرف الآخر.",
+        "يجوز للمؤجر إنهاء هذا العقد فوراً دون إشعار إذا قام المستأجر بـ: (أ) الإخفاق في دفع الإيجار لمدة ثلاثين (30) يوماً متتالية أو أكثر؛ (ب) التأجير من الباطن دون موافقة؛ (ج) استخدام العقار لأغراض غير مشروعة؛ (د) التسبب في أضرار جسيمة أو متعمدة للعقار؛ أو (هـ) إدانته بجريمة جنائية في العقار أو متعلقة به.",
+        "عند الإنهاء، يُخلي المستأجر العقار ويُزيل جميع ممتلكاته الشخصية ويُعيد جميع المفاتيح في حالة جيدة. يُسلَّم العقار بالحالة ذاتها التي استُلم بها، مع مراعاة الاهتراء الطبيعي المعقول.",
+      ],
+    },
+    {
+      headingEn: "13. Renewal",
+      headingAr: "13. التجديد",
+      paragraphsEn: [
+        "Renewal option: {renewal_option}.",
+        "Where renewal is by mutual written agreement: the Parties shall discuss renewal terms no later than sixty (60) days before the expiry of the Initial Term. Any renewed tenancy shall be subject to the terms agreed at that time, which may include a rent adjustment.",
+        "Where auto-renewal applies: if neither Party serves a notice to terminate by the required notice period before expiry, this Agreement shall automatically renew for the same term at the same rent, unless otherwise agreed in writing.",
+        "Rent increases on renewal shall not exceed the percentage cap stipulated by the competent Omani authority (Ministry of Housing / Municipality) at the time of renewal, where applicable.",
+      ],
+      paragraphsAr: [
+        "خيار التجديد: {renewal_option}.",
+        "في حالة التجديد بموافقة خطية متبادلة: يتباحث الطرفان بشأن شروط التجديد في موعد أقصاه ستون (60) يوماً قبل انتهاء المدة الابتدائية. يخضع أي عقد إيجار مجدّد للشروط المتفق عليها في ذلك الوقت، والتي قد تتضمن تعديل الإيجار.",
+        "في حالة التجديد التلقائي: إذا لم يُوجّه أي طرف إشعاراً بالإنهاء خلال فترة الإشعار المطلوبة قبل انتهاء العقد، يُجدَّد هذا العقد تلقائياً لنفس المدة وبنفس الإيجار، ما لم يُتفق على خلاف ذلك كتابةً.",
+        "لا تتجاوز زيادات الإيجار عند التجديد النسبة المحددة من قِبَل الجهة العمانية المختصة (وزارة الإسكان / البلدية) وقت التجديد، حيثما ينطبق ذلك.",
+      ],
+    },
+    {
+      headingEn: "14. Signatures",
+      headingAr: "14. التوقيعات",
+      paragraphsEn: [
+        "This Agreement has been executed in two original bilingual copies, each Party retaining one copy. In case of any discrepancy between the Arabic and English versions, the Arabic version shall prevail. This Agreement shall be governed by the laws of the Sultanate of Oman.",
+        " ",
+        "LANDLORD",
+        "Name: {landlord_name}",
+        "Civil ID / CR: {landlord_id}",
+        "Signature: _________________________   Date: _________________",
+        " ",
+        "TENANT",
+        "Name: {tenant_name}",
+        "Civil ID / Passport: {tenant_id}",
+        "Signature: _________________________   Date: _________________",
+      ],
+      paragraphsAr: [
+        "تم تحرير هذا العقد من نسختين أصليتين ثنائيتي اللغة، يحتفظ كل طرف بنسخة. في حال وجود أي تعارض بين النسختين العربية والإنجليزية، تكون النسخة العربية هي السائدة. يخضع هذا العقد لقوانين سلطنة عُمان.",
+        " ",
+        "المؤجر",
+        "الاسم: {landlord_name}",
+        "الهوية / السجل التجاري: {landlord_id}",
+        "التوقيع: _________________________   التاريخ: _________________",
+        " ",
+        "المستأجر",
+        "الاسم: {tenant_name}",
+        "الهوية / جواز السفر: {tenant_id}",
+        "التوقيع: _________________________   التاريخ: _________________",
+      ],
+    },
+  ],
+};
