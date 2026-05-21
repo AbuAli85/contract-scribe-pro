@@ -740,11 +740,11 @@ export default function RecordDetail() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <Label className="text-xs">Start date</Label>
-                      <Input type="date" value={editStart} onChange={e => setEditStart(e.target.value)} />
+                      <Input type="date" lang="en-GB" value={editStart} onChange={e => setEditStart(e.target.value)} />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs">End date</Label>
-                      <Input type="date" value={editEnd} onChange={e => setEditEnd(e.target.value)} />
+                      <Input type="date" lang="en-GB" value={editEnd} onChange={e => setEditEnd(e.target.value)} />
                     </div>
                   </div>
                 </CardContent>
@@ -758,6 +758,7 @@ export default function RecordDetail() {
                     <span className="text-xs text-muted-foreground w-44 flex-shrink-0 leading-tight">{humanizeKey(k)}</span>
                     <Input
                       type={isDateK ? "date" : "text"}
+                      lang={isDateK ? "en-GB" : undefined}
                       value={v}
                       dir={isAr ? "rtl" : undefined}
                       className={`h-8 text-sm ${isAr ? "text-right" : ""}`}
@@ -921,7 +922,7 @@ export default function RecordDetail() {
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
               <Label>Termination date</Label>
-              <Input type="date" value={terminateDate} onChange={e => setTerminateDate(e.target.value)} />
+              <Input type="date" lang="en-GB" value={terminateDate} onChange={e => setTerminateDate(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label>Reason (optional)</Label>

@@ -1432,11 +1432,11 @@ export default function NewContract() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label>Start date</Label>
-                    <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                    <Input type="date" lang="en-GB" value={startDate} onChange={e => setStartDate(e.target.value)} />
                   </div>
                   <div className="space-y-1.5">
                     <Label>End date</Label>
-                    <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                    <Input type="date" lang="en-GB" value={endDate} onChange={e => setEndDate(e.target.value)} />
                   </div>
                 </div>
               </div>
