@@ -434,6 +434,18 @@ const MyTemplates = () => {
           </Card>
         )}
 
+        {stage === "review" && scanning && !scan && (
+          <Card>
+            <CardContent className="pt-10 pb-10 flex flex-col items-center gap-3">
+              <Loader2 className="h-10 w-10 text-primary animate-spin" />
+              <div className="font-medium">
+                {isAr ? "يقرأ الذكاء الاصطناعي مستندك..." : "AI is reading your document..."}
+              </div>
+              <div className="text-xs text-muted-foreground">~5-10 seconds</div>
+            </CardContent>
+          </Card>
+        )}
+
         {stage === "review" && scan && (
           <Card>
             <CardHeader>
