@@ -390,8 +390,9 @@ export const TEMPLATES: ContractTemplate[] = [
     descAr: "إيجار عقار تجاري: الإيجار، المدة، قيود الاستخدام، التجهيزات، التجديد.",
     category: "Real Estate",
     icon: "Building2",
-    status: "pro",
-    isPro: true,
+    status: "coming-soon",
+    isPro: false,
+    demand: "High demand from retail + F&B tenants",
   },
   comingSoon(
     "sublease",
@@ -410,8 +411,9 @@ export const TEMPLATES: ContractTemplate[] = [
     descAr: "بيع العقارات: السعر، الوديعة، نقل الملكية، الشروط الأولية.",
     category: "Real Estate",
     icon: "Key",
-    status: "pro",
-    isPro: true,
+    status: "coming-soon",
+    isPro: false,
+    demand: "Asked by property developers",
   },
   comingSoon(
     "property-management",
@@ -656,14 +658,14 @@ export const TEMPLATES: ContractTemplate[] = [
     titleEn: "Full HR Policy Bundle",
     titleAr: "حزمة سياسات الموارد البشرية",
     descEn:
-      "Employee Handbook, Disciplinary, Leave Policy, Code of Conduct. Pro feature.",
+      "Employee Handbook, Disciplinary, Leave Policy, Code of Conduct — full bundle.",
     descAr:
-      "دليل الموظف، سياسة التأديب، سياسة الإجازات، مدونة قواعد السلوك. ميزة Pro.",
+      "دليل الموظف، سياسة التأديب، سياسة الإجازات، مدونة قواعد السلوك — حزمة كاملة.",
     category: "HR Bundle",
     icon: "Star",
-    status: "pro",
-    isPro: true,
-    demand: "Pro upgrade trigger",
+    status: "coming-soon",
+    isPro: false,
+    demand: "Most-requested by HR teams",
   },
 ];
 

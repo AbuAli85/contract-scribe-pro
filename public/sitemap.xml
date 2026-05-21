@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- ── PRIMARY PAGES ─────────────────────────────────────── -->
+  <url>
+    <loc>https://contract-scribe-pro.vercel.app/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://contract-scribe-pro.vercel.app/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://contract-scribe-pro.vercel.app/?lang=ar"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://contract-scribe-pro.vercel.app/"/>
+  </url>
+  <url>
+    <loc>https://contract-scribe-pro.vercel.app/templates</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://contract-scribe-pro.vercel.app/templates?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://contract-scribe-pro.vercel.app/templates?lang=ar"/>
+  </url>
+  <url>
+    <loc>https://contract-scribe-pro.vercel.app/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://contract-scribe-pro.vercel.app/blog/best-contract-tools-oman-2026</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ── READY TEMPLATES (full content, highest SEO priority) ── -->
+  <url>
+    <loc>https://contract-scribe-pro.vercel.app/templates/fill/employment</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://contract-scribe-pro.vercel.app/templates/fill/nda</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://contract-scribe-pro.vercel.app/templates/fill/service-agreement</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://contract-scribe-pro.vercel.app/templates/fill/partnership</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://contract-scribe-pro.vercel.app/templates/fill/msa</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://contract-scribe-pro.vercel.app/templates/fill/tenancy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://contract-scribe-pro.vercel.app/templates/fill/freelance</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://contract-scribe-pro.vercel.app/templates/fill/noc-rop</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ── COMING-SOON TEMPLATES (lower priority but indexable) ── -->
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/offer-letter</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/termination-letter</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/resignation-letter</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/warning-letter</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/promotion-letter</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/salary-certificate</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/experience-letter</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/non-compete</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/sow</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/shareholders</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/joint-venture</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/loi</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/distribution</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/franchise</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/vendor-agreement</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/purchase-order</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/quotation</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/bill-of-sale</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/sales-purchase</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/power-of-attorney</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/affidavit</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/loan-personal</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/permission-travel</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/sponsorship-letter</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/commercial-lease</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/sublease</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/property-sale</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/property-management</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/demand-letter</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/cease-desist</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/authorization-letter</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/complaint-letter</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/recommendation-letter</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/photo-release</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/influencer</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/music-license</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/saas-agreement</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/dpa</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/privacy-policy</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/terms-of-service</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/software-dev</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/noc-employment</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/visa-sponsorship</loc><priority>0.5</priority></url>
+  <url><loc>https://contract-scribe-pro.vercel.app/templates/fill/hr-bundle</loc><priority>0.5</priority></url>
+</urlset>

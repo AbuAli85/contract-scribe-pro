@@ -16,6 +16,8 @@ import TemplateDownload from "./pages/TemplateDownload"
 import FillTemplate from "./pages/FillTemplate"
 import Auth from "./pages/Auth"
 import Upgrade from "./pages/Upgrade"
+import Blog from "./pages/Blog"
+import BlogPost from "./pages/BlogPost"
 
 // Apply print styles globally
 import "./styles/contract-global.css"
@@ -93,6 +95,8 @@ function App() {
           <Route path="/my-templates" element={<MyTemplates />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/upgrade" element={<Upgrade />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

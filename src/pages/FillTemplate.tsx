@@ -22,6 +22,7 @@ import { getTemplateContent, type TemplateField } from "@/lib/templateContent";
 import { downloadFilledContract, generateFilledContract } from "@/utils/docx/generateFilledContract";
 import { sendForSignature, sendViaWhatsApp, type Signer } from "@/lib/signAndShare";
 import { useAuth } from "@/hooks/useAuth";
+import { applySeo, templateHowToSchema } from "@/lib/seo";
 
 const COPY = {
   en: {
@@ -142,6 +143,31 @@ const FillTemplate = () => {
       document.documentElement.dir = prevDir;
     };
   }, [isAr, language]);
+
+  // Per-template SEO: unique title, description, canonical URL, and
+  // JSON-LD HowTo schema so Google can index each template individually
+  // and may render rich result steps in search.
+  useEffect(() => {
+    if (!template || !templateId) return;
+    const titleEn = `${template.titleEn} — Free Bilingual Template (Oman) | Contract Scribe Pro`;
+    const titleAr = `${template.titleAr} — نموذج مجاني ثنائي اللغة (عُمان) | Contract Scribe Pro`;
+    const descEn = `${template.descEn} Download a free bilingual (Arabic + English) ${template.titleEn} aligned with Omani law. Fill, sign, and share in minutes.`;
+    const descAr = `${template.descAr} نزّل ${template.titleAr} مجاناً وثنائي اللغة (عربي + إنجليزي) متوافق مع القانون العماني. عبّئ، وقّع، وشارك في دقائق.`;
+    const cleanup = applySeo({
+      title: isAr ? titleAr : titleEn,
+      description: isAr ? descAr : descEn,
+      canonical: `https://contract-scribe-pro.vercel.app/templates/fill/${templateId}`,
+      ogType: "article",
+      lang: language,
+      jsonLd: templateHowToSchema({
+        name: isAr ? template.titleAr : template.titleEn,
+        description: isAr ? template.descAr : template.descEn,
+        url: `https://contract-scribe-pro.vercel.app/templates/fill/${templateId}`,
+        inLanguage: language,
+      }),
+    });
+    return cleanup;
+  }, [template, templateId, isAr, language]);
 
   // ── Guards ─────────────────────────────────────────────────
   // Order matters: Pro check must fire BEFORE the content-missing check.
