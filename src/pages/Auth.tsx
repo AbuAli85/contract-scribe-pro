@@ -32,9 +32,11 @@ export default function Auth() {
 
   // If already signed in, skip to redirect
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate(redirect, { replace: true });
-    });
+    supabase.auth.getSession()
+      .then(({ data }) => {
+        if (data.session) navigate(redirect, { replace: true });
+      })
+      .catch(() => {});
   }, [navigate, redirect]);
 
   const c = COPY[mode];

@@ -42,15 +42,20 @@ export default function AppLayout() {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (!session) {
+          const dest = window.location.pathname + window.location.search;
+          navigate(`/auth?redirect=${encodeURIComponent(dest)}`, { replace: true });
+        } else {
+          setUserEmail(session.user.email ?? null);
+        }
+        setAuthChecked(true);
+      })
+      .catch(() => {
         const dest = window.location.pathname + window.location.search;
         navigate(`/auth?redirect=${encodeURIComponent(dest)}`, { replace: true });
-      } else {
-        setUserEmail(session.user.email ?? null);
-      }
-      setAuthChecked(true);
-    });
+      });
   }, [navigate]);
 
   if (!authChecked) return null;
