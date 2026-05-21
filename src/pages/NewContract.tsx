@@ -695,7 +695,7 @@ export default function NewContract() {
       if (recErr) throw recErr;
 
       if (docxBlob && record) {
-        const path = `records/${user.id}/${record.id}.docx`;
+        const path = `${user.id}/records/${record.id}.docx`;
         const { error: upErr } = await supabase.storage
           .from("user-templates")
           .upload(path, docxBlob, {

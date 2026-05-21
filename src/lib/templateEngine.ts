@@ -121,6 +121,87 @@ function isDuplicateTagError(err: unknown): boolean {
   return false;
 }
 
+// ── XML run-merger: fixes {{tags}} split across <w:t> elements by Word ──
+
+function countUnbalancedOpens(text: string, start: string, end: string): number {
+  let depth = 0, i = 0;
+  while (i < text.length) {
+    if (text.startsWith(start, i)) { depth++; i += start.length; }
+    else if (text.startsWith(end, i)) { depth--; i += end.length; }
+    else i++;
+  }
+  return depth;
+}
+
+function hasTrailingPartialDelimiter(text: string, delim: string): boolean {
+  for (let n = delim.length - 1; n >= 1; n--) {
+    if (text.endsWith(delim.slice(0, n))) return true;
+  }
+  return false;
+}
+
+function fixXmlRuns(xml: string, startDelim: string, endDelim: string): string {
+  const RE = /(<w:t(?:\s[^>]*)?>)([\s\S]*?)(<\/w:t>)/g;
+  type Wt = { idx: number; len: number; open: string; text: string };
+  const wts: Wt[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = RE.exec(xml)) !== null) {
+    wts.push({ idx: m.index, len: m[0].length, open: m[1], text: m[2] });
+  }
+
+  const groups: Wt[][] = [];
+  let i = 0;
+  while (i < wts.length) {
+    const wt = wts[i];
+    const unbal = countUnbalancedOpens(wt.text, startDelim, endDelim);
+    const partial = hasTrailingPartialDelimiter(wt.text, startDelim);
+    if (unbal > 0 || partial) {
+      const group: Wt[] = [wt];
+      let depth = Math.max(unbal, partial ? 1 : 0);
+      for (let j = i + 1; j < wts.length && depth > 0; j++) {
+        group.push(wts[j]);
+        depth += countUnbalancedOpens(wts[j].text, startDelim, endDelim);
+      }
+      if (group.length > 1) {
+        groups.push(group);
+        i += group.length;
+        continue;
+      }
+    }
+    i++;
+  }
+
+  if (groups.length === 0) return xml;
+
+  let result = xml;
+  for (let g = groups.length - 1; g >= 0; g--) {
+    const group = groups[g];
+    const first = group[0], last = group[group.length - 1];
+    const mergedText = group.map(w => w.text).join("");
+    const hasPreserve = group.some(w => w.open.includes("preserve"));
+    const openTag = hasPreserve ? '<w:t xml:space="preserve">' : "<w:t>";
+    result =
+      result.slice(0, first.idx) +
+      `${openTag}${mergedText}</w:t>` +
+      result.slice(last.idx + last.len);
+  }
+  return result;
+}
+
+function fixDocxXmlRuns(zip: PizZip, startDelim: string, endDelim: string): void {
+  const FILES = [
+    "word/document.xml",
+    "word/header1.xml", "word/header2.xml", "word/header3.xml",
+    "word/footer1.xml", "word/footer2.xml", "word/footer3.xml",
+  ];
+  for (const path of FILES) {
+    const f = zip.file(path);
+    if (f) zip.file(path, fixXmlRuns(f.asText(), startDelim, endDelim));
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export async function mergeTemplate(
   file: File | Blob | ArrayBuffer,
   values: Record<string, unknown>,
@@ -136,6 +217,7 @@ export async function mergeTemplate(
 
   const tryMerge = (delimiters: { start: string; end: string }): Blob => {
     const zip = new PizZip(buf);
+    fixDocxXmlRuns(zip, delimiters.start, delimiters.end);
     const doc = new Docxtemplater(zip, {
       delimiters,
       paragraphLoop: true,
