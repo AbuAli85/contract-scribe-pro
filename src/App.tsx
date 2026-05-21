@@ -15,6 +15,7 @@ import MyTemplates from "./pages/MyTemplates"
 import TemplateDownload from "./pages/TemplateDownload"
 import FillTemplate from "./pages/FillTemplate"
 import Auth from "./pages/Auth"
+import AutoAuth from "./pages/AutoAuth"
 import Upgrade from "./pages/Upgrade"
 import Blog from "./pages/Blog"
 import BlogPost from "./pages/BlogPost"
@@ -92,6 +93,7 @@ function App() {
           {/* Public / standalone pages */}
           <Route path="/" element={<HomePage />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/auto-auth" element={<AutoAuth />} />
           <Route path="/upgrade" element={<Upgrade />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
