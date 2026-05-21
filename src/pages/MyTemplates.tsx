@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,9 +18,19 @@ import {
   Loader2,
   Wand2,
   Info,
+  Save,
+  BookUser,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import LanguageToggle from "@/components/LanguageToggle";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
 import {
   scanTemplate,
   scanTemplateWithAi,
@@ -115,9 +125,68 @@ const MyTemplates = () => {
   const [values, setValues] = useState<Record<string, string>>({});
   const [generating, setGenerating] = useState(false);
   const [lastBlob, setLastBlob] = useState<Blob | null>(null);
+  const [seeds, setSeeds] = useState<Array<{ id: string; label: string; fields: Record<string, string> }>>([]);
+  const [newSeedLabel, setNewSeedLabel] = useState("");
+  const [savingSeed, setSavingSeed] = useState(false);
   const { toast } = useToast();
   const t = COPY[language];
   const isAr = language === "ar";
+
+  // Load saved profiles when entering the fill stage
+  useEffect(() => {
+    if (stage !== "fill") return;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase
+        .from("fill_seeds")
+        .select("id, label, fields")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .then(({ data }) => {
+          if (!data) return;
+          const rows = data as Array<{ id: string; label: string; fields: Record<string, string> }>;
+          setSeeds(rows);
+          // Auto-apply if there's exactly one saved profile
+          if (rows.length === 1) {
+            applySeeds(rows[0].fields);
+          }
+        });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
+
+  const applySeeds = useCallback((seedFields: Record<string, string>) => {
+    setValues((prev) => {
+      const next = { ...prev };
+      for (const [k, v] of Object.entries(seedFields)) {
+        if (k in next && v) next[k] = v;
+      }
+      return next;
+    });
+  }, []);
+
+  const handleSaveSeed = async () => {
+    if (!newSeedLabel.trim()) return;
+    setSavingSeed(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { toast({ title: isAr ? "يجب تسجيل الدخول أولاً" : "Sign in to save profiles", variant: "destructive" }); return; }
+      const { error } = await supabase.from("fill_seeds").insert({
+        user_id: user.id,
+        label: newSeedLabel.trim(),
+        fields: values,
+      });
+      if (error) throw error;
+      setNewSeedLabel("");
+      const { data } = await supabase.from("fill_seeds").select("id, label, fields").eq("user_id", user.id).order("created_at", { ascending: false });
+      if (data) setSeeds(data as Array<{ id: string; label: string; fields: Record<string, string> }>);
+      toast({ title: isAr ? "تم حفظ ملف الشركة" : "Company profile saved" });
+    } catch {
+      toast({ title: t.error, variant: "destructive" });
+    } finally {
+      setSavingSeed(false);
+    }
+  };
 
   const handleFile = useCallback(
     async (f: File) => {
@@ -577,6 +646,56 @@ const MyTemplates = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* ── Company profile selector ── */}
+              <div className={`flex flex-col gap-2 mb-5 pb-5 border-b ${isAr ? "items-end" : ""}`}>
+                <div className={`flex items-center gap-2 text-sm font-medium ${isAr ? "flex-row-reverse" : ""}`}>
+                  <BookUser className="h-4 w-4 text-primary" />
+                  {isAr ? "ملف الشركة" : "Company profile"}
+                </div>
+                {seeds.length > 0 && (
+                  <div className={`flex gap-2 w-full ${isAr ? "flex-row-reverse" : ""}`}>
+                    <Select onValueChange={(id) => {
+                      const seed = seeds.find((s) => s.id === id);
+                      if (seed) applySeeds(seed.fields);
+                    }}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder={isAr ? "اختر ملف الشركة..." : "Select a saved profile..."} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {seeds.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <div className={`flex gap-2 w-full ${isAr ? "flex-row-reverse" : ""}`}>
+                  <Input
+                    placeholder={isAr ? "اسم الملف (مثال: شركة اكسترا)" : "Profile name (e.g. eXtra Stores)"}
+                    value={newSeedLabel}
+                    onChange={(e) => setNewSeedLabel(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSaveSeed}
+                    disabled={savingSeed || !newSeedLabel.trim()}
+                  >
+                    {savingSeed ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    <span className="ms-1.5">{isAr ? "حفظ" : "Save"}</span>
+                  </Button>
+                </div>
+                {seeds.length === 0 && (
+                  <p className={`text-xs text-muted-foreground ${isAr ? "text-right" : ""}`}>
+                    {isAr
+                      ? "أدخل بيانات شركتك مرة واحدة ثم احفظها — ستُملأ تلقائياً في كل عقد لاحق."
+                      : "Fill in your company details once and save — they'll auto-fill in every future contract."}
+                  </p>
+                )}
+              </div>
+
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
