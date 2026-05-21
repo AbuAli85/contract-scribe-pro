@@ -104,36 +104,58 @@ const FIELD_GROUP_DEFS: [string, string[], string[]][] = [
   ]],
 ];
 
-function groupFieldValues(fv: Record<string, unknown>): { group: string; entries: [string, unknown][]; hasUrls: boolean }[] {
+// Hidden from field display — meta keys and doc attachment keys
+function isHiddenKey(key: string): boolean {
+  return key.startsWith("_") ||
+    (key.startsWith("doc_") && (key.endsWith("_url") || key.endsWith("_expires") || key.endsWith("_status")));
+}
+
+function groupFieldValues(fv: Record<string, unknown>): { group: string; entries: [string, unknown][] }[] {
   const assigned = new Set<string>();
-  const result: { group: string; entries: [string, unknown][]; hasUrls: boolean }[] = [];
+  const result: { group: string; entries: [string, unknown][] }[] = [];
 
   for (const [group, prefixes, standalones] of FIELD_GROUP_DEFS) {
     const entries: [string, unknown][] = [];
     for (const [k, v] of Object.entries(fv)) {
-      if (assigned.has(k)) continue;
+      if (assigned.has(k) || isHiddenKey(k)) continue;
       if (prefixes.some(p => k.startsWith(p)) || standalones.includes(k)) {
-        if (!isDocUrl(k)) { entries.push([k, v]); }
+        entries.push([k, v]);
         assigned.add(k);
       }
     }
-    if (entries.length > 0) {
-      result.push({ group, entries, hasUrls: false });
-    }
+    if (entries.length > 0) result.push({ group, entries });
   }
 
-  const remaining = Object.entries(fv).filter(([k]) => !assigned.has(k) && !isDocUrl(k));
-  if (remaining.length > 0) result.push({ group: "Other", entries: remaining, hasUrls: false });
+  const remaining = Object.entries(fv).filter(([k]) => !assigned.has(k) && !isHiddenKey(k));
+  if (remaining.length > 0) result.push({ group: "Other", entries: remaining });
 
   return result;
 }
 
-function isDocUrl(key: string): boolean {
-  return key.startsWith("doc_") && (key.endsWith("_url") || key.endsWith("_expires") || key.endsWith("_status"));
-}
-
 function isUrl(v: unknown): v is string {
   return typeof v === "string" && (v.startsWith("http://") || v.startsWith("https://"));
+}
+
+// Detect ISO date strings: YYYY-MM-DD or with time portion
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}(T[\d:.Z+-]*)?$/;
+function isIsoDate(v: unknown): v is string {
+  return typeof v === "string" && ISO_DATE_RE.test(v);
+}
+
+function formatDateBilingual(v: string): { en: string; ar: string } {
+  try {
+    const d = new Date(v);
+    if (isNaN(d.getTime())) return { en: v, ar: v };
+    const en = d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    const ar = d.toLocaleDateString("ar-OM", { day: "numeric", month: "long", year: "numeric" });
+    return { en, ar };
+  } catch {
+    return { en: v, ar: v };
+  }
+}
+
+function isArabicKey(k: string): boolean {
+  return k.endsWith("_ar");
 }
 
 function humanizeKey(k: string): string {
@@ -223,6 +245,7 @@ export default function RecordDetail() {
 
   const [downloading, setDownloading] = useState(false);
   const [actioning, setActioning] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -276,6 +299,12 @@ export default function RecordDetail() {
   const attachments = useMemo(() => extractAttachments(fv), [fv]);
   const hasSentForSigning = useMemo(() => events.some(e => e.type === "sent_for_signing"), [events]);
   const isSigned = useMemo(() => events.some(e => e.type === "signed"), [events]);
+  const smartproMeta = useMemo(() => ({
+    hubUrl: fv._smartpro_hub_url as string | undefined,
+    companyId: fv._smartpro_company_id as string | undefined,
+    employeeId: fv._smartpro_employee_id as number | undefined,
+  }), [fv]);
+  const canSyncAttachments = !!(smartproMeta.hubUrl && smartproMeta.companyId && smartproMeta.employeeId != null);
 
   // Pre-fill send dialog when record loads
   useEffect(() => {
@@ -405,6 +434,43 @@ export default function RecordDetail() {
       setEvents((evts ?? []) as ContractEvent[]);
     } catch { toast({ title: "Failed", variant: "destructive" }); }
     finally { setActioning(false); }
+  };
+
+  // ── Sync employee attachments from SmartPro ───────────────────────────
+  const handleSyncAttachments = async () => {
+    if (!canSyncAttachments || !record) return;
+    setSyncing(true);
+    try {
+      const apiKey = (import.meta.env.VITE_SMARTPRO_API_KEY as string | undefined) ?? "";
+      const res = await fetch(
+        `${smartproMeta.hubUrl}/api/contract-scribe/parties?companyId=${smartproMeta.companyId}`,
+        { headers: { Authorization: `Bearer ${apiKey}` } },
+      );
+      if (!res.ok) throw new Error(`SmartPro API ${res.status}`);
+      const data = await res.json();
+      const emp = (data.employees ?? []).find((e: { id: number }) => e.id === smartproMeta.employeeId);
+      if (!emp) throw new Error("Employee not found in SmartPro");
+
+      const docUpdates: Record<string, string> = {};
+      for (const doc of emp.documents ?? []) {
+        if (doc.fileUrl) {
+          docUpdates[`doc_${doc.type}_url`] = doc.fileUrl;
+          if (doc.expiresAt) docUpdates[`doc_${doc.type}_expires`] = doc.expiresAt;
+          if (doc.status) docUpdates[`doc_${doc.type}_status`] = doc.status;
+        }
+      }
+
+      const newFv = { ...(record.field_values as Record<string, unknown>), ...docUpdates };
+      const { error } = await supabase.from("contract_records").update({ field_values: newFv }).eq("id", id);
+      if (error) throw error;
+      await logEvent("note_added", `Attachments synced from SmartPro — ${Object.keys(docUpdates).filter(k => k.endsWith("_url")).length} documents`);
+      toast({ title: `${Object.keys(docUpdates).filter(k => k.endsWith("_url")).length} documents synced` });
+      await load();
+    } catch (e) {
+      toast({ title: (e as Error).message ?? "Sync failed", variant: "destructive" });
+    } finally {
+      setSyncing(false);
+    }
   };
 
   if (loading) return (
@@ -581,10 +647,12 @@ export default function RecordDetail() {
       <Tabs defaultValue="details">
         <TabsList>
           <TabsTrigger value="details">Details</TabsTrigger>
-          {attachments.length > 0 && (
+          {(attachments.length > 0 || canSyncAttachments) && (
             <TabsTrigger value="attachments">
               Attachments
-              <Badge variant="secondary" className="ms-1.5 text-[10px] px-1">{attachments.length}</Badge>
+              {attachments.length > 0 && (
+                <Badge variant="secondary" className="ms-1.5 text-[10px] px-1">{attachments.length}</Badge>
+              )}
             </TabsTrigger>
           )}
           <TabsTrigger value="history">
@@ -605,20 +673,32 @@ export default function RecordDetail() {
               </CardHeader>
               <CardContent className="px-4 pb-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-0">
-                  {entries.map(([k, v]) => (
-                    <div key={k} className="flex items-start gap-2 py-2 border-b last:border-0 sm:even:border-l sm:even:pl-6">
-                      <span className="text-xs text-muted-foreground w-40 flex-shrink-0 pt-0.5 leading-tight">{humanizeKey(k)}</span>
-                      <span className="text-sm font-medium break-words min-w-0 flex-1">
-                        {isUrl(v) ? (
-                          <a href={v} target="_blank" rel="noopener noreferrer"
-                            className="text-primary underline hover:no-underline flex items-center gap-1">
-                            <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                            Open link
-                          </a>
-                        ) : v ? String(v) : <span className="text-muted-foreground italic text-xs">—</span>}
-                      </span>
-                    </div>
-                  ))}
+                  {entries.map(([k, v]) => {
+                    const isAr = isArabicKey(k);
+                    const isDate = isIsoDate(v);
+                    const dates = isDate ? formatDateBilingual(v as string) : null;
+                    return (
+                      <div key={k} className="flex items-start gap-2 py-2 border-b last:border-0 sm:even:border-l sm:even:pl-6">
+                        <span className="text-xs text-muted-foreground w-40 flex-shrink-0 pt-0.5 leading-tight">{humanizeKey(k)}</span>
+                        <span className="text-sm font-medium break-words min-w-0 flex-1">
+                          {isUrl(v) ? (
+                            <a href={v as string} target="_blank" rel="noopener noreferrer"
+                              className="text-primary underline hover:no-underline flex items-center gap-1">
+                              <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                              Open link
+                            </a>
+                          ) : dates ? (
+                            <span className="space-y-0.5">
+                              <span className="block" dir="ltr">{dates.en}</span>
+                              <span className="block text-muted-foreground text-xs" dir="rtl">{dates.ar}</span>
+                            </span>
+                          ) : isAr ? (
+                            <span dir="rtl" className="block text-right">{v ? String(v) : <span className="text-muted-foreground italic text-xs not-italic text-left" dir="ltr">—</span>}</span>
+                          ) : v ? String(v) : <span className="text-muted-foreground italic text-xs">—</span>}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
@@ -626,15 +706,28 @@ export default function RecordDetail() {
         </TabsContent>
 
         {/* Attachments tab — employee documents */}
-        {attachments.length > 0 && (
+        {(attachments.length > 0 || canSyncAttachments) && (
           <TabsContent value="attachments" className="mt-4">
             <Card>
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Paperclip className="h-4 w-4" /> Employee Documents
                 </CardTitle>
+                {canSyncAttachments && (
+                  <Button size="sm" variant="outline" onClick={handleSyncAttachments} disabled={syncing}>
+                    {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin me-1.5" /> : <RefreshCw className="h-3.5 w-3.5 me-1.5" />}
+                    Sync from SmartPro
+                  </Button>
+                )}
               </CardHeader>
               <CardContent>
+                {attachments.length === 0 && canSyncAttachments && (
+                  <div className="py-6 text-center space-y-2">
+                    <Paperclip className="h-8 w-8 text-muted-foreground mx-auto" />
+                    <p className="text-sm text-muted-foreground">No attachments stored yet.</p>
+                    <p className="text-xs text-muted-foreground">Click "Sync from SmartPro" above to pull the latest employee documents.</p>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {attachments.map((att) => (
                     <a

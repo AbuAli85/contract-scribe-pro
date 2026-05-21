@@ -893,10 +893,14 @@ export default function NewContract() {
       const user = session?.user;
       if (!user) throw new Error("Not authenticated");
 
-      const allValues = {
+      const allValues: Record<string, unknown> = {
         ...values,
         ...(startDate ? { start_date: startDate } : {}),
         ...(endDate ? { end_date: endDate } : {}),
+        // SmartPro meta — stored so RecordDetail can sync attachments later
+        ...(isSmartpro && hubUrl ? { _smartpro_hub_url: hubUrl } : {}),
+        ...(isSmartpro && companyId ? { _smartpro_company_id: companyId } : {}),
+        ...(isSmartpro && selectedEmployeeId != null ? { _smartpro_employee_id: selectedEmployeeId } : {}),
       };
       const normalized = normalizeValuesForMerge(scan.fields, allValues);
 
