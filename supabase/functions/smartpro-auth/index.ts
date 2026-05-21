@@ -12,9 +12,7 @@ Deno.serve(async (req) => {
 
   try {
     const { auth_token } = await req.json() as { auth_token?: string };
-    if (!auth_token) {
-      return json({ error: "auth_token required" }, 400);
-    }
+    if (!auth_token) return json({ error: "auth_token required" }, 400);
 
     const apiKey = Deno.env.get("CONTRACT_SCRIBE_API_KEY");
     if (!apiKey) return json({ error: "Not configured" }, 500);
@@ -35,26 +33,36 @@ Deno.serve(async (req) => {
     const email = payload.email as string | undefined;
     if (!email) return json({ error: "Token missing email" }, 401);
 
-    // Create/find a Supabase user for this email and generate a magic-link token
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       { auth: { autoRefreshToken: false, persistSession: false } },
     );
 
+    // Ensure user exists and is email-confirmed before generating magic link.
+    // createUser with email_confirm:true is idempotent-safe — we ignore "already exists".
+    const { error: createErr } = await admin.auth.admin.createUser({
+      email,
+      email_confirm: true,
+    });
+    if (createErr && !createErr.message.toLowerCase().includes("already")) {
+      return json({ error: createErr.message }, 500);
+    }
+
+    // Generate the magic link — user is now confirmed so verifyOtp won't 403
     const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
       type: "magiclink",
       email,
-      options: { shouldCreateUser: true },
+      options: { shouldCreateUser: false },
     });
 
     if (linkErr || !linkData) {
       return json({ error: linkErr?.message ?? "Failed to generate link" }, 500);
     }
 
-    // Return the hashed_token — client uses verifyOtp to exchange for a session
     return json({
       token_hash: linkData.properties.hashed_token,
+      type: linkData.properties.verification_type ?? "magiclink",
       email,
     });
   } catch (err) {

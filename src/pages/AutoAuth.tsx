@@ -26,7 +26,7 @@ export default function AutoAuth() {
       try {
         // Exchange SmartPro SSO token for a Supabase magic-link token
         const { data: body, error: fnErr } = await supabase.functions.invoke<{
-          token_hash?: string; error?: string;
+          token_hash?: string; type?: string; error?: string;
         }>("smartpro-auth", { body: { auth_token: token } });
 
         if (fnErr || !body?.token_hash) {
@@ -36,7 +36,7 @@ export default function AutoAuth() {
         // Exchange the token_hash for a real Supabase session
         const { error: otpErr } = await supabase.auth.verifyOtp({
           token_hash: body.token_hash,
-          type: "magiclink",
+          type: (body.type ?? "magiclink") as Parameters<typeof supabase.auth.verifyOtp>[0]["type"],
         });
 
         if (otpErr) throw otpErr;
