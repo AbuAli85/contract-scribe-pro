@@ -39,12 +39,21 @@ export default function AppLayout() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUserEmail(user?.email ?? null);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        const dest = window.location.pathname + window.location.search;
+        navigate(`/auth?redirect=${encodeURIComponent(dest)}`, { replace: true });
+      } else {
+        setUserEmail(session.user.email ?? null);
+      }
+      setAuthChecked(true);
     });
-  }, []);
+  }, [navigate]);
+
+  if (!authChecked) return null;
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
