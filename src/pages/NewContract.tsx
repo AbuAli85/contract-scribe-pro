@@ -412,6 +412,7 @@ function FieldInput({ f, v, seeded, onChange }: {
         <Input
           id={id}
           type={f.type === "date" ? "date" : f.type === "number" ? "number" : f.type === "email" ? "email" : "text"}
+          lang={f.type === "date" ? "en-GB" : undefined}
           value={v}
           onChange={e => onChange(e.target.value)}
         />
@@ -490,10 +491,18 @@ function applyPartyToFields(
 }
 
 function smartproClientToFieldValues(c: SmartProClient): Record<string, string> {
+  const nameEn = c.displayNameEn;
+  const nameAr = c.displayNameAr ?? "";
   const base: Record<string, string> = {
-    name_en: c.displayNameEn,
-    name: c.displayNameEn,
-    name_ar: c.displayNameAr ?? "",
+    name_en: nameEn,
+    name: nameEn,
+    name_ar: nameAr,
+    company_name_en: nameEn,
+    company_name_ar: nameAr,
+    legal_name_en: nameEn,
+    legal_name_ar: nameAr,
+    full_name_en: nameEn,
+    full_name_ar: nameAr,
   };
   if (c.kind === "crm_client") {
     base.cr_number = c.crNumber ?? "";
@@ -501,6 +510,8 @@ function smartproClientToFieldValues(c: SmartProClient): Record<string, string> 
     base.registration_number = c.crNumber ?? "";
     base.company_registration_number = c.crNumber ?? "";
     base.commercial_registration = c.crNumber ?? "";
+    base.commercial_registration_no = c.crNumber ?? "";
+    base.commercial_reg_no = c.crNumber ?? "";
     base.vat_number = c.vatNumber ?? "";
     base.vat_no = c.vatNumber ?? "";
     base.tax_id = c.vatNumber ?? "";
@@ -509,24 +520,38 @@ function smartproClientToFieldValues(c: SmartProClient): Record<string, string> 
     base.client_type = c.clientType ?? "";
     base.industry = c.industry ?? "";
   } else if (c.kind === "platform") {
-    base.registration_number = c.registrationNumber ?? "";
-    base.cr_number = c.registrationNumber ?? "";
-    base.cr_no = c.registrationNumber ?? "";
-    base.company_registration_number = c.registrationNumber ?? "";
+    const regNo = c.registrationNumber ?? "";
+    base.registration_number = regNo;
+    base.cr_number = regNo;
+    base.cr_no = regNo;
+    base.company_registration_number = regNo;
+    base.commercial_registration = regNo;
+    base.commercial_registration_no = regNo;
   }
   return base;
 }
 
 function smartproEmployerToFieldValues(e: SmartProEmployer): Record<string, string> {
+  const nameEn = e.nameEn;
+  const nameAr = e.nameAr ?? "";
+  const regNo = e.crNumber ?? "";
   return {
-    name_en: e.nameEn,
-    name: e.nameEn,
-    name_ar: e.nameAr ?? "",
-    cr_number: e.crNumber ?? "",
-    cr_no: e.crNumber ?? "",
-    registration_number: e.crNumber ?? "",
-    company_registration_number: e.crNumber ?? "",
-    commercial_registration: e.crNumber ?? "",
+    name_en: nameEn,
+    name: nameEn,
+    name_ar: nameAr,
+    company_name_en: nameEn,
+    company_name_ar: nameAr,
+    legal_name_en: nameEn,
+    legal_name_ar: nameAr,
+    full_name_en: nameEn,
+    full_name_ar: nameAr,
+    cr_number: regNo,
+    cr_no: regNo,
+    registration_number: regNo,
+    company_registration_number: regNo,
+    commercial_registration: regNo,
+    commercial_registration_no: regNo,
+    commercial_reg_no: regNo,
     phone: e.phone ?? "",
     email: e.email ?? "",
   };
@@ -535,10 +560,24 @@ function smartproEmployerToFieldValues(e: SmartProEmployer): Record<string, stri
 function smartproEmployeeToFieldValues(e: SmartProEmployee): Record<string, string> {
   const fullNameEn = [e.firstName, e.lastName].filter(Boolean).join(" ");
   const fullNameAr = [e.firstNameAr, e.lastNameAr].filter(Boolean).join(" ");
+  const jobTitleEn = e.jobTitleEn ?? "";
+  const jobTitleAr = e.jobTitleAr ?? "";
   const out: Record<string, string> = {
     name_en: fullNameEn,
     name: fullNameEn,
     name_ar: fullNameAr,
+    // When the promoter/employee acts as a "company" party in the contract
+    company_name_en: fullNameEn,
+    company_name_ar: fullNameAr,
+    legal_name_en: fullNameEn,
+    legal_name_ar: fullNameAr,
+    full_name_en: fullNameEn,
+    full_name_ar: fullNameAr,
+    // Signatory = the person themselves
+    signatory_name_en: fullNameEn,
+    signatory_name_ar: fullNameAr,
+    signatory_designation_en: jobTitleEn,
+    signatory_designation_ar: jobTitleAr,
     first_name: e.firstName,
     last_name: e.lastName,
     first_name_ar: e.firstNameAr ?? "",
@@ -606,14 +645,27 @@ function smartproEmployeeToFieldValues(e: SmartProEmployee): Record<string, stri
 }
 
 function smartproSupplierToFieldValues(s: SmartProSupplier): Record<string, string> {
+  const nameEn = s.legalNameEn ?? s.displayNameEn;
+  const nameAr = s.legalNameAr ?? s.displayNameAr ?? "";
+  const regNo = s.registrationNumber ?? "";
   return {
-    name_en: s.legalNameEn ?? s.displayNameEn,
-    name: s.legalNameEn ?? s.displayNameEn,
-    name_ar: s.legalNameAr ?? s.displayNameAr ?? "",
+    name_en: nameEn,
+    name: nameEn,
+    name_ar: nameAr,
+    company_name_en: nameEn,
+    company_name_ar: nameAr,
+    legal_name_en: nameEn,
+    legal_name_ar: nameAr,
+    full_name_en: nameEn,
+    full_name_ar: nameAr,
     display_name_en: s.displayNameEn,
     display_name_ar: s.displayNameAr ?? "",
-    registration_number: s.registrationNumber ?? "",
-    cr_number: s.registrationNumber ?? "",
+    registration_number: regNo,
+    cr_number: regNo,
+    cr_no: regNo,
+    commercial_registration: regNo,
+    commercial_registration_no: regNo,
+    company_registration_number: regNo,
     phone: s.phone ?? "",
     email: s.email ?? "",
   };
@@ -827,7 +879,23 @@ export default function NewContract() {
     let next = { ...values };
 
     if (isSmartpro && smartproData) {
-      // First Party — CRM client only
+      // ── Employer (always present) ───────────────────────────────────────
+      // Applied first with lowest priority. Client overwrites party_1 if selected.
+      // Employer goes to party_1 by default (employment contract) AND to party_2
+      // for service contracts where the employer is the staffing company (party_2).
+      {
+        const eVals = smartproEmployerToFieldValues(smartproData.employer);
+        const before = next;
+        next = applyPartyToFields(eVals, "employer", keys, next);
+        next = applyPartyToFields(eVals, "party_1", keys, next);
+        next = applyPartyToFields(eVals, "party1", keys, next);
+        next = applyPartyToFields(eVals, "second_party", keys, next);
+        next = applyPartyToFields(eVals, "party_2", keys, next);
+        next = applyPartyToFields(eVals, "party2", keys, next);
+        for (const k of keys) { if (next[k] && !before[k]) newSeeded.add(k); }
+      }
+
+      // ── First Party — CRM client (overwrites employer for party_1 fields) ──
       const client = selectedClientKey
         ? (smartproData.crmClients ?? []).find(c => clientKey(c) === selectedClientKey) ?? null
         : null;
@@ -841,18 +909,8 @@ export default function NewContract() {
         for (const k of keys) { if (next[k] && !before[k]) newSeeded.add(k); }
       }
 
-      // Employer — always present
-      {
-        const eVals = smartproEmployerToFieldValues(smartproData.employer);
-        const before = next;
-        next = applyPartyToFields(eVals, "employer", keys, next);
-        next = applyPartyToFields(eVals, "second_party", keys, next);
-        next = applyPartyToFields(eVals, "party_2", keys, next);
-        next = applyPartyToFields(eVals, "party2", keys, next);
-        for (const k of keys) { if (next[k] && !before[k]) newSeeded.add(k); }
-      }
-
-      // Second Party — Employee
+      // ── Second Party — Employee ─────────────────────────────────────────
+      // Applied last so employee data overwrites employer for party_2 fields.
       if (secondPartyRole === "employee") {
         const employee = selectedEmployeeId != null
           ? smartproData.employees.find(e => e.id === selectedEmployeeId) ?? null
@@ -864,11 +922,15 @@ export default function NewContract() {
           next = applyPartyToFields(empVals, "promoter", keys, next);
           next = applyPartyToFields(empVals, "worker", keys, next);
           next = applyPartyToFields(empVals, "second_party", keys, next);
+          next = applyPartyToFields(empVals, "party_2", keys, next);
+          next = applyPartyToFields(empVals, "party2", keys, next);
+          // Many promoter templates also have supplier_* fields for the same person
+          next = applyPartyToFields(empVals, "supplier", keys, next);
           for (const k of keys) { if (next[k] && !before[k]) newSeeded.add(k); }
         }
       }
 
-      // Second Party — Supplier
+      // ── Second Party — Supplier ─────────────────────────────────────────
       if (secondPartyRole === "supplier") {
         const supplier = selectedSupplierId != null
           ? smartproData.suppliers.find(s => s.partyId === selectedSupplierId) ?? null
@@ -880,6 +942,7 @@ export default function NewContract() {
           next = applyPartyToFields(supVals, "second_party", keys, next);
           next = applyPartyToFields(supVals, "vendor", keys, next);
           next = applyPartyToFields(supVals, "party_2", keys, next);
+          next = applyPartyToFields(supVals, "party2", keys, next);
           for (const k of keys) { if (next[k] && !before[k]) newSeeded.add(k); }
         }
       }
