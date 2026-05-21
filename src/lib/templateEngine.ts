@@ -66,7 +66,7 @@ export async function scanTemplate(file: File | Blob): Promise<ScanResult> {
     }
   }
 
-  const tokenRe = /\{([a-zA-Z][a-zA-Z0-9_\- ]{0,60})\}/g;
+  const tokenRe = /\{+([a-zA-Z][a-zA-Z0-9_\- ]{0,60})\}+/g;
   const rawTokens: string[] = [];
   const seen = new Set<string>();
   const fields: PlaceholderField[] = [];
@@ -94,19 +94,25 @@ export interface MergeOptions {
   filename?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isDuplicateTagError(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const e = err as Record<string, unknown>;
+  if ((e.properties as Record<string, unknown>)?.id === "duplicate_open_tag") return true;
+  if (Array.isArray(e.errors)) {
+    return (e.errors as Array<Record<string, unknown>>).some(
+      (sub) => (sub.properties as Record<string, unknown>)?.id === "duplicate_open_tag"
+    );
+  }
+  return false;
+}
+
 export async function mergeTemplate(
   file: File | Blob | ArrayBuffer,
   values: Record<string, unknown>,
   options: MergeOptions = {}
 ): Promise<Blob> {
   const buf = file instanceof ArrayBuffer ? file : await file.arrayBuffer();
-  const zip = new PizZip(buf);
-
-  const doc = new Docxtemplater(zip, {
-    paragraphLoop: true,
-    linebreaks: true,
-    nullGetter: () => "",
-  });
 
   const data: Record<string, unknown> = { ...values };
   for (const [k, v] of Object.entries(values)) {
@@ -114,14 +120,34 @@ export async function mergeTemplate(
     if (!(alt in data)) data[alt] = v;
   }
 
-  doc.render(data);
+  const tryMerge = (delimiters: { start: string; end: string }): Blob => {
+    const zip = new PizZip(buf);
+    const doc = new Docxtemplater(zip, {
+      delimiters,
+      paragraphLoop: true,
+      linebreaks: true,
+      nullGetter: () => "",
+    });
+    doc.render(data);
+    return doc.getZip().generate({
+      type: "blob",
+      mimeType:
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      compression: "DEFLATE",
+    });
+  };
 
-  const blob = doc.getZip().generate({
-    type: "blob",
-    mimeType:
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    compression: "DEFLATE",
-  });
+  let blob: Blob;
+  try {
+    blob = tryMerge({ start: "{", end: "}" });
+  } catch (err) {
+    if (isDuplicateTagError(err)) {
+      // Document uses {{double_braces}} — retry with Mustache-style delimiters
+      blob = tryMerge({ start: "{{", end: "}}" });
+    } else {
+      throw err;
+    }
+  }
 
   if (options.download !== false) {
     saveAs(blob, options.filename ?? "filled-contract.docx");
