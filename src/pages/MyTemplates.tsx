@@ -131,7 +131,7 @@ const MyTemplates = () => {
 
       try {
         if (scanMode === "ai") {
-          const ai = await scanTemplateWithAi(f);
+          const ai = await scanTemplateWithAi(f, { mode: "fields-only" });
           setAiResult(ai);
           const aiFields = ai.templateContent?.fields ?? [];
           const compatFields: PlaceholderField[] = aiFields.map((af) => ({
@@ -189,6 +189,7 @@ const MyTemplates = () => {
       try {
         const ai = await scanTextWithAi(text, {
           idHint: name.replace(/[^a-z0-9]+/gi, "-").toLowerCase(),
+          mode: "fields-only",
         });
         setAiResult(ai);
         const aiFields = ai.templateContent?.fields ?? [];
