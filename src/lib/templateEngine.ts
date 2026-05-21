@@ -432,21 +432,30 @@ export async function scanTextWithAi(
   return { ...data.result, diagnostics: data.diagnostics, usage: data.usage };
 }
 
+const DATE_FMT: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" };
+
 export function normalizeValuesForMerge(
   fields: PlaceholderField[],
-  rawValues: Record<string, string>
+  rawValues: Record<string, string>,
+  options: { lang?: "en" | "ar" | "bilingual" } = {}
 ): Record<string, unknown> {
+  const lang = options.lang ?? "en";
   const out: Record<string, unknown> = {};
   for (const f of fields) {
     const v = rawValues[f.key] ?? "";
     if (f.type === "date" && v) {
       const d = new Date(v);
       if (!Number.isNaN(d.getTime())) {
-        out[f.key] = d.toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        });
+        const enDate = d.toLocaleDateString("en-GB", DATE_FMT);
+        const arDate = d.toLocaleDateString("ar-OM", DATE_FMT);
+        if (lang === "ar") {
+          out[f.key] = arDate;
+        } else if (lang === "bilingual") {
+          out[f.key] = enDate;           // English placeholder → English date
+          out[f.key + "_ar"] = arDate;   // Arabic placeholder → Arabic date
+        } else {
+          out[f.key] = enDate;
+        }
         continue;
       }
     }

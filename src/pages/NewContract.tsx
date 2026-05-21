@@ -605,6 +605,7 @@ export default function NewContract() {
   const [templateSource, setTemplateSource] = useState<"catalog" | "upload">("catalog");
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [templateLang, setTemplateLang] = useState<"en" | "ar" | "bilingual">("en");
   const [scanning, setScanning] = useState(false);
 
   // Scanned fields
@@ -770,6 +771,7 @@ export default function NewContract() {
     setScanning(true);
     try {
       const ai = await scanTemplateWithAi(file, { mode: "fields-only" });
+      setTemplateLang(ai.detectedLanguage ?? "en");
       const fields: PlaceholderField[] = (ai.templateContent?.fields ?? []).map(f => ({
         key: f.key,
         label: f.labelEn,
@@ -901,8 +903,14 @@ export default function NewContract() {
         ...(isSmartpro && hubUrl ? { _smartpro_hub_url: hubUrl } : {}),
         ...(isSmartpro && companyId ? { _smartpro_company_id: companyId } : {}),
         ...(isSmartpro && selectedEmployeeId != null ? { _smartpro_employee_id: selectedEmployeeId } : {}),
+        // Template language — used for date formatting and re-generation
+        _template_lang: templateLang,
       };
-      const normalized = normalizeValuesForMerge(scan.fields, allValues);
+      const normalized = normalizeValuesForMerge(
+        scan.fields,
+        allValues as Record<string, string>,
+        { lang: templateLang },
+      );
 
       let docxBlob: Blob | null = null;
       let docPath: string | null = null;

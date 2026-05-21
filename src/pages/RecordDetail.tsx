@@ -247,6 +247,14 @@ export default function RecordDetail() {
   const [actioning, setActioning] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
+  // Edit mode
+  const [editMode, setEditMode] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editStart, setEditStart] = useState("");
+  const [editEnd, setEditEnd] = useState("");
+  const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+
   const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
@@ -473,6 +481,53 @@ export default function RecordDetail() {
     }
   };
 
+  // ── Edit mode ─────────────────────────────────────────────────────────
+  const enterEdit = () => {
+    if (!record) return;
+    setEditTitle(record.title);
+    setEditStart(record.start_date ?? "");
+    setEditEnd(record.end_date ?? "");
+    const flat: Record<string, string> = {};
+    for (const [k, v] of Object.entries((record.field_values ?? {}) as Record<string, unknown>)) {
+      if (!k.startsWith("_")) flat[k] = v != null ? String(v) : "";
+    }
+    setEditValues(flat);
+    setEditMode(true);
+  };
+
+  const cancelEdit = () => setEditMode(false);
+
+  const handleSave = async () => {
+    if (!record) return;
+    setSaving(true);
+    try {
+      // Merge edited values back, preserving hidden meta keys
+      const currentFv = (record.field_values ?? {}) as Record<string, unknown>;
+      const metaKeys: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(currentFv)) {
+        if (k.startsWith("_")) metaKeys[k] = v;
+      }
+      const newFv = { ...editValues, ...metaKeys };
+
+      await supabase.from("contract_records").update({
+        title: editTitle.trim() || record.title,
+        start_date: editStart || null,
+        end_date: editEnd || null,
+        field_values: newFv,
+        updated_at: new Date().toISOString(),
+      }).eq("id", id);
+
+      await logEvent("note_added", "Contract details updated");
+      toast({ title: "Changes saved" });
+      setEditMode(false);
+      await load();
+    } catch (e) {
+      toast({ title: (e as Error).message ?? "Save failed", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -525,6 +580,12 @@ export default function RecordDetail() {
 
         {/* Action buttons */}
         <div className="flex gap-2 flex-wrap justify-end">
+          {/* Edit button — always available for draft, also available when not actively editing */}
+          {!editMode && effectiveStatus === "draft" && (
+            <Button size="sm" variant="outline" onClick={enterEdit}>
+              <Pencil className="me-1.5 h-3.5 w-3.5" /> Edit
+            </Button>
+          )}
           {record.document_path && (
             <Button size="sm" variant="outline" onClick={handleDownload} disabled={downloading}>
               {downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
@@ -662,9 +723,59 @@ export default function RecordDetail() {
           <TabsTrigger value="notes">Notes</TabsTrigger>
         </TabsList>
 
-        {/* Details tab — grouped field values */}
+        {/* Details tab — grouped field values / edit mode */}
         <TabsContent value="details" className="mt-4 space-y-4">
-          {fieldGroups.length === 0 ? (
+          {editMode ? (
+            <>
+              {/* Edit form */}
+              <Card>
+                <CardHeader className="pb-2 pt-4 px-4">
+                  <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contract Info</CardTitle>
+                </CardHeader>
+                <CardContent className="px-4 pb-4 space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Title</Label>
+                    <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Start date</Label>
+                      <Input type="date" value={editStart} onChange={e => setEditStart(e.target.value)} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">End date</Label>
+                      <Input type="date" value={editEnd} onChange={e => setEditEnd(e.target.value)} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {Object.entries(editValues).map(([k, v]) => {
+                const isAr = isArabicKey(k);
+                const isDateK = /date|expir|start|end|birth|hired/i.test(k);
+                return (
+                  <div key={k} className="flex items-center gap-3 px-1">
+                    <span className="text-xs text-muted-foreground w-44 flex-shrink-0 leading-tight">{humanizeKey(k)}</span>
+                    <Input
+                      type={isDateK ? "date" : "text"}
+                      value={v}
+                      dir={isAr ? "rtl" : undefined}
+                      className={`h-8 text-sm ${isAr ? "text-right" : ""}`}
+                      onChange={e => setEditValues(prev => ({ ...prev, [k]: e.target.value }))}
+                    />
+                  </div>
+                );
+              })}
+
+              <div className="flex gap-2 pt-2 sticky bottom-4">
+                <Button onClick={handleSave} disabled={saving} className="flex-1">
+                  {saving && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+                  Save changes
+                </Button>
+                <Button variant="outline" onClick={cancelEdit} disabled={saving}>Cancel</Button>
+              </div>
+            </>
+          ) : fieldGroups.length === 0 ? (
             <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No field values stored.</CardContent></Card>
           ) : fieldGroups.map(({ group, entries }) => (
             <Card key={group}>
@@ -693,7 +804,7 @@ export default function RecordDetail() {
                               <span className="block text-muted-foreground text-xs" dir="rtl">{dates.ar}</span>
                             </span>
                           ) : isAr ? (
-                            <span dir="rtl" className="block text-right">{v ? String(v) : <span className="text-muted-foreground italic text-xs not-italic text-left" dir="ltr">—</span>}</span>
+                            <span dir="rtl" className="block text-right">{v ? String(v) : <span className="text-muted-foreground italic text-xs" dir="ltr">—</span>}</span>
                           ) : v ? String(v) : <span className="text-muted-foreground italic text-xs">—</span>}
                         </span>
                       </div>
