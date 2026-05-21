@@ -497,8 +497,12 @@ function smartproClientToFieldValues(c: SmartProClient): Record<string, string> 
   };
   if (c.kind === "crm_client") {
     base.cr_number = c.crNumber ?? "";
+    base.cr_no = c.crNumber ?? "";
     base.registration_number = c.crNumber ?? "";
+    base.company_registration_number = c.crNumber ?? "";
+    base.commercial_registration = c.crNumber ?? "";
     base.vat_number = c.vatNumber ?? "";
+    base.vat_no = c.vatNumber ?? "";
     base.tax_id = c.vatNumber ?? "";
     base.phone = c.phone ?? "";
     base.email = c.email ?? "";
@@ -507,6 +511,8 @@ function smartproClientToFieldValues(c: SmartProClient): Record<string, string> 
   } else if (c.kind === "platform") {
     base.registration_number = c.registrationNumber ?? "";
     base.cr_number = c.registrationNumber ?? "";
+    base.cr_no = c.registrationNumber ?? "";
+    base.company_registration_number = c.registrationNumber ?? "";
   }
   return base;
 }
@@ -517,7 +523,10 @@ function smartproEmployerToFieldValues(e: SmartProEmployer): Record<string, stri
     name: e.nameEn,
     name_ar: e.nameAr ?? "",
     cr_number: e.crNumber ?? "",
+    cr_no: e.crNumber ?? "",
     registration_number: e.crNumber ?? "",
+    company_registration_number: e.crNumber ?? "",
+    commercial_registration: e.crNumber ?? "",
     phone: e.phone ?? "",
     email: e.email ?? "",
   };
@@ -537,12 +546,29 @@ function smartproEmployeeToFieldValues(e: SmartProEmployee): Record<string, stri
     employee_number: e.employeeNumber ?? "",
     email: e.email ?? "",
     phone: e.phone ?? "",
+    // National ID / Civil ID — cover every common template token name
     id_number: e.nationalId ?? "",
+    id_card_number: e.nationalId ?? "",
+    id_no: e.nationalId ?? "",
     national_id: e.nationalId ?? "",
+    national_id_number: e.nationalId ?? "",
     civil_id: e.nationalId ?? "",
+    civil_id_number: e.nationalId ?? "",
+    identity_number: e.nationalId ?? "",
+    identity_no: e.nationalId ?? "",
+    iqama_number: e.nationalId ?? "",
+    resident_id: e.nationalId ?? "",
+    // Passport
     passport_number: e.passportNumber ?? "",
+    passport_no: e.passportNumber ?? "",
+    passport_num: e.passportNumber ?? "",
+    // Visa
     visa_number: e.visaNumber ?? "",
+    visa_no: e.visaNumber ?? "",
+    // Work permit
     work_permit_number: e.workPermitNumber ?? "",
+    work_permit_no: e.workPermitNumber ?? "",
+    permit_number: e.workPermitNumber ?? "",
     nationality: e.nationality ?? "",
     job_title_en: e.jobTitleEn ?? "",
     job_title: e.jobTitleEn ?? "",
@@ -551,7 +577,11 @@ function smartproEmployeeToFieldValues(e: SmartProEmployee): Record<string, stri
     position: e.position ?? "",
     contract_type: e.contractType ?? "",
     hire_date: e.hireDate ?? "",
+    joining_date: e.hireDate ?? "",
+    start_date_employment: e.hireDate ?? "",
     date_of_birth: e.dateOfBirth ?? "",
+    dob: e.dateOfBirth ?? "",
+    birth_date: e.dateOfBirth ?? "",
     gender: e.gender ?? "",
     salary: e.salary != null ? String(e.salary) : "",
     basic_salary: e.basicSalary != null ? String(e.basicSalary) : "",
