@@ -31,34 +31,93 @@ interface SmartProEmployer {
   nameEn: string;
   nameAr: string | null;
   crNumber: string | null;
+  phone: string | null;
+  email: string | null;
 }
 
-interface SmartProClient {
-  kind: string;
+interface SmartProCrmClient {
+  kind: "crm_client";
+  crmClientId: number;
+  displayNameEn: string;
+  displayNameAr: string | null;
+  crNumber: string | null;
+  vatNumber: string | null;
+  phone: string | null;
+  email: string | null;
+  clientType: string | null;
+  industry: string | null;
+}
+
+interface SmartProPlatformClient {
+  kind: "platform";
+  companyId: number;
   displayNameEn: string;
   displayNameAr: string | null;
   registrationNumber: string | null;
-  companyId?: number;
-  partyId?: number;
-  crmClientId?: number;
+}
+
+interface SmartProSupplier {
+  kind: "external_party";
+  partyId: string;
+  displayNameEn: string;
+  displayNameAr: string | null;
+  legalNameEn: string | null;
+  legalNameAr: string | null;
+  registrationNumber: string | null;
+  phone: string | null;
+  email: string | null;
+}
+
+type SmartProClient = SmartProCrmClient | SmartProPlatformClient;
+
+interface SmartProEmployeeDocument {
+  type: "passport" | "civil_id" | "visa" | "resident_card" | "labour_card" | "employment_contract" | "photo" | "other" | "mol_work_permit_certificate" | "medical_certificate";
+  fileUrl: string;
+  fileName: string;
+  issuedAt: string | null;
+  expiresAt: string | null;
+  status: "pending" | "verified" | "rejected" | "expired";
 }
 
 interface SmartProEmployee {
   id: number;
+  employeeNumber: string | null;
   firstName: string;
   lastName: string;
   firstNameAr: string | null;
   lastNameAr: string | null;
+  email: string | null;
+  phone: string | null;
+  nationality: string | null;
   nationalId: string | null;
   passportNumber: string | null;
-  nationality: string | null;
+  visaNumber: string | null;
+  workPermitNumber: string | null;
   jobTitleEn: string | null;
   jobTitleAr: string | null;
+  department: string | null;
+  position: string | null;
+  contractType: string | null;
+  hireDate: string | null;
+  dateOfBirth: string | null;
+  gender: string | null;
+  salary: number | null;
+  basicSalary: number | null;
+  totalSalary: number | null;
+  housingAllowance: number | null;
+  transportAllowance: number | null;
+  currency: string | null;
+  bankName: string | null;
+  bankAccountNumber: string | null;
+  ibanNumber: string | null;
+  documents: SmartProEmployeeDocument[];
 }
 
 interface SmartProParties {
   employer: SmartProEmployer;
-  clients: SmartProClient[];
+  crmClients: SmartProCrmClient[];
+  platformClients: SmartProPlatformClient[];
+  suppliers: SmartProSupplier[];
   employees: SmartProEmployee[];
 }
 
@@ -272,6 +331,68 @@ function SmartProEmployeeCombobox({
   );
 }
 
+// ── SmartPro supplier combobox ─────────────────────────────────────────
+function SmartProSupplierCombobox({
+  suppliers, value, onChange,
+}: {
+  suppliers: SmartProSupplier[];
+  value: string | null;
+  onChange: (id: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = value ? suppliers.find(s => s.partyId === value) : null;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox" className="w-full justify-between h-auto min-h-10 text-left font-normal">
+          {selected ? (
+            <div className="flex items-center gap-2 min-w-0">
+              <Building2 className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+              <span className="truncate">{selected.displayNameEn}</span>
+              {selected.displayNameAr && (
+                <span className="text-muted-foreground text-xs shrink-0" dir="rtl">{selected.displayNameAr}</span>
+              )}
+            </div>
+          ) : (
+            <span className="text-muted-foreground">Select supplier…</span>
+          )}
+          <ChevronsUpDown className="h-4 w-4 opacity-50 flex-shrink-0 ms-2" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search suppliers…" />
+          <CommandList>
+            <CommandEmpty>No suppliers found.</CommandEmpty>
+            <CommandGroup>
+              <CommandItem value="__none__" onSelect={() => { onChange(null); setOpen(false); }}>
+                <span className="text-muted-foreground">— None —</span>
+              </CommandItem>
+              {suppliers.map(s => (
+                <CommandItem
+                  key={s.partyId}
+                  value={s.displayNameEn}
+                  onSelect={() => { onChange(s.partyId); setOpen(false); }}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Building2 className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                    <span className="truncate">{s.displayNameEn}</span>
+                    {s.displayNameAr && (
+                      <span className="text-muted-foreground text-xs shrink-0" dir="rtl">{s.displayNameAr}</span>
+                    )}
+                  </div>
+                  {value === s.partyId && <Check className="ms-auto h-3.5 w-3.5 shrink-0" />}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 // ── FieldInput ─────────────────────────────────────────────────────────
 function FieldInput({ f, v, seeded, onChange }: {
   f: PlaceholderField; v: string; seeded: boolean;
@@ -302,10 +423,22 @@ function FieldInput({ f, v, seeded, onChange }: {
 // ── Helpers ────────────────────────────────────────────────────────────
 function clientKey(c: SmartProClient): string {
   if (c.kind === "platform") return `platform:${c.companyId}`;
-  if (c.kind === "external_party") return `external:${c.partyId}`;
   if (c.kind === "crm_client") return `crm:${c.crmClientId}`;
   return `other:${c.displayNameEn}`;
 }
+
+const DOC_TYPE_LABEL: Record<string, string> = {
+  passport: "Passport",
+  civil_id: "Civil ID",
+  visa: "Visa",
+  resident_card: "Resident Card",
+  labour_card: "Labour Card",
+  employment_contract: "Employment Contract",
+  mol_work_permit_certificate: "Work Permit",
+  medical_certificate: "Medical Certificate",
+  photo: "Photo",
+  other: "Other",
+};
 
 function partyToFieldValues(party: Party): Record<string, string> {
   const out: Record<string, string> = { ...party.extra_fields };
@@ -340,13 +473,25 @@ function applyPartyToFields(
 }
 
 function smartproClientToFieldValues(c: SmartProClient): Record<string, string> {
-  return {
+  const base: Record<string, string> = {
     name_en: c.displayNameEn,
     name: c.displayNameEn,
     name_ar: c.displayNameAr ?? "",
-    cr_number: c.registrationNumber ?? "",
-    registration_number: c.registrationNumber ?? "",
   };
+  if (c.kind === "crm_client") {
+    base.cr_number = c.crNumber ?? "";
+    base.registration_number = c.crNumber ?? "";
+    base.vat_number = c.vatNumber ?? "";
+    base.tax_id = c.vatNumber ?? "";
+    base.phone = c.phone ?? "";
+    base.email = c.email ?? "";
+    base.client_type = c.clientType ?? "";
+    base.industry = c.industry ?? "";
+  } else if (c.kind === "platform") {
+    base.registration_number = c.registrationNumber ?? "";
+    base.cr_number = c.registrationNumber ?? "";
+  }
+  return base;
 }
 
 function smartproEmployerToFieldValues(e: SmartProEmployer): Record<string, string> {
@@ -355,6 +500,9 @@ function smartproEmployerToFieldValues(e: SmartProEmployer): Record<string, stri
     name: e.nameEn,
     name_ar: e.nameAr ?? "",
     cr_number: e.crNumber ?? "",
+    registration_number: e.crNumber ?? "",
+    phone: e.phone ?? "",
+    email: e.email ?? "",
   };
 }
 
@@ -369,13 +517,49 @@ function smartproEmployeeToFieldValues(e: SmartProEmployee): Record<string, stri
     last_name: e.lastName,
     first_name_ar: e.firstNameAr ?? "",
     last_name_ar: e.lastNameAr ?? "",
+    employee_number: e.employeeNumber ?? "",
+    email: e.email ?? "",
+    phone: e.phone ?? "",
     id_number: e.nationalId ?? "",
     national_id: e.nationalId ?? "",
+    civil_id: e.nationalId ?? "",
     passport_number: e.passportNumber ?? "",
+    visa_number: e.visaNumber ?? "",
+    work_permit_number: e.workPermitNumber ?? "",
     nationality: e.nationality ?? "",
     job_title_en: e.jobTitleEn ?? "",
     job_title: e.jobTitleEn ?? "",
     job_title_ar: e.jobTitleAr ?? "",
+    department: e.department ?? "",
+    position: e.position ?? "",
+    contract_type: e.contractType ?? "",
+    hire_date: e.hireDate ?? "",
+    date_of_birth: e.dateOfBirth ?? "",
+    gender: e.gender ?? "",
+    salary: e.salary != null ? String(e.salary) : "",
+    basic_salary: e.basicSalary != null ? String(e.basicSalary) : "",
+    total_salary: e.totalSalary != null ? String(e.totalSalary) : "",
+    housing_allowance: e.housingAllowance != null ? String(e.housingAllowance) : "",
+    transport_allowance: e.transportAllowance != null ? String(e.transportAllowance) : "",
+    currency: e.currency ?? "",
+    bank_name: e.bankName ?? "",
+    bank_account_number: e.bankAccountNumber ?? "",
+    iban: e.ibanNumber ?? "",
+    iban_number: e.ibanNumber ?? "",
+  };
+}
+
+function smartproSupplierToFieldValues(s: SmartProSupplier): Record<string, string> {
+  return {
+    name_en: s.legalNameEn ?? s.displayNameEn,
+    name: s.legalNameEn ?? s.displayNameEn,
+    name_ar: s.legalNameAr ?? s.displayNameAr ?? "",
+    display_name_en: s.displayNameEn,
+    display_name_ar: s.displayNameAr ?? "",
+    registration_number: s.registrationNumber ?? "",
+    cr_number: s.registrationNumber ?? "",
+    phone: s.phone ?? "",
+    email: s.email ?? "",
   };
 }
 
@@ -412,6 +596,9 @@ export default function NewContract() {
   const [smartproError, setSmartproError] = useState<string | null>(null);
   const [selectedClientKey, setSelectedClientKey] = useState<string | null>(null);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string | null>(null);
+  // "none" | "employee" | "supplier"
+  const [secondPartyRole, setSecondPartyRole] = useState<"none" | "employee" | "supplier">("employee");
 
   // Step 3 — fields
   const [values, setValues] = useState<Record<string, string>>({});
@@ -582,9 +769,10 @@ export default function NewContract() {
     let next = { ...values };
 
     if (isSmartpro && smartproData) {
-      // First Party — Client
+      // First Party — Client (CRM or platform)
+      const allClients: SmartProClient[] = [...(smartproData.crmClients ?? []), ...(smartproData.platformClients ?? [])];
       const client = selectedClientKey
-        ? smartproData.clients.find(c => clientKey(c) === selectedClientKey) ?? null
+        ? allClients.find(c => clientKey(c) === selectedClientKey) ?? null
         : null;
       if (client) {
         const cVals = smartproClientToFieldValues(client);
@@ -596,28 +784,47 @@ export default function NewContract() {
         for (const k of keys) { if (next[k] && !before[k]) newSeeded.add(k); }
       }
 
-      // Second Party — Employer (always present)
+      // Employer — always present
       {
         const eVals = smartproEmployerToFieldValues(smartproData.employer);
         const before = next;
-        next = applyPartyToFields(eVals, "second_party", keys, next);
         next = applyPartyToFields(eVals, "employer", keys, next);
+        next = applyPartyToFields(eVals, "second_party", keys, next);
         next = applyPartyToFields(eVals, "party_2", keys, next);
         next = applyPartyToFields(eVals, "party2", keys, next);
         for (const k of keys) { if (next[k] && !before[k]) newSeeded.add(k); }
       }
 
-      // Employee — linked to employer
-      const employee = selectedEmployeeId != null
-        ? smartproData.employees.find(e => e.id === selectedEmployeeId) ?? null
-        : null;
-      if (employee) {
-        const empVals = smartproEmployeeToFieldValues(employee);
-        const before = next;
-        next = applyPartyToFields(empVals, "employee", keys, next);
-        next = applyPartyToFields(empVals, "promoter", keys, next);
-        next = applyPartyToFields(empVals, "worker", keys, next);
-        for (const k of keys) { if (next[k] && !before[k]) newSeeded.add(k); }
+      // Second Party — Employee
+      if (secondPartyRole === "employee") {
+        const employee = selectedEmployeeId != null
+          ? smartproData.employees.find(e => e.id === selectedEmployeeId) ?? null
+          : null;
+        if (employee) {
+          const empVals = smartproEmployeeToFieldValues(employee);
+          const before = next;
+          next = applyPartyToFields(empVals, "employee", keys, next);
+          next = applyPartyToFields(empVals, "promoter", keys, next);
+          next = applyPartyToFields(empVals, "worker", keys, next);
+          next = applyPartyToFields(empVals, "second_party", keys, next);
+          for (const k of keys) { if (next[k] && !before[k]) newSeeded.add(k); }
+        }
+      }
+
+      // Second Party — Supplier
+      if (secondPartyRole === "supplier") {
+        const supplier = selectedSupplierId != null
+          ? smartproData.suppliers.find(s => s.partyId === selectedSupplierId) ?? null
+          : null;
+        if (supplier) {
+          const supVals = smartproSupplierToFieldValues(supplier);
+          const before = next;
+          next = applyPartyToFields(supVals, "supplier", keys, next);
+          next = applyPartyToFields(supVals, "second_party", keys, next);
+          next = applyPartyToFields(supVals, "vendor", keys, next);
+          next = applyPartyToFields(supVals, "party_2", keys, next);
+          for (const k of keys) { if (next[k] && !before[k]) newSeeded.add(k); }
+        }
       }
     } else {
       // Regular Supabase parties flow
@@ -916,37 +1123,26 @@ export default function NewContract() {
                   <>
                     <div className="flex items-center gap-2 p-2.5 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800">
                       <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-blue-600" />
-                      Data loaded from SmartPro Hub — {smartproData.clients.length} clients, {smartproData.employees.length} employees
+                      SmartPro: {(smartproData.crmClients?.length ?? 0) + (smartproData.platformClients?.length ?? 0)} clients · {smartproData.suppliers?.length ?? 0} suppliers · {smartproData.employees.length} employees
                     </div>
 
-                    {/* First Party — Client */}
-                    <div className="space-y-2">
-                      <Label>First Party — Client</Label>
-                      <SmartProClientCombobox
-                        clients={smartproData.clients}
-                        value={selectedClientKey}
-                        onChange={setSelectedClientKey}
-                      />
-                      {smartproData.clients.length === 0 && (
-                        <p className="text-xs text-muted-foreground">No clients found in SmartPro for this company.</p>
-                      )}
-                    </div>
-
-                    <Separator />
-
-                    {/* Second Party — Employer (readonly) */}
-                    <div className="space-y-2">
-                      <Label>Second Party — Employer</Label>
+                    {/* Employer card — always shown */}
+                    <div className="space-y-1.5">
+                      <Label className="text-xs uppercase tracking-wide text-muted-foreground">Employer (auto)</Label>
                       <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-border bg-muted/30">
                         <Building2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">{smartproData.employer.nameEn}</p>
-                          {smartproData.employer.nameAr && (
-                            <p className="text-xs text-muted-foreground" dir="rtl">{smartproData.employer.nameAr}</p>
-                          )}
-                          {smartproData.employer.crNumber && (
-                            <p className="text-xs text-muted-foreground">CR: {smartproData.employer.crNumber}</p>
-                          )}
+                        <div className="min-w-0 flex-1 grid grid-cols-2 gap-x-3">
+                          <div>
+                            <p className="text-sm font-medium truncate">{smartproData.employer.nameEn}</p>
+                            {smartproData.employer.nameAr && (
+                              <p className="text-xs text-muted-foreground" dir="rtl">{smartproData.employer.nameAr}</p>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground space-y-0.5">
+                            {smartproData.employer.crNumber && <p>CR: {smartproData.employer.crNumber}</p>}
+                            {smartproData.employer.phone && <p>📞 {smartproData.employer.phone}</p>}
+                            {smartproData.employer.email && <p>✉ {smartproData.employer.email}</p>}
+                          </div>
                         </div>
                         <Badge variant="secondary" className="ms-auto text-[10px] shrink-0">SmartPro</Badge>
                       </div>
@@ -954,17 +1150,125 @@ export default function NewContract() {
 
                     <Separator />
 
-                    {/* Employee — linked to employer */}
+                    {/* First Party — Client */}
                     <div className="space-y-2">
-                      <Label>Employee <span className="text-muted-foreground font-normal">(optional)</span></Label>
-                      <SmartProEmployeeCombobox
-                        employees={smartproData.employees}
-                        value={selectedEmployeeId}
-                        onChange={setSelectedEmployeeId}
+                      <Label>First Party — Client</Label>
+                      <SmartProClientCombobox
+                        clients={[...(smartproData.crmClients ?? []), ...(smartproData.platformClients ?? [])]}
+                        value={selectedClientKey}
+                        onChange={setSelectedClientKey}
                       />
-                      <p className="text-xs text-muted-foreground">
-                        Employee data will auto-fill <code>employee_*</code> and <code>promoter_*</code> fields in the template.
-                      </p>
+                      {selectedClientKey && (() => {
+                        const allClients: SmartProClient[] = [...(smartproData.crmClients ?? []), ...(smartproData.platformClients ?? [])];
+                        const c = allClients.find(x => clientKey(x) === selectedClientKey);
+                        if (!c || c.kind !== "crm_client") return null;
+                        return (
+                          <div className="grid grid-cols-2 gap-x-3 px-2 text-xs text-muted-foreground">
+                            {c.crNumber && <span>CR: {c.crNumber}</span>}
+                            {c.vatNumber && <span>VAT: {c.vatNumber}</span>}
+                            {c.phone && <span>📞 {c.phone}</span>}
+                            {c.email && <span>✉ {c.email}</span>}
+                          </div>
+                        );
+                      })()}
+                      {(smartproData.crmClients?.length ?? 0) === 0 && (smartproData.platformClients?.length ?? 0) === 0 && (
+                        <p className="text-xs text-muted-foreground">No clients found for this company in SmartPro.</p>
+                      )}
+                    </div>
+
+                    <Separator />
+
+                    {/* Second Party — Employee OR Supplier */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label>Second Party</Label>
+                        <div className="flex rounded-md border overflow-hidden text-xs">
+                          {(["employee", "supplier", "none"] as const).map(role => (
+                            <button
+                              key={role}
+                              type="button"
+                              onClick={() => setSecondPartyRole(role)}
+                              className={`px-2.5 py-1 capitalize transition-colors ${secondPartyRole === role ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`}
+                            >
+                              {role === "none" ? "Skip" : role.charAt(0).toUpperCase() + role.slice(1)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {secondPartyRole === "employee" && (
+                        <div className="space-y-2">
+                          <SmartProEmployeeCombobox
+                            employees={smartproData.employees}
+                            value={selectedEmployeeId}
+                            onChange={setSelectedEmployeeId}
+                          />
+                          {/* Employee detail + documents */}
+                          {selectedEmployeeId != null && (() => {
+                            const emp = smartproData.employees.find(e => e.id === selectedEmployeeId);
+                            if (!emp) return null;
+                            return (
+                              <div className="rounded-lg border bg-muted/20 p-3 space-y-2 text-xs">
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground">
+                                  {emp.nationalId && <span>Civil ID: <span className="text-foreground font-mono">{emp.nationalId}</span></span>}
+                                  {emp.passportNumber && <span>Passport: <span className="text-foreground font-mono">{emp.passportNumber}</span></span>}
+                                  {emp.visaNumber && <span>Visa: <span className="text-foreground font-mono">{emp.visaNumber}</span></span>}
+                                  {emp.workPermitNumber && <span>Work Permit: <span className="text-foreground font-mono">{emp.workPermitNumber}</span></span>}
+                                  {emp.nationality && <span>Nationality: {emp.nationality}</span>}
+                                  {emp.dateOfBirth && <span>DOB: {emp.dateOfBirth}</span>}
+                                  {emp.salary != null && <span>Salary: {emp.salary} {emp.currency ?? ""}</span>}
+                                  {emp.bankName && <span>Bank: {emp.bankName}</span>}
+                                  {emp.ibanNumber && <span>IBAN: <span className="font-mono">{emp.ibanNumber}</span></span>}
+                                </div>
+                                {emp.documents.length > 0 && (
+                                  <div className="pt-1 border-t">
+                                    <p className="font-medium text-foreground mb-1.5">Attachments</p>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {emp.documents.map((doc, i) => (
+                                        <a
+                                          key={i}
+                                          href={doc.fileUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className={`inline-flex items-center gap-1 px-2 py-1 rounded border text-[11px] hover:bg-muted transition-colors ${doc.status === "verified" ? "border-green-300 text-green-800 bg-green-50" : doc.status === "expired" ? "border-red-300 text-red-700 bg-red-50" : "border-border text-muted-foreground bg-background"}`}
+                                        >
+                                          <FileText className="h-3 w-3 flex-shrink-0" />
+                                          {DOC_TYPE_LABEL[doc.type] ?? doc.type}
+                                          {doc.expiresAt && <span className="opacity-70">· {doc.expiresAt}</span>}
+                                        </a>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      )}
+
+                      {secondPartyRole === "supplier" && (
+                        <div className="space-y-2">
+                          <SmartProSupplierCombobox
+                            suppliers={smartproData.suppliers ?? []}
+                            value={selectedSupplierId}
+                            onChange={setSelectedSupplierId}
+                          />
+                          {selectedSupplierId && (() => {
+                            const s = smartproData.suppliers?.find(x => x.partyId === selectedSupplierId);
+                            if (!s) return null;
+                            return (
+                              <div className="grid grid-cols-2 gap-x-3 px-2 text-xs text-muted-foreground">
+                                {s.registrationNumber && <span>CR: {s.registrationNumber}</span>}
+                                {s.phone && <span>📞 {s.phone}</span>}
+                                {s.email && <span>✉ {s.email}</span>}
+                              </div>
+                            );
+                          })()}
+                          {(smartproData.suppliers?.length ?? 0) === 0 && (
+                            <p className="text-xs text-muted-foreground">No suppliers registered for this company in SmartPro.</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
