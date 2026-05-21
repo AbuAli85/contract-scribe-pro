@@ -28,7 +28,7 @@ import {
   normalizeValuesForMerge,
   type PlaceholderField,
   type ScanResult,
-  type AiScanResult,
+  type AiIngestionResult,
 } from "@/lib/templateEngine";
 
 type Stage = "upload" | "review" | "fill" | "done";
@@ -43,7 +43,7 @@ const COPY = {
     uploadHint:
       "Use {token} syntax in your Word document. Example: 'Dear {employee_name}, your salary will be {salary} OMR.'",
     uploadCta: "Choose a Word file",
-    scanning: "Scanning template…",
+    scanning: "Scanning template...",
     reviewTitle: "Detected placeholders",
     reviewSubtitle:
       "We found these fields in your template. Review the labels, then continue to fill them in.",
@@ -52,11 +52,11 @@ const COPY = {
     fieldKey: "Token",
     fieldLabel: "Label",
     fieldType: "Type",
-    continueToFill: "Continue → fill the form",
+    continueToFill: "Continue to fill the form",
     fillTitle: "Fill the contract",
     fillSubtitle: "Enter the values for each placeholder. Date fields will be formatted automatically.",
     generate: "Generate filled document",
-    generating: "Generating…",
+    generating: "Generating...",
     doneTitle: "Done! Your filled contract is ready.",
     doneSubtitle:
       "The .docx was downloaded to your computer. You can also save it for digital signature.",
@@ -73,9 +73,9 @@ const COPY = {
     back: "العودة إلى لوحة التحكم",
     uploadTitle: "حمّل ملف .docx",
     uploadHint:
-      "استخدم صيغة {token} في مستند Word. مثال: 'عزيزي {employee_name}، راتبك سيكون {salary} ريال عماني.'",
+      "استخدم صيغة {token} في مستند Word.",
     uploadCta: "اختر ملف Word",
-    scanning: "جارٍ فحص النموذج…",
+    scanning: "جارٍ فحص النموذج...",
     reviewTitle: "العناصر النائبة المكتشفة",
     reviewSubtitle:
       "وجدنا هذه الحقول في نموذجك. راجع التسميات، ثم تابع لملئها.",
@@ -84,11 +84,11 @@ const COPY = {
     fieldKey: "الرمز",
     fieldLabel: "التسمية",
     fieldType: "النوع",
-    continueToFill: "متابعة ← تعبئة النموذج",
+    continueToFill: "متابعة لتعبئة النموذج",
     fillTitle: "املأ العقد",
     fillSubtitle: "أدخل قيم كل عنصر نائب. سيتم تنسيق حقول التاريخ تلقائياً.",
     generate: "إنشاء المستند المعبأ",
-    generating: "جارٍ الإنشاء…",
+    generating: "جارٍ الإنشاء...",
     doneTitle: "تم! العقد المعبأ جاهز.",
     doneSubtitle:
       "تم تنزيل ملف .docx على جهازك. يمكنك أيضاً حفظه للتوقيع الرقمي.",
@@ -107,7 +107,7 @@ const MyTemplates = () => {
   const [stage, setStage] = useState<Stage>("upload");
   const [file, setFile] = useState<File | null>(null);
   const [scan, setScan] = useState<ScanResult | null>(null);
-  const [aiResult, setAiResult] = useState<AiScanResult | null>(null);
+  const [aiResult, setAiResult] = useState<AiIngestionResult | null>(null);
   const [scanMode, setScanMode] = useState<ScanMode>("ai");
   const [scanning, setScanning] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
@@ -129,12 +129,10 @@ const MyTemplates = () => {
 
       try {
         if (scanMode === "ai") {
-          // AI smart scan — reads the doc semantically via Claude
           const ai = await scanTemplateWithAi(f);
           setAiResult(ai);
-          // Convert AI fields into the legacy ScanResult shape so the
-          // existing review table + fill flow keep working unchanged.
-          const compatFields: PlaceholderField[] = ai.fields.map((af) => ({
+          const aiFields = ai.templateContent?.fields ?? [];
+          const compatFields: PlaceholderField[] = aiFields.map((af) => ({
             key: af.key,
             label: isAr ? af.labelAr : af.labelEn,
             type:
@@ -149,14 +147,13 @@ const MyTemplates = () => {
           }));
           setScan({
             fields: compatFields,
-            rawTokens: ai.fields.map((af) => af.key),
-            totalTokens: ai.fields.length,
+            rawTokens: aiFields.map((af) => af.key),
+            totalTokens: aiFields.length,
           });
           const seed: Record<string, string> = {};
           compatFields.forEach((field) => (seed[field.key] = ""));
           setValues(seed);
         } else {
-          // Manual {placeholder} regex scan (free, instant)
           const result = await scanTemplate(f);
           setScan(result);
           setAiResult(null);
@@ -223,7 +220,6 @@ const MyTemplates = () => {
   };
 
   const refillSame = () => {
-    // Keep file + scan, just clear values
     const cleared: Record<string, string> = {};
     scan?.fields.forEach((f) => (cleared[f.key] = ""));
     setValues(cleared);
@@ -246,7 +242,6 @@ const MyTemplates = () => {
       </header>
 
       <main className="container mx-auto px-4 py-10 max-w-3xl">
-        {/* HEADER */}
         <div className={`mb-8 ${isAr ? "text-right" : ""}`}>
           <Badge variant="outline" className="mb-3 gap-1.5">
             <Sparkles className="h-3 w-3 text-primary" />
@@ -258,33 +253,25 @@ const MyTemplates = () => {
           <p className="text-muted-foreground leading-relaxed">{t.subtitle}</p>
         </div>
 
-        {/* STAGE: UPLOAD */}
         {stage === "upload" && (
           <Card>
             <CardHeader>
-              <CardTitle className={isAr ? "text-right" : ""}>
-                {t.uploadTitle}
-              </CardTitle>
-              <CardDescription
-                className={`leading-relaxed ${isAr ? "text-right" : ""}`}
-              >
+              <CardTitle className={isAr ? "text-right" : ""}>{t.uploadTitle}</CardTitle>
+              <CardDescription className={`leading-relaxed ${isAr ? "text-right" : ""}`}>
                 {scanMode === "ai"
                   ? isAr
-                    ? "حمّل أي مستند Word — سيقرأ الذكاء الاصطناعي محتواه ويحدد الحقول القابلة للتعبئة تلقائياً."
+                    ? "حمّل أي مستند Word."
                     : "Upload any Word document — our AI reads the content and identifies the fillable fields automatically."
                   : t.uploadHint}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Scan-mode picker */}
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setScanMode("ai")}
                   className={`text-start p-3 border rounded-lg transition-colors ${
-                    scanMode === "ai"
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-border/80"
+                    scanMode === "ai" ? "border-primary bg-primary/5" : "border-border"
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
@@ -298,7 +285,7 @@ const MyTemplates = () => {
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {isAr
-                      ? "لا حاجة لأي رموز. الذكاء الاصطناعي يقرأ المستند ويحدد الحقول."
+                      ? "لا حاجة لأي رموز."
                       : "No tokens needed. AI reads the document and detects fields."}
                   </p>
                 </button>
@@ -306,9 +293,7 @@ const MyTemplates = () => {
                   type="button"
                   onClick={() => setScanMode("manual")}
                   className={`text-start p-3 border rounded-lg transition-colors ${
-                    scanMode === "manual"
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-border/80"
+                    scanMode === "manual" ? "border-primary bg-primary/5" : "border-border"
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
@@ -319,13 +304,12 @@ const MyTemplates = () => {
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {isAr
-                      ? "إذا كنت قد أدرجت رموز {token} يدوياً. سريع ومجاني."
+                      ? "إذا كنت قد أدرجت رموز يدوياً."
                       : "For docs where you've already added {token} markers. Free and instant."}
                   </p>
                 </button>
               </div>
 
-              {/* Upload dropzone */}
               <label
                 htmlFor="docx-upload"
                 className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-10 cursor-pointer hover:border-primary hover:bg-muted/40 transition-colors"
@@ -373,8 +357,8 @@ const MyTemplates = () => {
                   <Info className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
                   <p className="leading-relaxed">
                     {isAr
-                      ? "يستخدم النظام Claude AI لتحليل المستند. لا تُحفظ بيانات مستندك. التحليل يستغرق 5-10 ثوانٍ."
-                      : "Powered by Claude AI. Your document is analyzed in-memory and not stored. Analysis takes 5-10 seconds."}
+                      ? "يستخدم النظام Claude AI لتحليل المستند."
+                      : "Powered by Claude AI. Your document is analyzed in-memory and not stored."}
                   </p>
                 </div>
               )}
@@ -382,7 +366,6 @@ const MyTemplates = () => {
           </Card>
         )}
 
-        {/* STAGE: REVIEW */}
         {stage === "review" && scan && (
           <Card>
             <CardHeader>
@@ -413,10 +396,9 @@ const MyTemplates = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* AI Suggestions panel (only when AI scan returned issues) */}
               {aiResult && aiResult.suggestions.length > 0 && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-900/40 p-3 space-y-2">
-                  <div className={`flex items-center gap-2 text-amber-900 dark:text-amber-200 font-medium text-sm ${isAr ? "flex-row-reverse" : ""}`}>
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-2">
+                  <div className={`flex items-center gap-2 text-amber-900 font-medium text-sm ${isAr ? "flex-row-reverse" : ""}`}>
                     <Wand2 className="h-4 w-4" />
                     {isAr ? "اقتراحات الذكاء الاصطناعي" : "AI suggestions"}
                   </div>
@@ -424,7 +406,7 @@ const MyTemplates = () => {
                     {aiResult.suggestions.map((s, i) => (
                       <li
                         key={i}
-                        className={`text-xs flex items-start gap-2 text-amber-900 dark:text-amber-200 ${isAr ? "flex-row-reverse text-right" : ""}`}
+                        className={`text-xs flex items-start gap-2 text-amber-900 ${isAr ? "flex-row-reverse text-right" : ""}`}
                       >
                         <Badge
                           variant="outline"
@@ -445,7 +427,7 @@ const MyTemplates = () => {
                 </div>
               )}
               {scan.fields.length === 0 ? (
-                <div className="flex items-center gap-3 p-4 rounded-lg border border-amber-200 bg-amber-50 text-amber-900 dark:bg-amber-900/10 dark:border-amber-900/40 dark:text-amber-200">
+                <div className="flex items-center gap-3 p-4 rounded-lg border border-amber-200 bg-amber-50 text-amber-900">
                   <AlertCircle className="h-5 w-5 flex-shrink-0" />
                   <div className="text-sm">{t.noFields}</div>
                 </div>
@@ -491,13 +473,10 @@ const MyTemplates = () => {
           </Card>
         )}
 
-        {/* STAGE: FILL */}
         {stage === "fill" && scan && (
           <Card>
             <CardHeader>
-              <CardTitle className={isAr ? "text-right" : ""}>
-                {t.fillTitle}
-              </CardTitle>
+              <CardTitle className={isAr ? "text-right" : ""}>{t.fillTitle}</CardTitle>
               <CardDescription className={isAr ? "text-right" : ""}>
                 {t.fillSubtitle}
               </CardDescription>
@@ -577,7 +556,6 @@ const MyTemplates = () => {
           </Card>
         )}
 
-        {/* STAGE: DONE */}
         {stage === "done" && (
           <Card>
             <CardContent className="pt-6 text-center space-y-4">

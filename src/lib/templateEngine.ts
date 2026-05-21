@@ -1,16 +1,6 @@
 // =============================================================
-// Template Engine — placeholder detection + .docx merging
-//
-// Phase 1 of the BYO-template feature. Uses docxtemplater + pizzip
-// to scan uploaded .docx files for {token} placeholders and merge
-// user-supplied values into a final filled document.
-//
-// Required deps (install in repo):
-//   npm install docxtemplater pizzip file-saver
-//   npm install --save-dev @types/file-saver
-//
-// docxtemplater default delimiters are { ... }. To use {{ ... }} or
-// other syntax, pass `parser` / `delimiters` options when constructing.
+// Template Engine — placeholder detection + .docx merging +
+// AI-powered ingestion (delegates to detect-template-fields).
 // =============================================================
 
 import PizZip from "pizzip";
@@ -19,24 +9,18 @@ import { saveAs } from "file-saver";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface PlaceholderField {
-  /** machine key — e.g. "employee_name" */
   key: string;
-  /** human label shown on the fill form — e.g. "Employee Name" */
   label: string;
-  /** input type — heuristically inferred from key name */
   type: "text" | "date" | "number" | "email" | "textarea";
   required: boolean;
 }
 
 export interface ScanResult {
   fields: PlaceholderField[];
-  /** raw placeholder names found in the doc, in document order */
   rawTokens: string[];
-  /** count of tokens detected (including duplicates) */
   totalTokens: number;
 }
 
-// ─── Heuristics for inferring field type from token name ─────────
 const DATE_HINTS = /(date|start|end|expiry|expires|dob|birthday|joining)/i;
 const NUMBER_HINTS = /(salary|amount|rate|count|quantity|qty|years|age|months|days|fee)/i;
 const EMAIL_HINTS = /(email|e_?mail)/i;
@@ -58,22 +42,10 @@ function humanizeKey(key: string): string {
     .trim();
 }
 
-// ─── Scan a .docx for placeholders ───────────────────────────────
-/**
- * Reads a .docx ArrayBuffer and returns the list of {placeholder}
- * tokens it contains, along with inferred field types.
- *
- * docxtemplater's InspectModule could be used for this, but we don't
- * want a hard dep on it for Phase 1. Instead, we extract document.xml
- * from the zip and run a regex over the text runs.
- */
 export async function scanTemplate(file: File | Blob): Promise<ScanResult> {
   const buf = await file.arrayBuffer();
   const zip = new PizZip(buf);
 
-  // The main document content lives at word/document.xml inside the zip.
-  // Headers and footers live separately — scan those too so {company_name}
-  // in a letterhead is captured.
   const sources = [
     "word/document.xml",
     "word/header1.xml",
@@ -88,11 +60,6 @@ export async function scanTemplate(file: File | Blob): Promise<ScanResult> {
   for (const path of sources) {
     const entry = zip.file(path);
     if (entry) {
-      // Strip XML tags so placeholders split across runs are still detected.
-      // docx writes "{employee" + "_name}" across separate <w:t> elements
-      // when Word auto-corrects mid-token. The naive regex below catches
-      // the common case; production should use docxtemplater's parser to
-      // verify, but this works for ~95% of real-world templates.
       const raw = entry.asText();
       const stripped = raw.replace(/<[^>]+>/g, "");
       combinedText += stripped + "\n";
@@ -107,7 +74,6 @@ export async function scanTemplate(file: File | Blob): Promise<ScanResult> {
   let match: RegExpExecArray | null;
   while ((match = tokenRe.exec(combinedText)) !== null) {
     const tokenRaw = match[1].trim();
-    // docxtemplater normalizes spaces; we mirror by collapsing whitespace
     const key = tokenRaw.replace(/\s+/g, "_").toLowerCase();
     rawTokens.push(tokenRaw);
     if (seen.has(key)) continue;
@@ -123,14 +89,8 @@ export async function scanTemplate(file: File | Blob): Promise<ScanResult> {
   return { fields, rawTokens, totalTokens: rawTokens.length };
 }
 
-// ─── Merge values into the template + return the filled .docx ────
 export interface MergeOptions {
-  /**
-   * Save & download the result to the user's machine. Defaults to true.
-   * Set to false if you want to upload the Blob to storage instead.
-   */
   download?: boolean;
-  /** Filename for the download — defaults to "filled-contract.docx" */
   filename?: string;
 }
 
@@ -145,12 +105,9 @@ export async function mergeTemplate(
   const doc = new Docxtemplater(zip, {
     paragraphLoop: true,
     linebreaks: true,
-    // Replace missing tokens with empty string rather than throwing
     nullGetter: () => "",
   });
 
-  // Normalize value keys to match how we stored them (lowercase, underscored).
-  // docxtemplater will only match exact token text, so we pass both forms.
   const data: Record<string, unknown> = { ...values };
   for (const [k, v] of Object.entries(values)) {
     const alt = k.replace(/_/g, " ");
@@ -173,12 +130,6 @@ export async function mergeTemplate(
   return blob;
 }
 
-// ─── AI Smart Detection (calls Supabase Edge Function) ──────────
-/**
- * Extracts plain readable text from a .docx by unzipping it and stripping
- * XML markup from document.xml + any headers/footers. Used as the input
- * to Claude when doing AI-powered field detection.
- */
 export async function extractTextFromDocx(
   file: File | Blob
 ): Promise<string> {
@@ -197,7 +148,6 @@ export async function extractTextFromDocx(
   for (const path of sources) {
     const entry = zip.file(path);
     if (entry) {
-      // Replace paragraph closes with newlines so the output reads as paragraphs
       const raw = entry
         .asText()
         .replace(/<\/w:p>/g, "</w:p>\n")
@@ -205,7 +155,6 @@ export async function extractTextFromDocx(
       combined += raw.replace(/<[^>]+>/g, "") + "\n";
     }
   }
-  // Collapse runs of whitespace, preserve paragraph breaks
   return combined
     .split(/\n+/)
     .map((line) => line.trim())
@@ -213,24 +162,40 @@ export async function extractTextFromDocx(
     .join("\n");
 }
 
-export interface AiDetectedField {
+// ─── AI ingestion result types ───────────────────────────────
+
+export type AiFieldType =
+  | "text"
+  | "textarea"
+  | "number"
+  | "currency-omr"
+  | "date"
+  | "select"
+  | "email"
+  | "phone";
+
+export interface AiTemplateField {
   key: string;
-  labelEn: string;
-  labelAr: string;
-  type:
-    | "text"
-    | "textarea"
-    | "number"
-    | "currency-omr"
-    | "date"
-    | "select"
-    | "email"
-    | "phone";
-  required: boolean;
   group: string;
   groupAr: string;
+  labelEn: string;
+  labelAr: string;
+  type: AiFieldType;
+  required: boolean;
+  helperEn?: string;
+  helperAr?: string;
   options?: { value: string; labelEn: string; labelAr: string }[];
-  sourceSnippet?: string;
+  defaultValue?: string;
+  placeholderEn?: string;
+  placeholderAr?: string;
+  bilingual?: boolean;
+}
+
+export interface AiTemplateClause {
+  headingEn: string;
+  headingAr: string;
+  paragraphsEn: string[];
+  paragraphsAr: string[];
 }
 
 export interface AiSuggestion {
@@ -240,30 +205,53 @@ export interface AiSuggestion {
   messageAr: string;
 }
 
-export interface AiScanResult {
-  fields: AiDetectedField[];
-  clauses: { headingEn: string; headingAr: string; body: string }[];
+export interface AiCatalogMeta {
+  titleEn: string;
+  titleAr: string;
+  descEn: string;
+  descAr: string;
+  category: string;
+  icon: string;
+}
+
+export interface AiTemplateContent {
+  id: string;
+  subtitleEn?: string;
+  subtitleAr?: string;
+  fields: AiTemplateField[];
+  clauses: AiTemplateClause[];
+}
+
+export interface AiIngestionResult {
+  templateContent: AiTemplateContent;
   suggestions: AiSuggestion[];
   detectedCategory: string;
   detectedLanguage: "en" | "ar" | "bilingual";
+  catalogMeta: AiCatalogMeta;
   confidence: number;
-  usage?: { inputTokens: number | null; outputTokens: number | null };
+  diagnostics?: {
+    orphanTokens: string[];
+    fieldCount: number;
+    clauseCount: number;
+    bilingualFieldCount: number;
+  };
+  usage?: {
+    inputTokens: number | null;
+    outputTokens: number | null;
+    cacheReadTokens: number | null;
+    cacheCreationTokens: number | null;
+  };
 }
 
-/**
- * AI-powered template scan. Sends the extracted document text to the
- * detect-template-fields Supabase Edge Function (which calls Claude),
- * returns a fully structured analysis: detected fields, clauses,
- * missing-clause suggestions, and language detection.
- *
- * Use this for documents that DON'T have manual {placeholder} tokens.
- * For docs with explicit tokens, the regex scanTemplate() is faster
- * and free.
- */
 export async function scanTemplateWithAi(
   file: File | Blob,
-  options: { category?: string; lang?: "en" | "ar" | "bilingual" } = {}
-): Promise<AiScanResult> {
+  options: {
+    category?: string;
+    lang?: "en" | "ar" | "bilingual";
+    idHint?: string;
+    mode?: "full" | "fields-only";
+  } = {}
+): Promise<AiIngestionResult> {
   const text = await extractTextFromDocx(file);
   if (text.length < 50) {
     throw new Error(
@@ -274,7 +262,13 @@ export async function scanTemplateWithAi(
   const { data, error } = await supabase.functions.invoke(
     "detect-template-fields",
     {
-      body: { text, category: options.category, lang: options.lang },
+      body: {
+        text,
+        category: options.category,
+        lang: options.lang,
+        idHint: options.idHint,
+        mode: options.mode ?? "full",
+      },
     }
   );
 
@@ -284,10 +278,38 @@ export async function scanTemplateWithAi(
       data?.error ?? "AI returned an error. Please try again or use manual scan."
     );
   }
-  return { ...data.result, usage: data.usage };
+  return { ...data.result, diagnostics: data.diagnostics, usage: data.usage };
 }
 
-// ─── Helper: convert form values to docxtemplater-friendly format ──
+export async function scanTextWithAi(
+  text: string,
+  options: {
+    category?: string;
+    lang?: "en" | "ar" | "bilingual";
+    idHint?: string;
+    mode?: "full" | "fields-only";
+  } = {}
+): Promise<AiIngestionResult> {
+  if (text.length < 50) {
+    throw new Error("Text too short to analyze (minimum 50 characters).");
+  }
+  const { data, error } = await supabase.functions.invoke(
+    "detect-template-fields",
+    {
+      body: {
+        text,
+        category: options.category,
+        lang: options.lang,
+        idHint: options.idHint,
+        mode: options.mode ?? "full",
+      },
+    }
+  );
+  if (error) throw new Error(error.message ?? "AI scan failed");
+  if (!data?.ok) throw new Error(data?.error ?? "AI returned an error.");
+  return { ...data.result, diagnostics: data.diagnostics, usage: data.usage };
+}
+
 export function normalizeValuesForMerge(
   fields: PlaceholderField[],
   rawValues: Record<string, string>
@@ -296,7 +318,6 @@ export function normalizeValuesForMerge(
   for (const f of fields) {
     const v = rawValues[f.key] ?? "";
     if (f.type === "date" && v) {
-      // Render dates in a Word-friendly long format
       const d = new Date(v);
       if (!Number.isNaN(d.getTime())) {
         out[f.key] = d.toLocaleDateString("en-GB", {

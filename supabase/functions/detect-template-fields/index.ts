@@ -1,12 +1,17 @@
 // =============================================================
 // Edge Function: detect-template-fields
 //
-// AI-powered smart detection. Receives extracted text from an
-// uploaded Word/Google document and asks Claude to identify
-// fillable fields, clause structure, and missing standard clauses.
+// AI-powered template ingestion engine. Receives extracted text
+// from an uploaded Word/Google document and asks Claude to
+// produce a complete TemplateContent schema (fields + bilingual
+// clauses with {token} substitutions), plus quality suggestions.
 //
-// Returns structured JSON ready to feed into the existing
-// template engine + fill form.
+// Used by TWO surfaces:
+//   1. The user-facing BYO upload — turns a customer's own .docx
+//      into a fillable bilingual template inside Contract Scribe Pro.
+//   2. The CLI ingestion script (scripts/ingest-template.mjs) —
+//      drops a draft TemplateContent TS file ready for human review
+//      and merge into the catalog.
 //
 // Deploy:
 //   supabase functions deploy detect-template-fields --no-verify-jwt
@@ -25,26 +30,62 @@ interface RequestBody {
   category?: string;
   /** Detected or declared primary language */
   lang?: "en" | "ar" | "bilingual";
+  /**
+   * Output mode:
+   *   - "full" (default) returns the complete TemplateContent schema
+   *     ready to use by the form generator and doc renderer.
+   *   - "fields-only" returns just the field list (faster, smaller,
+   *     for legacy callers that only need the placeholder scan).
+   */
+  mode?: "full" | "fields-only";
+  /**
+   * Hint for the generated template's machine ID — e.g. "service-agreement".
+   * Used inside the returned TemplateContent.id. If not provided, the AI
+   * will infer one from the detected category.
+   */
+  idHint?: string;
 }
 
-interface DetectedField {
+// ── TemplateContent-shaped output ────────────────────────────
+type FieldType =
+  | "text"
+  | "textarea"
+  | "number"
+  | "currency-omr"
+  | "date"
+  | "select"
+  | "email"
+  | "phone";
+
+interface TemplateField {
   key: string;
-  labelEn: string;
-  labelAr: string;
-  type: "text" | "textarea" | "number" | "currency-omr" | "date" | "select" | "email" | "phone";
-  required: boolean;
   group: string;
   groupAr: string;
+  labelEn: string;
+  labelAr: string;
+  type: FieldType;
+  required: boolean;
+  helperEn?: string;
+  helperAr?: string;
   options?: { value: string; labelEn: string; labelAr: string }[];
-  /** Where in the source text we detected this (helps the UI highlight) */
-  sourceSnippet?: string;
+  defaultValue?: string;
+  placeholderEn?: string;
+  placeholderAr?: string;
+  /**
+   * Script-sensitive fields (party names, addresses, signatories) — the
+   * form renders paired EN+AR inputs so the Arabic side never falls back
+   * to Latin script. The AI should set this true for any field that would
+   * be rendered as a proper noun (name, company, address).
+   */
+  bilingual?: boolean;
 }
 
-interface DetectedClause {
+interface TemplateClause {
   headingEn: string;
   headingAr: string;
-  /** Plain text of the clause as it appears in source */
-  body: string;
+  /** Each entry = one paragraph. Use {field_key} to reference fields. */
+  paragraphsEn: string[];
+  paragraphsAr: string[];
 }
 
 interface Suggestion {
@@ -54,13 +95,29 @@ interface Suggestion {
   messageAr: string;
 }
 
-interface DetectionResult {
-  fields: DetectedField[];
-  clauses: DetectedClause[];
+interface IngestionResult {
+  templateContent: {
+    id: string;
+    subtitleEn?: string;
+    subtitleAr?: string;
+    fields: TemplateField[];
+    clauses: TemplateClause[];
+  };
   suggestions: Suggestion[];
   detectedCategory: string;
   detectedLanguage: "en" | "ar" | "bilingual";
-  confidence: number; // 0..1
+  /** Suggested catalog metadata so the CLI / upload UI can preview the card */
+  catalogMeta: {
+    titleEn: string;
+    titleAr: string;
+    descEn: string;
+    descAr: string;
+    /** Suggested category name from our TemplateCategory enum */
+    category: string;
+    /** Suggested lucide-react icon name */
+    icon: string;
+  };
+  confidence: number;
 }
 
 const CORS = {
@@ -70,39 +127,64 @@ const CORS = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const SYSTEM_PROMPT = `You are an expert legal document analyzer specialized in Oman/GCC contracts and the Oman Labour Law (Royal Decree 35/2003).
+const SYSTEM_PROMPT = `You are an expert legal document analyzer specialized in Oman/GCC contracts. You know Oman Labour Law (Royal Decree 35/2003), Commercial Companies Law (Royal Decree 18/2019), Civil Transactions Law (29/2013), Tenancy Law, and VAT Law (121/2020).
 
-Your job: read the user's uploaded contract or legal document and produce a STRUCTURED ANALYSIS in JSON format.
+Your job: read the user's uploaded contract or legal document and produce a COMPLETE BILINGUAL TEMPLATE READY FOR USE — not just an analysis.
 
 For each document you receive:
-1. Identify every piece of variable information that should be a FILLABLE FIELD (names, dates, amounts, durations, addresses, etc.) — these are the things that change per-contract.
-2. Identify every CLAUSE — the structural sections of the contract with their headings and body text.
-3. Identify any STANDARD CLAUSES that appear to be MISSING (e.g., a contract with no confidentiality clause, no governing law, no termination clause).
-4. Detect whether the document is in English, Arabic, or already bilingual.
-5. Detect the contract category.
+
+1. EXTRACT FIELDS — Identify every piece of variable information that should be a fillable field. For each:
+   - snake_case "key" (e.g. employee_name, monthly_salary_omr, contract_start_date)
+   - English + Arabic labels
+   - Field type from: text, textarea, number, currency-omr, date, select, email, phone
+   - Required flag (true unless the field is genuinely optional)
+   - Logical group + Arabic group label
+   - For "select" type, provide the options list with EN+AR labels
+   - For script-sensitive fields (party names, company names, addresses, signatory names, job titles), set bilingual: true so the form will render paired EN+AR inputs.
+
+2. AUTHOR BILINGUAL CLAUSES — For each clause in the document, produce both an English paragraph list AND an Arabic paragraph list. Inside the paragraphs, use {field_key} references that match the field keys you extracted. Critical rules:
+   - Every {field_key} reference must match an actual field.key you produced.
+   - paragraphsEn and paragraphsAr must have the SAME paragraph order (paragraph N in English corresponds to paragraph N in Arabic — they're the same legal content in two languages).
+   - If the source document is English-only, TRANSLATE the clause text into proper formal legal Arabic. If Arabic-only, translate to formal legal English.
+   - Cite the relevant Royal Decree / Oman law article inline when applicable.
+   - Use professional Arabic legal register (formal, not colloquial).
+
+3. SURFACE COMPLIANCE GAPS — In suggestions[], flag:
+   - Missing standard clauses (e.g. no confidentiality, no governing law, no termination notice)
+   - Ambiguous language that should be tightened
+   - Possible non-compliance with Oman law (notice periods too short, wage clauses missing, etc.)
+   For each suggestion include severity (low/medium/high) and Arabic translation of the message.
+
+4. CATALOG METADATA — Suggest a clean catalog card: titleEn, titleAr, descEn (1 sentence, ~12 words), descAr (1 sentence), category (one of: "Employment & HR", "Business Agreements", "Sales & Vendors", "Real Estate", "Personal & Family", "Letters & Notices", "Freelance & Creative", "Technology & SaaS", "Government & Compliance", "Healthcare", "Education", "HR Bundle"), and icon (a lucide-react icon name like "FileText", "Briefcase", "Home", "Handshake").
+
+5. ID — Use a kebab-case ID for the template. Examples: "employment", "service-agreement", "commercial-lease". If the user gave an idHint, use that.
 
 Output rules:
-- Use snake_case for field keys.
-- For currency amounts in OMR, use field type "currency-omr".
-- For dates, use field type "date".
-- For things that should be picked from a fixed list (notice period, contract duration, etc.), use type "select" and provide options.
-- Always produce BOTH English and Arabic versions of every label, heading, and message.
-- Group fields by logical section (Employer, Employee, Compensation, etc.).
-- Cite the relevant Oman law article in suggestions when applicable.
+- Return ONLY valid JSON. No markdown code fences. No commentary.
+- Match the exact shape below.
 
-Return ONLY valid JSON matching this exact shape:
 {
-  "fields": [
-    { "key": "...", "labelEn": "...", "labelAr": "...", "type": "...", "required": true|false, "group": "...", "groupAr": "...", "options": [...optional], "sourceSnippet": "...optional" }
-  ],
-  "clauses": [
-    { "headingEn": "...", "headingAr": "...", "body": "..." }
-  ],
+  "templateContent": {
+    "id": "kebab-case-id",
+    "subtitleEn": "optional one-line subtitle",
+    "subtitleAr": "...",
+    "fields": [
+      { "key": "...", "group": "...", "groupAr": "...", "labelEn": "...", "labelAr": "...", "type": "...", "required": true|false, "bilingual": true|false, "placeholderEn": "...", "placeholderAr": "...", "options": [{ "value": "...", "labelEn": "...", "labelAr": "..." }] }
+    ],
+    "clauses": [
+      { "headingEn": "...", "headingAr": "...", "paragraphsEn": ["..."], "paragraphsAr": ["..."] }
+    ]
+  },
   "suggestions": [
     { "type": "...", "severity": "...", "messageEn": "...", "messageAr": "..." }
   ],
   "detectedCategory": "...",
   "detectedLanguage": "en"|"ar"|"bilingual",
+  "catalogMeta": {
+    "titleEn": "...", "titleAr": "...",
+    "descEn": "...", "descAr": "...",
+    "category": "...", "icon": "..."
+  },
   "confidence": 0.0..1.0
 }`;
 
@@ -112,7 +194,8 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { text, category, lang } = (await req.json()) as RequestBody;
+    const body = (await req.json()) as RequestBody;
+    const { text, category, lang, mode = "full", idHint } = body;
 
     if (!text || text.length < 50) {
       return new Response(
@@ -133,14 +216,21 @@ serve(async (req: Request) => {
       );
     }
 
-    // Cap input to ~50K chars to stay within sensible token budget
+    // Cap input to ~50K chars to stay within sensible token budget.
+    // Average contract is 5-20K chars so this comfortably accommodates
+    // anything reasonable. Beyond 50K we'd lose later clauses anyway
+    // since legal docs are usually written in order of importance.
     const trimmed = text.slice(0, 50_000);
 
     const userMessage = [
       category ? `Category hint: ${category}` : null,
       lang ? `Language hint: ${lang}` : null,
+      idHint ? `ID hint (use this kebab-case ID): ${idHint}` : null,
+      mode === "fields-only"
+        ? "MODE: Fields-only — produce only the templateContent.fields array, leave clauses empty."
+        : null,
       "",
-      "Analyze the following document and produce the structured JSON described in the system prompt. Return ONLY the JSON, no commentary, no markdown code fences.",
+      "Analyze the following document and produce the structured JSON described in the system prompt. Output ONLY the JSON, no commentary, no markdown code fences. Make sure every {field_key} inside a clause paragraph matches an actual field.key you produce.",
       "",
       "--- BEGIN DOCUMENT ---",
       trimmed,
@@ -154,12 +244,17 @@ serve(async (req: Request) => {
       headers: {
         "x-api-key": ANTHROPIC_API_KEY,
         "anthropic-version": "2023-06-01",
+        "anthropic-beta": "prompt-caching-2024-07-31",
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-5",
-        max_tokens: 4096,
-        system: SYSTEM_PROMPT,
+        model: "claude-sonnet-4-6",
+        // Up the budget — full bilingual template content can be substantial,
+        // especially when AR translation effectively doubles the output.
+        max_tokens: 8192,
+        // Cache the system prompt — it's ~3KB and identical for every ingestion.
+        // On a cache hit this saves ~85% of input token cost (~$0.04 → ~$0.006).
+        system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
         messages: [{ role: "user", content: userMessage }],
       }),
     });
@@ -185,7 +280,7 @@ serve(async (req: Request) => {
       .replace(/\s*```\s*$/i, "")
       .trim();
 
-    let parsed: DetectionResult;
+    let parsed: IngestionResult;
     try {
       parsed = JSON.parse(cleanJson);
     } catch (parseErr) {
@@ -200,14 +295,42 @@ serve(async (req: Request) => {
       );
     }
 
+    // ── Post-processing: enforce schema invariants ───────────
+    // Catch the common failure mode where the AI references a {token}
+    // inside a clause that doesn't match any field.key — that would
+    // render as a literal "{employee_name}" in the final document.
+    const validKeys = new Set(
+      parsed.templateContent?.fields?.map((f) => f.key) ?? []
+    );
+    const orphanTokens = new Set<string>();
+    const tokenRe = /\{([a-zA-Z][a-zA-Z0-9_]*)\}/g;
+    for (const clause of parsed.templateContent?.clauses ?? []) {
+      for (const para of [...clause.paragraphsEn, ...clause.paragraphsAr]) {
+        let m: RegExpExecArray | null;
+        while ((m = tokenRe.exec(para)) !== null) {
+          if (!validKeys.has(m[1])) orphanTokens.add(m[1]);
+        }
+      }
+    }
+
     return new Response(
       JSON.stringify({
         ok: true,
         result: parsed,
-        // Surface basic usage info for client-side cost tracking
+        // Diagnostics so the CLI / upload UI can surface warnings before
+        // the user commits the template to the catalog.
+        diagnostics: {
+          orphanTokens: [...orphanTokens],
+          fieldCount: parsed.templateContent?.fields?.length ?? 0,
+          clauseCount: parsed.templateContent?.clauses?.length ?? 0,
+          bilingualFieldCount:
+            parsed.templateContent?.fields?.filter((f) => f.bilingual).length ?? 0,
+        },
         usage: {
           inputTokens: claudeData.usage?.input_tokens ?? null,
           outputTokens: claudeData.usage?.output_tokens ?? null,
+          cacheReadTokens: claudeData.usage?.cache_read_input_tokens ?? null,
+          cacheCreationTokens: claudeData.usage?.cache_creation_input_tokens ?? null,
         },
       }),
       { headers: { ...CORS, "Content-Type": "application/json" } }
