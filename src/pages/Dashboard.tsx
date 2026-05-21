@@ -3,20 +3,47 @@ import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { PlusCircle, FileText, CheckCircle, XCircle, Clock, Database } from "lucide-react"
+import { PlusCircle, FileText, CheckCircle, XCircle, Clock, Database, Users, AlertTriangle, ChevronRight } from "lucide-react"
 import { getSupabaseClient } from "@/lib/supabase"
 import { ContractCard } from "@/components/ContractCard"
 import { ContractFilter } from "@/components/ContractFilter"
 import { useToast } from "@/hooks/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
+import { supabase } from "@/integrations/supabase/client"
+import { differenceInDays, parseISO } from "date-fns"
 
 export default function Dashboard() {
   const [contracts, setContracts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>("all")
   const [isSeeding, setIsSeeding] = useState(false)
+  const [expiringCount, setExpiringCount] = useState(0)
+  const [expiredCount, setExpiredCount] = useState(0)
 
   const { toast } = useToast()
+
+  // Load CLM expiry counts
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      supabase.from("contract_records")
+        .select("end_date, status")
+        .eq("user_id", user.id)
+        .in("status", ["draft", "active", "expiring_soon"])
+        .then(({ data }) => {
+          if (!data) return
+          let expiring = 0, expired = 0
+          for (const r of data as { end_date: string | null; status: string }[]) {
+            if (!r.end_date) continue
+            const days = differenceInDays(parseISO(r.end_date), new Date())
+            if (days < 0) expired++
+            else if (days <= 30) expiring++
+          }
+          setExpiringCount(expiring)
+          setExpiredCount(expired)
+        })
+    })
+  }, [])
 
   const handleSeedDatabase = async () => {
     try {
@@ -237,6 +264,78 @@ export default function Dashboard() {
           </Link>
         </div>
       </div>
+
+      {/* CLM quick-actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+        <Link to="/records/new">
+          <Card className="hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <PlusCircle className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">New Contract</p>
+                  <p className="text-xs text-muted-foreground">Wizard + auto-fill</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </CardContent>
+          </Card>
+        </Link>
+        <Link to="/records">
+          <Card className="hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-blue-700" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">All Contracts</p>
+                  <p className="text-xs text-muted-foreground">Records &amp; lifecycle</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </CardContent>
+          </Card>
+        </Link>
+        <Link to="/parties">
+          <Card className="hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-purple-100 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-purple-700" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Parties</p>
+                  <p className="text-xs text-muted-foreground">Companies &amp; people</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      {/* Expiry alerts */}
+      {expiringCount > 0 && (
+        <Link to="/records?status=expiring_soon">
+          <div className="flex items-center gap-3 p-3 mb-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-900 text-sm hover:bg-amber-100 transition-colors">
+            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+            <span><strong>{expiringCount}</strong> contract{expiringCount > 1 ? "s" : ""} expiring within 30 days</span>
+            <ChevronRight className="h-4 w-4 ms-auto" />
+          </div>
+        </Link>
+      )}
+      {expiredCount > 0 && (
+        <Link to="/records?status=expired">
+          <div className="flex items-center gap-3 p-3 mb-3 rounded-lg border border-red-200 bg-red-50 text-red-900 text-sm hover:bg-red-100 transition-colors">
+            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+            <span><strong>{expiredCount}</strong> contract{expiredCount > 1 ? "s" : ""} have expired</span>
+            <ChevronRight className="h-4 w-4 ms-auto" />
+          </div>
+        </Link>
+      )}
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

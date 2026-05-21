@@ -18,6 +18,12 @@ import Auth from "./pages/Auth"
 import Upgrade from "./pages/Upgrade"
 import Blog from "./pages/Blog"
 import BlogPost from "./pages/BlogPost"
+import AppLayout from "./components/AppLayout"
+import Parties from "./pages/Parties"
+import PartyDetail from "./pages/PartyDetail"
+import Records from "./pages/Records"
+import NewContract from "./pages/NewContract"
+import RecordDetail from "./pages/RecordDetail"
 
 // Apply print styles globally
 import "./styles/contract-global.css"
@@ -83,20 +89,32 @@ function App() {
     <ThemeProvider defaultTheme="light" storageKey="ui-theme">
       <Router>
         <Routes>
+          {/* Public / standalone pages */}
           <Route path="/" element={<HomePage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/create-contract" element={<CreateContract />} />
-          <Route path="/contracts/:contractId" element={<ContractDetail />} />
-          <Route path="/print-error" element={<PrintErrorPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/templates" element={<Templates />} />
-          <Route path="/templates/fill/:templateId" element={<FillTemplate />} />
-          <Route path="/templates/download/:templateId" element={<TemplateDownload />} />
-          <Route path="/my-templates" element={<MyTemplates />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/upgrade" element={<Upgrade />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/print-error" element={<PrintErrorPage />} />
+
+          {/* App shell — sidebar layout */}
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/create-contract" element={<CreateContract />} />
+            <Route path="/contracts/:contractId" element={<ContractDetail />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/templates/fill/:templateId" element={<FillTemplate />} />
+            <Route path="/templates/download/:templateId" element={<TemplateDownload />} />
+            <Route path="/my-templates" element={<MyTemplates />} />
+            {/* CLM system */}
+            <Route path="/parties" element={<Parties />} />
+            <Route path="/parties/:id" element={<PartyDetail />} />
+            <Route path="/records" element={<Records />} />
+            <Route path="/records/new" element={<NewContract />} />
+            <Route path="/records/:id" element={<RecordDetail />} />
+          </Route>
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
