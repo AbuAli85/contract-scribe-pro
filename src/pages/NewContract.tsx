@@ -423,6 +423,14 @@ export default function NewContract() {
   // Step 4 — generating
   const [generating, setGenerating] = useState(false);
 
+  // ── Draft auto-save ────────────────────────────────────────────────
+  const DRAFT_KEY = `csp_draft_${companyId || "local"}`;
+  const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [draftSavedAt, setDraftSavedAt] = useState<number | null>(null);
+  const [hasDraft, setHasDraft] = useState(() => {
+    try { return !!localStorage.getItem(`csp_draft_${companyId || "local"}`); } catch { return false; }
+  });
+
   // Load on mount
   useEffect(() => {
     if (isSmartpro && hubUrl && companyId && !prefillApplied.current) {
@@ -462,6 +470,54 @@ export default function NewContract() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── Draft: auto-save on state changes ────────────────────────────
+  useEffect(() => {
+    if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
+    draftTimerRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+          step, templateSource, selectedTemplateId, templateTitle,
+          contractTitle, scan, values, seededKeys: [...seededKeys],
+          startDate, endDate, firstPartyId, secondPartyId,
+          selectedClientKey, selectedEmployeeId,
+        }));
+        setDraftSavedAt(Date.now());
+      } catch {}
+    }, 1500);
+    return () => { if (draftTimerRef.current) clearTimeout(draftTimerRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, templateSource, selectedTemplateId, templateTitle, contractTitle,
+      scan, values, seededKeys, startDate, endDate,
+      firstPartyId, secondPartyId, selectedClientKey, selectedEmployeeId]);
+
+  function restoreDraft() {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      setStep(d.step ?? 0);
+      setTemplateSource(d.templateSource ?? "catalog");
+      setSelectedTemplateId(d.selectedTemplateId ?? null);
+      setTemplateTitle(d.templateTitle ?? "");
+      setContractTitle(d.contractTitle ?? "");
+      setScan(d.scan ?? null);
+      setValues(d.values ?? {});
+      setSeededKeys(new Set(d.seededKeys ?? []));
+      setStartDate(d.startDate ?? "");
+      setEndDate(d.endDate ?? "");
+      setFirstPartyId(d.firstPartyId ?? null);
+      setSecondPartyId(d.secondPartyId ?? null);
+      setSelectedClientKey(d.selectedClientKey ?? null);
+      setSelectedEmployeeId(d.selectedEmployeeId ?? null);
+    } catch {}
+    setHasDraft(false);
+  }
+
+  function dismissDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    setHasDraft(false);
+  }
 
   // ── Step 1: scan catalog template ──
   const handleCatalogSelect = useCallback(async (id: string) => {
@@ -661,6 +717,7 @@ export default function NewContract() {
       ];
       await supabase.from("contract_events").insert(events);
 
+      try { localStorage.removeItem(DRAFT_KEY); } catch {}
       toast({ title: "Contract saved" });
       navigate(`/records/${record.id}`);
     } catch (e: unknown) {
@@ -696,7 +753,25 @@ export default function NewContract() {
         <Link to="/records"><ArrowLeft className="me-2 h-4 w-4" />Contracts</Link>
       </Button>
 
-      <h1 className="text-2xl font-bold mb-6">New Contract</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">New Contract</h1>
+        {draftSavedAt && (
+          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+            <CheckCircle2 className="h-3 w-3 text-green-500" /> Draft saved
+          </span>
+        )}
+      </div>
+
+      {hasDraft && (
+        <div className="flex items-center justify-between gap-3 p-3 mb-4 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-900">
+          <span>You have an unsaved draft. Restore it?</span>
+          <div className="flex gap-2 shrink-0">
+            <Button size="sm" variant="outline" className="h-7 text-xs border-amber-300 text-amber-800 hover:bg-amber-100" onClick={dismissDraft}>Discard</Button>
+            <Button size="sm" className="h-7 text-xs bg-amber-700 hover:bg-amber-800 text-white" onClick={restoreDraft}>Restore</Button>
+          </div>
+        </div>
+      )}
+
       <StepBar current={step} />
 
       {/* ── Step 0: Choose Template ──────────────────────────────────── */}
