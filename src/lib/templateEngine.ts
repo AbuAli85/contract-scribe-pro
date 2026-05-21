@@ -94,16 +94,30 @@ export interface MergeOptions {
   filename?: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isDuplicateTagError(err: unknown): boolean {
   if (!err || typeof err !== "object") return false;
   const e = err as Record<string, unknown>;
-  if ((e.properties as Record<string, unknown>)?.id === "duplicate_open_tag") return true;
-  if (Array.isArray(e.errors)) {
-    return (e.errors as Array<Record<string, unknown>>).some(
-      (sub) => (sub.properties as Record<string, unknown>)?.id === "duplicate_open_tag"
-    );
-  }
+
+  const hasDupOpen = (sub: unknown): boolean => {
+    if (!sub || typeof sub !== "object") return false;
+    const s = sub as Record<string, unknown>;
+    const id = (s.properties as Record<string, unknown>)?.id;
+    return id === "duplicate_open_tag" || id === "duplicate_close_tag";
+  };
+
+  // Single error at top level
+  if (hasDupOpen(e)) return true;
+
+  // Multi-error: properties.errors  (standard docxtemplater format)
+  const propErrors = (e.properties as Record<string, unknown>)?.errors;
+  if (Array.isArray(propErrors) && (propErrors as unknown[]).some(hasDupOpen)) return true;
+
+  // Multi-error: top-level errors array
+  if (Array.isArray(e.errors) && (e.errors as unknown[]).some(hasDupOpen)) return true;
+
+  // Multi-error: top-level error array (seen when the thrown value is {error:[...]})
+  if (Array.isArray(e.error) && (e.error as unknown[]).some(hasDupOpen)) return true;
+
   return false;
 }
 
