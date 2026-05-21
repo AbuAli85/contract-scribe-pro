@@ -23,7 +23,7 @@ import { Loader2 } from "lucide-react";
 
 // ── Constants ────────────────────────────────────────────────
 const CLIENT_ID =
-  "302171308086-q4j7qo325v43pcgcsmvosd50a5qmf37g.apps.googleusercontent.com";
+  "302171308086-ialnspqqqa8annp4l070ltcshqpqj1u6.apps.googleusercontent.com";
 const APP_ID = "302171308086";
 const SCOPE = "https://www.googleapis.com/auth/drive.readonly";
 
