@@ -25,22 +25,12 @@ export default function AutoAuth() {
 
       try {
         // Exchange SmartPro SSO token for a Supabase magic-link token
-        const res = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/smartpro-auth`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-            },
-            body: JSON.stringify({ auth_token: token }),
-          },
-        );
+        const { data: body, error: fnErr } = await supabase.functions.invoke<{
+          token_hash?: string; error?: string;
+        }>("smartpro-auth", { body: { auth_token: token } });
 
-        const body = await res.json() as { token_hash?: string; error?: string };
-
-        if (!res.ok || !body.token_hash) {
-          throw new Error(body.error ?? "Auto-sign-in failed");
+        if (fnErr || !body?.token_hash) {
+          throw new Error(body?.error ?? fnErr?.message ?? "Auto-sign-in failed");
         }
 
         // Exchange the token_hash for a real Supabase session
