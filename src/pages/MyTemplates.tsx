@@ -282,14 +282,23 @@ function FillStage({ scan, values, setValues, generating, handleGenerate, isAr, 
                     {group.fields.length}
                   </Badge>
                 </div>
-                {/* Per-section profile selector — only for company groups with saved profiles */}
-                {group.isCompany && seeds.length > 0 && (
-                  <Select onValueChange={(id) => {
-                    const seed = seeds.find(s => s.id === id);
-                    if (seed) applyGroupProfile(group.fields, seed.fields);
-                  }}>
-                    <SelectTrigger className="w-44 h-8 text-xs">
-                      <SelectValue placeholder={isAr ? "تحميل ملف شخصي..." : "Load profile..."} />
+                {/* Per-section profile selector — always visible for company groups */}
+                {group.isCompany && (
+                  <Select
+                    disabled={seeds.length === 0}
+                    onValueChange={(id) => {
+                      const seed = seeds.find(s => s.id === id);
+                      if (seed) applyGroupProfile(group.fields, seed.fields);
+                    }}
+                  >
+                    <SelectTrigger className="w-52 h-8 text-xs">
+                      <SelectValue
+                        placeholder={
+                          seeds.length === 0
+                            ? isAr ? "↓ احفظ ملفاً أدناه لإعادة الاستخدام" : "↓ Save a profile below to reuse"
+                            : isAr ? "تحميل ملف شخصي..." : "Load profile..."
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {seeds.map(s => (
