@@ -874,7 +874,7 @@ export default function NewContract() {
 
     setValues(next);
     setSeededKeys(prev => new Set([...prev, ...newSeeded]));
-  }, [scan, values, isSmartpro, smartproData, selectedClientKey, selectedEmployeeId, allParties, firstPartyId, secondPartyId]);
+  }, [scan, values, isSmartpro, smartproData, selectedClientKey, selectedEmployeeId, selectedSupplierId, secondPartyRole, allParties, firstPartyId, secondPartyId]);
 
   // ── Step 4: Generate & Save ──
   const handleGenerate = async () => {
@@ -954,18 +954,27 @@ export default function NewContract() {
   // ── Derived labels for Review step ────────────────────────────────────
   const firstPartyLabel = useMemo(() => {
     if (isSmartpro && smartproData) {
-      const c = selectedClientKey
-        ? smartproData.clients.find(c => clientKey(c) === selectedClientKey)
-        : null;
+      const allClients: SmartProClient[] = [...(smartproData.crmClients ?? []), ...(smartproData.platformClients ?? [])];
+      const c = selectedClientKey ? allClients.find(c => clientKey(c) === selectedClientKey) : null;
       return c?.displayNameEn ?? "—";
     }
     return allParties.find(p => p.id === firstPartyId)?.name_en ?? "—";
   }, [isSmartpro, smartproData, selectedClientKey, allParties, firstPartyId]);
 
   const secondPartyLabel = useMemo(() => {
-    if (isSmartpro && smartproData) return smartproData.employer.nameEn;
+    if (isSmartpro && smartproData) {
+      if (secondPartyRole === "supplier" && selectedSupplierId) {
+        const s = smartproData.suppliers?.find(x => x.partyId === selectedSupplierId);
+        return s?.displayNameEn ?? smartproData.employer.nameEn;
+      }
+      if (secondPartyRole === "employee" && selectedEmployeeId != null) {
+        const e = smartproData.employees.find(x => x.id === selectedEmployeeId);
+        return e ? `${e.firstName} ${e.lastName}` : smartproData.employer.nameEn;
+      }
+      return smartproData.employer.nameEn;
+    }
     return allParties.find(p => p.id === secondPartyId)?.name_en ?? "—";
-  }, [isSmartpro, smartproData, allParties, secondPartyId]);
+  }, [isSmartpro, smartproData, secondPartyRole, selectedSupplierId, selectedEmployeeId, allParties, secondPartyId]);
 
   const readyTemplates = useMemo(() =>
     TEMPLATES.filter(t => t.status === "ready" || t.status === "pro"), []);
@@ -1459,20 +1468,22 @@ export default function NewContract() {
                 <p className="font-medium">{firstPartyLabel}</p>
               </div>
               <div className="p-3 rounded-lg bg-muted/50">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Second Party — Employer</p>
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
+                  {isSmartpro && secondPartyRole === "supplier" ? "Second Party — Supplier" : isSmartpro && secondPartyRole === "employee" ? "Second Party — Employee" : "Second Party — Employer"}
+                </p>
                 <p className="font-medium">{secondPartyLabel}</p>
               </div>
-              {isSmartpro && smartproData && selectedEmployeeId != null && (
-                <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Employee</p>
-                  <p className="font-medium">
-                    {(() => {
-                      const e = smartproData.employees.find(e => e.id === selectedEmployeeId);
-                      return e ? `${e.firstName} ${e.lastName}` : "—";
-                    })()}
-                  </p>
-                </div>
-              )}
+              {isSmartpro && smartproData && secondPartyRole === "supplier" && selectedSupplierId && (() => {
+                const s = smartproData.suppliers?.find(x => x.partyId === selectedSupplierId);
+                if (!s) return null;
+                return (
+                  <div className="p-3 rounded-lg bg-muted/50">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Employer (auto)</p>
+                    <p className="font-medium">{smartproData.employer.nameEn}</p>
+                    {s.registrationNumber && <p className="text-xs text-muted-foreground">CR: {s.registrationNumber}</p>}
+                  </div>
+                );
+              })()}
               {startDate && (
                 <div className="p-3 rounded-lg bg-muted/50">
                   <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Start</p>
