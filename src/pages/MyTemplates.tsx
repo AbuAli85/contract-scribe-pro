@@ -24,12 +24,14 @@ import LanguageToggle from "@/components/LanguageToggle";
 import {
   scanTemplate,
   scanTemplateWithAi,
+  scanTextWithAi,
   mergeTemplate,
   normalizeValuesForMerge,
   type PlaceholderField,
   type ScanResult,
   type AiIngestionResult,
 } from "@/lib/templateEngine";
+import { GoogleDrivePicker } from "@/components/GoogleDrivePicker";
 
 type Stage = "upload" | "review" | "fill" | "done";
 
@@ -177,6 +179,53 @@ const MyTemplates = () => {
       }
     },
     [scanMode, isAr, t, toast]
+  );
+
+  const handleText = useCallback(
+    async (text: string, name: string) => {
+      setFile(null);
+      setScanning(true);
+      setStage("review");
+      try {
+        const ai = await scanTextWithAi(text, {
+          idHint: name.replace(/[^a-z0-9]+/gi, "-").toLowerCase(),
+        });
+        setAiResult(ai);
+        const aiFields = ai.templateContent?.fields ?? [];
+        const compatFields: PlaceholderField[] = aiFields.map((af) => ({
+          key: af.key,
+          label: isAr ? af.labelAr : af.labelEn,
+          type:
+            af.type === "currency-omr" || af.type === "number"
+              ? "number"
+              : af.type === "phone"
+              ? "text"
+              : af.type === "select"
+              ? "text"
+              : (af.type as PlaceholderField["type"]),
+          required: af.required,
+        }));
+        setScan({
+          fields: compatFields,
+          rawTokens: aiFields.map((af) => af.key),
+          totalTokens: aiFields.length,
+        });
+        const seed: Record<string, string> = {};
+        compatFields.forEach((field) => (seed[field.key] = ""));
+        setValues(seed);
+      } catch (err) {
+        console.error("Google Doc scan failed:", err);
+        toast({
+          title: "AI scan failed",
+          description: "Could not analyze the Google Doc. Please try again.",
+          variant: "destructive",
+        });
+        setStage("upload");
+      } finally {
+        setScanning(false);
+      }
+    },
+    [isAr, toast]
   );
 
   const handleGenerate = async () => {
@@ -353,6 +402,24 @@ const MyTemplates = () => {
               </label>
 
               {scanMode === "ai" && (
+                <>
+                  <div className="relative flex items-center gap-3 text-xs text-muted-foreground">
+                    <span className="flex-1 border-t" />
+                    <span>{isAr ? "أو" : "or"}</span>
+                    <span className="flex-1 border-t" />
+                  </div>
+                  <div className={`flex ${isAr ? "justify-end" : "justify-start"}`}>
+                    <GoogleDrivePicker
+                      onFile={handleFile}
+                      onText={handleText}
+                      onError={(msg) => toast({ title: msg, variant: "destructive" })}
+                      disabled={scanning}
+                      isAr={isAr}
+                    />
+                  </div>
+                </>
+              )}
+              {scanMode === "ai" && (
                 <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground">
                   <Info className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
                   <p className="leading-relaxed">
@@ -396,6 +463,16 @@ const MyTemplates = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {!file && (
+                <div className={`flex items-start gap-2 p-3 rounded-lg border border-blue-200 bg-blue-50 text-xs text-blue-900 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200 ${isAr ? "flex-row-reverse text-right" : ""}`}>
+                  <Info className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                  <p className="leading-relaxed">
+                    {isAr
+                      ? "تم تحليل مستند Google Docs. لإنشاء مستند .docx مملوء، صدّر مستندك كـ .docx من Google Docs ثم حمّله هنا."
+                      : "Google Doc analyzed. To generate a filled .docx, export your Google Doc as .docx from Google Docs, then upload it here."}
+                  </p>
+                </div>
+              )}
               {aiResult && aiResult.suggestions.length > 0 && (
                 <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-2">
                   <div className={`flex items-center gap-2 text-amber-900 font-medium text-sm ${isAr ? "flex-row-reverse" : ""}`}>
@@ -463,7 +540,12 @@ const MyTemplates = () => {
                     <Button variant="outline" onClick={resetAll}>
                       {t.startOver}
                     </Button>
-                    <Button onClick={() => setStage("fill")} className="flex-1">
+                    <Button
+                      onClick={() => setStage("fill")}
+                      className="flex-1"
+                      disabled={!file}
+                      title={!file ? (isAr ? "حمّل ملف .docx للمتابعة" : "Upload a .docx file to continue") : undefined}
+                    >
                       {t.continueToFill}
                     </Button>
                   </div>
