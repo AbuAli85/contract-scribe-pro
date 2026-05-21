@@ -139,12 +139,6 @@ interface FillStageProps {
   scan: import("@/lib/templateEngine").ScanResult;
   values: Record<string, string>;
   setValues: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-  seeds: Array<{ id: string; label: string; fields: Record<string, string> }>;
-  newSeedLabel: string;
-  setNewSeedLabel: (v: string) => void;
-  savingSeed: boolean;
-  handleSaveSeed: () => void;
-  applySeeds: (fields: Record<string, string>) => void;
   generating: boolean;
   handleGenerate: () => void;
   isAr: boolean;
@@ -180,8 +174,81 @@ function FieldInput({ f, v, isAr, onChange }: {
   );
 }
 
-function FillStage({ scan, values, setValues, seeds, newSeedLabel, setNewSeedLabel, savingSeed,
-  handleSaveSeed, applySeeds, generating, handleGenerate, isAr, t, onBack }: FillStageProps) {
+function FillStage({ scan, values, setValues, generating, handleGenerate, isAr, t, onBack }: FillStageProps) {
+  const { toast } = useToast();
+  const [seeds, setSeeds] = useState<Array<{ id: string; label: string; fields: Record<string, string> }>>([]);
+  const [groupSaveLabels, setGroupSaveLabels] = useState<Record<string, string>>({});
+  const [groupSaving, setGroupSaving] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase
+        .from("fill_seeds")
+        .select("id, label, fields")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .then(({ data }) => {
+          if (!data) return;
+          const rows = data as Array<{ id: string; label: string; fields: Record<string, string> }>;
+          setSeeds(rows);
+          if (rows.length === 1) {
+            setValues(prev => {
+              const next = { ...prev };
+              for (const [k, v] of Object.entries(rows[0].fields)) {
+                if (k in next && v) next[k] = v;
+              }
+              return next;
+            });
+          }
+        });
+    });
+  }, [setValues]);
+
+  const applyGroupProfile = (
+    groupFields: import("@/lib/templateEngine").PlaceholderField[],
+    seedFields: Record<string, string>
+  ) => {
+    setValues(prev => {
+      const next = { ...prev };
+      for (const f of groupFields) {
+        if (f.key in seedFields && seedFields[f.key]) next[f.key] = seedFields[f.key];
+      }
+      return next;
+    });
+  };
+
+  const handleSaveGroupProfile = async (
+    groupId: string,
+    groupFields: import("@/lib/templateEngine").PlaceholderField[]
+  ) => {
+    const label = (groupSaveLabels[groupId] ?? "").trim();
+    if (!label) return;
+    setGroupSaving(prev => ({ ...prev, [groupId]: true }));
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: isAr ? "يجب تسجيل الدخول أولاً" : "Sign in to save profiles", variant: "destructive" });
+        return;
+      }
+      const groupValues: Record<string, string> = {};
+      for (const f of groupFields) groupValues[f.key] = values[f.key] ?? "";
+      const { error } = await supabase.from("fill_seeds").insert({ user_id: user.id, label, fields: groupValues });
+      if (error) throw error;
+      setGroupSaveLabels(prev => ({ ...prev, [groupId]: "" }));
+      const { data } = await supabase
+        .from("fill_seeds")
+        .select("id, label, fields")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (data) setSeeds(data as Array<{ id: string; label: string; fields: Record<string, string> }>);
+      toast({ title: isAr ? "تم حفظ الملف الشخصي" : "Profile saved" });
+    } catch {
+      toast({ title: t.error, variant: "destructive" });
+    } finally {
+      setGroupSaving(prev => ({ ...prev, [groupId]: false }));
+    }
+  };
 
   const groups = useMemo(() => {
     const map = new Map<string, import("@/lib/templateEngine").PlaceholderField[]>();
@@ -192,16 +259,6 @@ function FillStage({ scan, values, setValues, seeds, newSeedLabel, setNewSeedLab
     }
     return GROUP_DEFS.filter(g => map.has(g.id)).map(g => ({ ...g, fields: map.get(g.id)! }));
   }, [scan.fields]);
-
-  const applyGroupSeed = (groupFields: import("@/lib/templateEngine").PlaceholderField[], seedFields: Record<string, string>) => {
-    setValues(prev => {
-      const next = { ...prev };
-      for (const f of groupFields) {
-        if (f.key in seedFields && seedFields[f.key]) next[f.key] = seedFields[f.key];
-      }
-      return next;
-    });
-  };
 
   return (
     <Card>
@@ -225,25 +282,21 @@ function FillStage({ scan, values, setValues, seeds, newSeedLabel, setNewSeedLab
                     {group.fields.length}
                   </Badge>
                 </div>
-                {/* Per-section profile selector for company groups */}
+                {/* Per-section profile selector — only for company groups with saved profiles */}
                 {group.isCompany && seeds.length > 0 && (
                   <Select onValueChange={(id) => {
                     const seed = seeds.find(s => s.id === id);
-                    if (seed) applyGroupSeed(group.fields, seed.fields);
+                    if (seed) applyGroupProfile(group.fields, seed.fields);
                   }}>
                     <SelectTrigger className="w-44 h-8 text-xs">
-                      <SelectValue placeholder={isAr ? "تحميل من ملف..." : "Load profile..."} />
+                      <SelectValue placeholder={isAr ? "تحميل ملف شخصي..." : "Load profile..."} />
                     </SelectTrigger>
                     <SelectContent>
-                      {seeds.map(s => <SelectItem key={s.id} value={s.id} className="text-xs">{s.label}</SelectItem>)}
+                      {seeds.map(s => (
+                        <SelectItem key={s.id} value={s.id} className="text-xs">{s.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                )}
-                {/* Hint to save when no seeds yet */}
-                {group.isCompany && seeds.length === 0 && gi === 0 && (
-                  <span className="text-[10px] text-muted-foreground">
-                    {isAr ? "أدخل البيانات مرة واحدة ثم احفظها ↓" : "Fill once, save below ↓"}
-                  </span>
                 )}
               </div>
 
@@ -260,30 +313,41 @@ function FillStage({ scan, values, setValues, seeds, newSeedLabel, setNewSeedLab
                 ))}
               </div>
 
+              {/* Inline save row for company groups */}
+              {group.isCompany && (
+                <div className={`mt-4 flex gap-2 items-center p-2.5 rounded-lg bg-muted/40 border border-dashed ${isAr ? "flex-row-reverse" : ""}`}>
+                  <Save className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                  <Input
+                    placeholder={
+                      isAr
+                        ? `احفظ ${group.labelAr} كـ... (مثال: شركتي)`
+                        : `Save ${group.labelEn} as profile... (e.g. My Company)`
+                    }
+                    value={groupSaveLabels[group.id] ?? ""}
+                    onChange={(e) => setGroupSaveLabels(prev => ({ ...prev, [group.id]: e.target.value }))}
+                    className="flex-1 h-8 text-xs"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSaveGroupProfile(group.id, group.fields)}
+                    disabled={groupSaving[group.id] || !groupSaveLabels[group.id]?.trim()}
+                  >
+                    {groupSaving[group.id]
+                      ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      : <Save className="h-3.5 w-3.5" />}
+                    <span className="ms-1 text-xs">{isAr ? "حفظ" : "Save"}</span>
+                  </Button>
+                </div>
+              )}
+
               {gi < groups.length - 1 && <Separator className="mt-6" />}
             </div>
           ))}
 
-          <Separator />
-
-          {/* Save profile row */}
-          <div className={`flex gap-2 items-center p-3 rounded-lg bg-muted/40 ${isAr ? "flex-row-reverse" : ""}`}>
-            <BookUser className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <Input
-              placeholder={isAr ? "احفظ هذه البيانات كـ... (مثال: شركة اكسترا)" : "Save these values as... (e.g. eXtra Stores)"}
-              value={newSeedLabel}
-              onChange={(e) => setNewSeedLabel(e.target.value)}
-              className="flex-1 h-8 text-sm"
-            />
-            <Button type="button" variant="outline" size="sm" onClick={handleSaveSeed}
-              disabled={savingSeed || !newSeedLabel.trim()}>
-              {savingSeed ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-              <span className="ms-1">{isAr ? "حفظ" : "Save"}</span>
-            </Button>
-          </div>
-
           {/* Actions */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-2">
             <Button type="button" variant="outline" onClick={onBack}>
               {isAr ? "السابق" : "Back"}
             </Button>
@@ -315,68 +379,9 @@ const MyTemplates = () => {
   const [values, setValues] = useState<Record<string, string>>({});
   const [generating, setGenerating] = useState(false);
   const [lastBlob, setLastBlob] = useState<Blob | null>(null);
-  const [seeds, setSeeds] = useState<Array<{ id: string; label: string; fields: Record<string, string> }>>([]);
-  const [newSeedLabel, setNewSeedLabel] = useState("");
-  const [savingSeed, setSavingSeed] = useState(false);
   const { toast } = useToast();
   const t = COPY[language];
   const isAr = language === "ar";
-
-  // Load saved profiles when entering the fill stage
-  useEffect(() => {
-    if (stage !== "fill") return;
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
-      supabase
-        .from("fill_seeds")
-        .select("id, label, fields")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .then(({ data }) => {
-          if (!data) return;
-          const rows = data as Array<{ id: string; label: string; fields: Record<string, string> }>;
-          setSeeds(rows);
-          // Auto-apply if there's exactly one saved profile
-          if (rows.length === 1) {
-            applySeeds(rows[0].fields);
-          }
-        });
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stage]);
-
-  const applySeeds = useCallback((seedFields: Record<string, string>) => {
-    setValues((prev) => {
-      const next = { ...prev };
-      for (const [k, v] of Object.entries(seedFields)) {
-        if (k in next && v) next[k] = v;
-      }
-      return next;
-    });
-  }, []);
-
-  const handleSaveSeed = async () => {
-    if (!newSeedLabel.trim()) return;
-    setSavingSeed(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { toast({ title: isAr ? "يجب تسجيل الدخول أولاً" : "Sign in to save profiles", variant: "destructive" }); return; }
-      const { error } = await supabase.from("fill_seeds").insert({
-        user_id: user.id,
-        label: newSeedLabel.trim(),
-        fields: values,
-      });
-      if (error) throw error;
-      setNewSeedLabel("");
-      const { data } = await supabase.from("fill_seeds").select("id, label, fields").eq("user_id", user.id).order("created_at", { ascending: false });
-      if (data) setSeeds(data as Array<{ id: string; label: string; fields: Record<string, string> }>);
-      toast({ title: isAr ? "تم حفظ ملف الشركة" : "Company profile saved" });
-    } catch {
-      toast({ title: t.error, variant: "destructive" });
-    } finally {
-      setSavingSeed(false);
-    }
-  };
 
   const handleFile = useCallback(
     async (f: File) => {
@@ -832,12 +837,6 @@ const MyTemplates = () => {
             scan={scan}
             values={values}
             setValues={setValues}
-            seeds={seeds}
-            newSeedLabel={newSeedLabel}
-            setNewSeedLabel={setNewSeedLabel}
-            savingSeed={savingSeed}
-            handleSaveSeed={handleSaveSeed}
-            applySeeds={applySeeds}
             generating={generating}
             handleGenerate={handleGenerate}
             isAr={isAr}
