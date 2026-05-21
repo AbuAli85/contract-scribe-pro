@@ -526,7 +526,7 @@ function smartproEmployerToFieldValues(e: SmartProEmployer): Record<string, stri
 function smartproEmployeeToFieldValues(e: SmartProEmployee): Record<string, string> {
   const fullNameEn = [e.firstName, e.lastName].filter(Boolean).join(" ");
   const fullNameAr = [e.firstNameAr, e.lastNameAr].filter(Boolean).join(" ");
-  return {
+  const out: Record<string, string> = {
     name_en: fullNameEn,
     name: fullNameEn,
     name_ar: fullNameAr,
@@ -564,6 +564,15 @@ function smartproEmployeeToFieldValues(e: SmartProEmployee): Record<string, stri
     iban: e.ibanNumber ?? "",
     iban_number: e.ibanNumber ?? "",
   };
+  // Store document URLs so RecordDetail can show them as attachments
+  for (const doc of e.documents) {
+    if (doc.fileUrl) {
+      out[`doc_${doc.type}_url`] = doc.fileUrl;
+      if (doc.expiresAt) out[`doc_${doc.type}_expires`] = doc.expiresAt;
+      if (doc.status) out[`doc_${doc.type}_status`] = doc.status;
+    }
+  }
+  return out;
 }
 
 function smartproSupplierToFieldValues(s: SmartProSupplier): Record<string, string> {
