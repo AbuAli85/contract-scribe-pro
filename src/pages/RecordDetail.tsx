@@ -708,14 +708,12 @@ export default function RecordDetail() {
       <Tabs defaultValue="details">
         <TabsList>
           <TabsTrigger value="details">Details</TabsTrigger>
-          {(attachments.length > 0 || canSyncAttachments) && (
-            <TabsTrigger value="attachments">
-              Attachments
-              {attachments.length > 0 && (
-                <Badge variant="secondary" className="ms-1.5 text-[10px] px-1">{attachments.length}</Badge>
-              )}
-            </TabsTrigger>
-          )}
+          <TabsTrigger value="attachments">
+            Attachments
+            {attachments.length > 0 && (
+              <Badge variant="secondary" className="ms-1.5 text-[10px] px-1">{attachments.length}</Badge>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="history">
             History
             <Badge variant="secondary" className="ms-1.5 text-[10px] px-1">{events.length}</Badge>
@@ -817,73 +815,111 @@ export default function RecordDetail() {
           ))}
         </TabsContent>
 
-        {/* Attachments tab — employee documents */}
-        {(attachments.length > 0 || canSyncAttachments) && (
-          <TabsContent value="attachments" className="mt-4">
-            <Card>
-              <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Paperclip className="h-4 w-4" /> Employee Documents
-                </CardTitle>
-                {canSyncAttachments && (
-                  <Button size="sm" variant="outline" onClick={handleSyncAttachments} disabled={syncing}>
-                    {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin me-1.5" /> : <RefreshCw className="h-3.5 w-3.5 me-1.5" />}
-                    Sync from SmartPro
-                  </Button>
-                )}
-              </CardHeader>
-              <CardContent>
-                {attachments.length === 0 && canSyncAttachments && (
-                  <div className="py-6 text-center space-y-2">
-                    <Paperclip className="h-8 w-8 text-muted-foreground mx-auto" />
-                    <p className="text-sm text-muted-foreground">No attachments stored yet.</p>
-                    <p className="text-xs text-muted-foreground">Click "Sync from SmartPro" above to pull the latest employee documents.</p>
+        {/* Attachments tab — always visible */}
+        <TabsContent value="attachments" className="mt-4">
+          <Card>
+            <CardHeader className="pb-3 flex flex-row items-center justify-between gap-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Paperclip className="h-4 w-4" /> Employee Documents
+              </CardTitle>
+              {canSyncAttachments && (
+                <Button size="sm" variant="outline" onClick={handleSyncAttachments} disabled={syncing}>
+                  {syncing
+                    ? <Loader2 className="h-3.5 w-3.5 animate-spin me-1.5" />
+                    : <RefreshCw className="h-3.5 w-3.5 me-1.5" />}
+                  Sync from SmartPro
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent>
+              {attachments.length === 0 ? (
+                <div className="py-8 text-center space-y-3">
+                  <Paperclip className="h-10 w-10 text-muted-foreground/40 mx-auto" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">No documents attached</p>
+                    {canSyncAttachments ? (
+                      <p className="text-xs text-muted-foreground">
+                        Click <span className="font-medium">Sync from SmartPro</span> to pull the latest employee documents (ID card, passport, visa, work permit…)
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        This contract was created before attachment storage was added.
+                        Re-create it from SmartPro to include employee ID card, passport, and other documents.
+                      </p>
+                    )}
                   </div>
-                )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {attachments.map((att) => (
-                    <a
-                      key={att.type}
-                      href={att.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors ${
-                        att.status === "verified" ? "border-green-300 bg-green-50/50" :
-                        att.status === "expired" ? "border-red-300 bg-red-50/50" :
-                        att.status === "rejected" ? "border-red-200 bg-red-50/30" :
-                        "border-border"
-                      }`}
-                    >
-                      <FileText className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
-                        att.status === "verified" ? "text-green-600" :
-                        att.status === "expired" ? "text-red-600" : "text-muted-foreground"
-                      }`} />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium">{att.label}</p>
-                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                          {att.status && (
-                            <Badge variant="outline" className={`text-[10px] px-1 py-0 ${
-                              att.status === "verified" ? "border-green-300 text-green-700" :
-                              att.status === "expired" ? "border-red-300 text-red-700" :
-                              att.status === "rejected" ? "border-red-200 text-red-600" :
-                              "text-muted-foreground"
-                            }`}>
-                              {att.status}
-                            </Badge>
-                          )}
-                          {att.expires && (
-                            <span className="text-[10px] text-muted-foreground">Expires {att.expires}</span>
-                          )}
-                        </div>
-                      </div>
-                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-1" />
-                    </a>
-                  ))}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        )}
+              ) : (
+                <>
+                  {/* Priority docs pinned at top */}
+                  {(() => {
+                    const priority = ["passport", "civil_id", "visa", "mol_work_permit_certificate", "resident_card", "labour_card"];
+                    const pinned = attachments.filter(a => priority.includes(a.type));
+                    const rest = attachments.filter(a => !priority.includes(a.type));
+                    const renderCard = (att: typeof attachments[0]) => (
+                      <a
+                        key={att.type}
+                        href={att.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors group ${
+                          att.status === "verified"  ? "border-green-300 bg-green-50/60" :
+                          att.status === "expired"   ? "border-red-300 bg-red-50/60" :
+                          att.status === "rejected"  ? "border-red-200 bg-red-50/30" :
+                          "border-border bg-background"
+                        }`}
+                      >
+                        <FileText className={`h-5 w-5 flex-shrink-0 ${
+                          att.status === "verified" ? "text-green-600" :
+                          att.status === "expired"  ? "text-red-600"   : "text-muted-foreground"
+                        }`} />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold">{att.label}</p>
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            {att.status && (
+                              <Badge variant="outline" className={`text-[10px] px-1 py-0 capitalize ${
+                                att.status === "verified" ? "border-green-300 text-green-700" :
+                                att.status === "expired"  ? "border-red-300 text-red-700"    :
+                                att.status === "rejected" ? "border-red-200 text-red-600"    :
+                                "text-muted-foreground"
+                              }`}>
+                                {att.status}
+                              </Badge>
+                            )}
+                            {att.expires && (
+                              <span className="text-[10px] text-muted-foreground">Expires {att.expires}</span>
+                            )}
+                          </div>
+                        </div>
+                        <ExternalLink className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </a>
+                    );
+                    return (
+                      <div className="space-y-4">
+                        {pinned.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Identity &amp; Work Authorisation</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {pinned.map(renderCard)}
+                            </div>
+                          </div>
+                        )}
+                        {rest.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Other Documents</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {rest.map(renderCard)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* History tab */}
         <TabsContent value="history" className="mt-4">
