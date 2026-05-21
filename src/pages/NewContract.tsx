@@ -427,6 +427,23 @@ function clientKey(c: SmartProClient): string {
   return `other:${c.displayNameEn}`;
 }
 
+const CRITICAL_DOC_TYPES = new Set(["passport", "civil_id", "visa", "resident_card", "labour_card", "mol_work_permit_certificate"]);
+
+function getDocExpiryWarnings(docs: SmartProEmployeeDocument[]): { expired: string[]; expiringSoon: string[] } {
+  const today = new Date();
+  const in30 = new Date(today); in30.setDate(today.getDate() + 30);
+  const expired: string[] = [];
+  const expiringSoon: string[] = [];
+  for (const doc of docs) {
+    if (!CRITICAL_DOC_TYPES.has(doc.type) || !doc.expiresAt) continue;
+    const exp = new Date(doc.expiresAt);
+    const label = DOC_TYPE_LABEL[doc.type] ?? doc.type;
+    if (exp < today) expired.push(label);
+    else if (exp <= in30) expiringSoon.push(`${label} (${doc.expiresAt})`);
+  }
+  return { expired, expiringSoon };
+}
+
 const DOC_TYPE_LABEL: Record<string, string> = {
   passport: "Passport",
   civil_id: "Civil ID",
@@ -1207,8 +1224,33 @@ export default function NewContract() {
                           {selectedEmployeeId != null && (() => {
                             const emp = smartproData.employees.find(e => e.id === selectedEmployeeId);
                             if (!emp) return null;
+                            const { expired, expiringSoon } = getDocExpiryWarnings(emp.documents);
                             return (
                               <div className="rounded-lg border bg-muted/20 p-3 space-y-2 text-xs">
+                                {/* Document expiry warnings */}
+                                {expired.length > 0 && (
+                                  <div className="flex items-start gap-2 p-2 rounded bg-red-50 border border-red-200 text-red-800">
+                                    <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                      <span className="font-semibold">Expired documents: </span>
+                                      {expired.join(", ")}
+                                      {hubUrl && (
+                                        <a href={`${hubUrl}/hr/expiry-dashboard`} target="_blank" rel="noopener noreferrer" className="ml-1.5 underline hover:no-underline">
+                                          Renew in SmartPro →
+                                        </a>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                {expiringSoon.length > 0 && (
+                                  <div className="flex items-start gap-2 p-2 rounded bg-amber-50 border border-amber-200 text-amber-800">
+                                    <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                      <span className="font-semibold">Expiring within 30 days: </span>
+                                      {expiringSoon.join(", ")}
+                                    </div>
+                                  </div>
+                                )}
                                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground">
                                   {emp.nationalId && <span>Civil ID: <span className="text-foreground font-mono">{emp.nationalId}</span></span>}
                                   {emp.passportNumber && <span>Passport: <span className="text-foreground font-mono">{emp.passportNumber}</span></span>}
