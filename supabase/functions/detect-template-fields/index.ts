@@ -244,14 +244,12 @@ serve(async (req: Request) => {
       headers: {
         "x-api-key": ANTHROPIC_API_KEY,
         "anthropic-version": "2023-06-01",
-        "anthropic-beta": "prompt-caching-2024-07-31",
+        "anthropic-beta": "prompt-caching-2024-07-31,output-128k-2025-02-19",
         "content-type": "application/json",
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
-        // Up the budget — full bilingual template content can be substantial,
-        // especially when AR translation effectively doubles the output.
-        max_tokens: 8192,
+        max_tokens: 16000,
         // Cache the system prompt — it's ~3KB and identical for every ingestion.
         // On a cache hit this saves ~85% of input token cost (~$0.04 → ~$0.006).
         system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
