@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -174,11 +174,55 @@ function applyPartyToFields(
   return next;
 }
 
+// ── Upsert a party from URL-param data ────────────────────────────────
+async function upsertPartyFromParams(
+  userId: string,
+  data: {
+    name_en: string; name_ar?: string; type: "company" | "person";
+    role: string; cr_number?: string; email?: string;
+    id_number?: string; passport?: string; nationality?: string;
+    job_title_en?: string; job_title_ar?: string;
+  }
+): Promise<string | null> {
+  if (!data.name_en.trim()) return null;
+  // Try to find existing party with same name and user
+  const { data: existing } = await supabase
+    .from("parties")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("name_en", data.name_en.trim())
+    .maybeSingle();
+  if (existing) return existing.id as string;
+  // Create new party
+  const { data: created, error } = await supabase
+    .from("parties")
+    .insert({
+      user_id: userId,
+      type: data.type,
+      role: data.role,
+      name_en: data.name_en.trim(),
+      name_ar: data.name_ar?.trim() ?? "",
+      cr_number: data.cr_number?.trim() ?? null,
+      email: data.email?.trim() ?? null,
+      id_number: data.id_number?.trim() ?? data.passport?.trim() ?? null,
+      nationality: data.nationality?.trim() ?? null,
+      job_title_en: data.job_title_en?.trim() ?? null,
+      job_title_ar: data.job_title_ar?.trim() ?? null,
+      extra_fields: {},
+    })
+    .select("id")
+    .single();
+  if (error) return null;
+  return (created as { id: string }).id;
+}
+
 // ── Main page ──────────────────────────────────────────────────────────
 export default function NewContract() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [step, setStep] = useState(0);
+  const prefillApplied = useRef(false);
 
   // Step 1 — template
   const [templateSource, setTemplateSource] = useState<"catalog" | "upload">("catalog");
@@ -205,13 +249,119 @@ export default function NewContract() {
   // Step 4 — generating
   const [generating, setGenerating] = useState(false);
 
-  // Load parties on mount
+  // Load parties on mount; if source=smartpro params present, upsert them
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    const source = searchParams.get("source");
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
-      supabase.from("parties").select("*").eq("user_id", user.id).order("name_en")
-        .then(({ data }) => { if (data) setAllParties(data as Party[]); });
+      const { data } = await supabase
+        .from("parties")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("name_en");
+      const parties = (data ?? []) as Party[];
+      setAllParties(parties);
+
+      if (source === "smartpro" && !prefillApplied.current) {
+        prefillApplied.current = true;
+        const fpName = searchParams.get("fp_name") ?? "";
+        const spName = searchParams.get("sp_name") ?? "";
+        const empName = searchParams.get("emp_name") ?? "";
+
+        // Upsert First Party (client)
+        if (fpName) {
+          const fpId = await upsertPartyFromParams(user.id, {
+            name_en: fpName,
+            name_ar: searchParams.get("fp_name_ar") ?? "",
+            type: "company",
+            role: searchParams.get("fp_role") ?? "client",
+            cr_number: searchParams.get("fp_cr") ?? "",
+            email: searchParams.get("fp_email") ?? "",
+          });
+          if (fpId) {
+            setFirstPartyId(fpId);
+            if (!parties.find(p => p.id === fpId)) {
+              setAllParties(prev => [...prev, {
+                id: fpId, user_id: user.id, type: "company", role: "client",
+                name_en: fpName, name_ar: searchParams.get("fp_name_ar") ?? "",
+                cr_number: searchParams.get("fp_cr") ?? null,
+                extra_fields: {}, created_at: "", updated_at: "",
+              } as Party]);
+            }
+          }
+        }
+
+        // Upsert Second Party (employer)
+        if (spName) {
+          const spId = await upsertPartyFromParams(user.id, {
+            name_en: spName,
+            name_ar: searchParams.get("sp_name_ar") ?? "",
+            type: "company",
+            role: searchParams.get("sp_role") ?? "employer",
+            cr_number: searchParams.get("sp_cr") ?? "",
+          });
+          if (spId) {
+            setSecondPartyId(spId);
+            if (!parties.find(p => p.id === spId)) {
+              setAllParties(prev => [...prev, {
+                id: spId, user_id: user.id, type: "company", role: "employer",
+                name_en: spName, name_ar: searchParams.get("sp_name_ar") ?? "",
+                cr_number: searchParams.get("sp_cr") ?? null,
+                extra_fields: {}, created_at: "", updated_at: "",
+              } as Party]);
+            }
+          }
+        }
+
+        // Upsert Employee party and store in field values seed
+        if (empName) {
+          await upsertPartyFromParams(user.id, {
+            name_en: empName,
+            name_ar: searchParams.get("emp_name_ar") ?? "",
+            type: "person",
+            role: "employee",
+            id_number: searchParams.get("emp_id") ?? "",
+            passport: searchParams.get("emp_passport") ?? "",
+            nationality: searchParams.get("emp_nationality") ?? "",
+            job_title_en: searchParams.get("emp_job_title") ?? "",
+            job_title_ar: searchParams.get("emp_job_title_ar") ?? "",
+          });
+          // Pre-seed employee field values so they're available in Step 3
+          setValues(prev => ({
+            ...prev,
+            employee_name: empName,
+            employee_name_en: empName,
+            employee_name_ar: searchParams.get("emp_name_ar") ?? "",
+            employee_id: searchParams.get("emp_id") ?? "",
+            employee_passport: searchParams.get("emp_passport") ?? "",
+            employee_nationality: searchParams.get("emp_nationality") ?? "",
+            employee_job_title: searchParams.get("emp_job_title") ?? "",
+            employee_job_title_en: searchParams.get("emp_job_title") ?? "",
+            employee_job_title_ar: searchParams.get("emp_job_title_ar") ?? "",
+            promoter_name: empName,
+            promoter_name_en: empName,
+            promoter_name_ar: searchParams.get("emp_name_ar") ?? "",
+            promoter_id: searchParams.get("emp_id") ?? "",
+            promoter_nationality: searchParams.get("emp_nationality") ?? "",
+          }));
+          setSeededKeys(new Set([
+            "employee_name", "employee_name_en", "employee_name_ar",
+            "employee_id", "employee_passport", "employee_nationality",
+            "employee_job_title", "employee_job_title_en", "employee_job_title_ar",
+            "promoter_name", "promoter_name_en", "promoter_name_ar",
+            "promoter_id", "promoter_nationality",
+          ]));
+        }
+
+        // If all three parties are present, advance to Step 2
+        if (fpName || spName) setStep(1);
+        toast({
+          title: "Parties pre-filled from SmartPro Hub",
+          description: "Review the selected parties and proceed to fill the template.",
+        });
+      }
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Step 1: scan catalog template ──
@@ -295,12 +445,27 @@ export default function NewContract() {
       next = applyPartyToFields(spVals, "second_party", keys, next);
       next = applyPartyToFields(spVals, "party_2", keys, next);
       next = applyPartyToFields(spVals, "party2", keys, next);
+      // employer (company second party)
+      if (sp.type === "company") {
+        next = applyPartyToFields(spVals, "employer", keys, next);
+        next = applyPartyToFields(spVals, "second_party_company", keys, next);
+      }
+      // employee/promoter (person second party)
       next = applyPartyToFields(spVals, "employee", keys, next);
       next = applyPartyToFields(spVals, "promoter", keys, next);
       for (const k of keys) { if (next[k] && !before[k]) newSeeded.add(k); }
     }
+    // Merge any pre-seeded employee fields from URL params (they take lower priority than party records)
+    const empPreseeds = Object.fromEntries(
+      Object.entries(values).filter(([k]) =>
+        k.startsWith("employee_") || k.startsWith("promoter_")
+      )
+    );
+    for (const k of keys) {
+      if (!next[k] && empPreseeds[k]) { next[k] = empPreseeds[k]; newSeeded.add(k); }
+    }
     setValues(next);
-    setSeededKeys(newSeeded);
+    setSeededKeys(prev => new Set([...prev, ...newSeeded]));
   }, [scan, values, allParties, firstPartyId, secondPartyId]);
 
   // ── Step 4: Generate & Save ──
@@ -513,11 +678,18 @@ export default function NewContract() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
+            {searchParams.get("source") === "smartpro" && (
+              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800">
+                <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-blue-600" />
+                Parties pre-filled from SmartPro Hub. Review and continue.
+              </div>
+            )}
+
             <div className="space-y-2">
-              <Label>First Party (Employer / Client)</Label>
+              <Label>First Party — Client</Label>
               <PartyCombobox
-                label="Select first party…"
-                parties={allParties.filter(p => ["employer", "client", "supplier"].includes(p.role))}
+                label="Select client company…"
+                parties={allParties.filter(p => ["client", "employer", "supplier", "other"].includes(p.role) && p.type === "company")}
                 value={firstPartyId}
                 onChange={setFirstPartyId}
               />
@@ -531,13 +703,14 @@ export default function NewContract() {
             <Separator />
 
             <div className="space-y-2">
-              <Label>Second Party (Employee / Contractor)</Label>
+              <Label>Second Party — Employer / Employee</Label>
               <PartyCombobox
                 label="Select second party…"
-                parties={allParties.filter(p => ["employee", "contractor", "other"].includes(p.role))}
+                parties={allParties.filter(p => ["employer", "employee", "contractor", "other"].includes(p.role))}
                 value={secondPartyId}
                 onChange={setSecondPartyId}
               />
+              <p className="text-xs text-muted-foreground">Can be a company (employer) or a person (employee/contractor).</p>
             </div>
 
             {allParties.length === 0 && (
