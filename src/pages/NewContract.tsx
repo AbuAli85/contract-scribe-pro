@@ -786,10 +786,9 @@ export default function NewContract() {
     let next = { ...values };
 
     if (isSmartpro && smartproData) {
-      // First Party — Client (CRM or platform)
-      const allClients: SmartProClient[] = [...(smartproData.crmClients ?? []), ...(smartproData.platformClients ?? [])];
+      // First Party — CRM client only
       const client = selectedClientKey
-        ? allClients.find(c => clientKey(c) === selectedClientKey) ?? null
+        ? (smartproData.crmClients ?? []).find(c => clientKey(c) === selectedClientKey) ?? null
         : null;
       if (client) {
         const cVals = smartproClientToFieldValues(client);
@@ -954,8 +953,9 @@ export default function NewContract() {
   // ── Derived labels for Review step ────────────────────────────────────
   const firstPartyLabel = useMemo(() => {
     if (isSmartpro && smartproData) {
-      const allClients: SmartProClient[] = [...(smartproData.crmClients ?? []), ...(smartproData.platformClients ?? [])];
-      const c = selectedClientKey ? allClients.find(c => clientKey(c) === selectedClientKey) : null;
+      const c = selectedClientKey
+        ? (smartproData.crmClients ?? []).find(c => clientKey(c) === selectedClientKey)
+        : null;
       return c?.displayNameEn ?? "—";
     }
     return allParties.find(p => p.id === firstPartyId)?.name_en ?? "—";
@@ -1149,7 +1149,7 @@ export default function NewContract() {
                   <>
                     <div className="flex items-center gap-2 p-2.5 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800">
                       <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-blue-600" />
-                      SmartPro: {(smartproData.crmClients?.length ?? 0) + (smartproData.platformClients?.length ?? 0)} clients · {smartproData.suppliers?.length ?? 0} suppliers · {smartproData.employees.length} employees
+                      SmartPro: {smartproData.crmClients?.length ?? 0} clients · {smartproData.suppliers?.length ?? 0} suppliers · {smartproData.employees.length} employees
                     </div>
 
                     {/* Employer card — always shown */}
@@ -1180,25 +1180,26 @@ export default function NewContract() {
                     <div className="space-y-2">
                       <Label>First Party — Client</Label>
                       <SmartProClientCombobox
-                        clients={[...(smartproData.crmClients ?? []), ...(smartproData.platformClients ?? [])]}
+                        clients={smartproData.crmClients ?? []}
                         value={selectedClientKey}
                         onChange={setSelectedClientKey}
                       />
                       {selectedClientKey && (() => {
-                        const allClients: SmartProClient[] = [...(smartproData.crmClients ?? []), ...(smartproData.platformClients ?? [])];
-                        const c = allClients.find(x => clientKey(x) === selectedClientKey);
-                        if (!c || c.kind !== "crm_client") return null;
+                        const c = (smartproData.crmClients ?? []).find(x => clientKey(x) === selectedClientKey);
+                        if (!c) return null;
                         return (
                           <div className="grid grid-cols-2 gap-x-3 px-2 text-xs text-muted-foreground">
                             {c.crNumber && <span>CR: {c.crNumber}</span>}
                             {c.vatNumber && <span>VAT: {c.vatNumber}</span>}
                             {c.phone && <span>📞 {c.phone}</span>}
                             {c.email && <span>✉ {c.email}</span>}
+                            {c.clientType && <span>Type: {c.clientType}</span>}
+                            {c.industry && <span>Industry: {c.industry}</span>}
                           </div>
                         );
                       })()}
-                      {(smartproData.crmClients?.length ?? 0) === 0 && (smartproData.platformClients?.length ?? 0) === 0 && (
-                        <p className="text-xs text-muted-foreground">No clients found for this company in SmartPro.</p>
+                      {(smartproData.crmClients?.length ?? 0) === 0 && (
+                        <p className="text-xs text-muted-foreground">No CRM clients found for this company in SmartPro.</p>
                       )}
                     </div>
 
