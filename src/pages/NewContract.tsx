@@ -925,23 +925,29 @@ export default function NewContract() {
       const user = session?.user;
       if (!user) throw new Error("Not authenticated");
 
-      // Doc URLs from the selected employee — stored directly so they bypass
-      // applyPartyToFields (which only writes template-placeholder keys)
-      const docUrlVals: Record<string, string> = {};
-      if (isSmartpro && smartproData && selectedEmployeeId != null) {
-        const emp = smartproData.employees.find(e => e.id === selectedEmployeeId);
-        for (const doc of emp?.documents ?? []) {
-          if (doc.fileUrl) {
-            docUrlVals[`doc_${doc.type}_url`] = doc.fileUrl;
-            if (doc.expiresAt) docUrlVals[`doc_${doc.type}_expires`] = doc.expiresAt;
-            if (doc.status) docUrlVals[`doc_${doc.type}_status`] = doc.status;
-          }
+      // Collect the FULL SmartPro profile so every field (bank, ID, dates, docs…)
+      // is saved to field_values — not just the ones the template happens to use.
+      // values (template-matched form state) is spread on top and takes priority.
+      const fullProfileVals: Record<string, string> = {};
+      if (isSmartpro && smartproData) {
+        Object.assign(fullProfileVals, smartproEmployerToFieldValues(smartproData.employer));
+        if (selectedClientKey) {
+          const c = (smartproData.crmClients ?? []).find(x => clientKey(x) === selectedClientKey);
+          if (c) Object.assign(fullProfileVals, smartproClientToFieldValues(c));
+        }
+        if (selectedEmployeeId != null) {
+          const emp = smartproData.employees.find(e => e.id === selectedEmployeeId);
+          if (emp) Object.assign(fullProfileVals, smartproEmployeeToFieldValues(emp));
+        }
+        if (selectedSupplierId) {
+          const sup = (smartproData.suppliers ?? []).find(s => s.partyId === selectedSupplierId);
+          if (sup) Object.assign(fullProfileVals, smartproSupplierToFieldValues(sup));
         }
       }
 
       const allValues: Record<string, unknown> = {
-        ...values,
-        ...docUrlVals,
+        ...fullProfileVals,   // full SmartPro profile — base layer
+        ...values,            // template-matched form state overrides
         ...(startDate ? { start_date: startDate } : {}),
         ...(endDate ? { end_date: endDate } : {}),
         // SmartPro meta — stored so RecordDetail can sync attachments
