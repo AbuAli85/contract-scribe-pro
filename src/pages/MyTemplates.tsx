@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -113,6 +113,196 @@ const COPY = {
 } as const;
 
 type ScanMode = "manual" | "ai";
+
+// ── Field grouping ────────────────────────────────────────────
+const GROUP_DEFS = [
+  { id: "first_party",  labelEn: "Party 1",         labelAr: "الطرف الأول",    isCompany: true  },
+  { id: "second_party", labelEn: "Party 2",         labelAr: "الطرف الثاني",   isCompany: true  },
+  { id: "supplier",     labelEn: "Supplier",        labelAr: "المورد",          isCompany: true  },
+  { id: "individual",   labelEn: "Individual",      labelAr: "بيانات الفرد",    isCompany: false },
+  { id: "dates",        labelEn: "Dates",           labelAr: "التواريخ",        isCompany: false },
+  { id: "other",        labelEn: "Other Details",   labelAr: "تفاصيل أخرى",    isCompany: false },
+] as const;
+
+function classifyField(key: string): string {
+  const k = key.toLowerCase();
+  if (k.startsWith("first_party") || k.startsWith("party_1") || k.startsWith("party1")) return "first_party";
+  if (k.startsWith("second_party") || k.startsWith("party_2") || k.startsWith("party2")) return "second_party";
+  if (k.startsWith("supplier")) return "supplier";
+  if (/promoter|employee|id_card|passport|resident_card|civil_number/.test(k)) return "individual";
+  if (/date|start|end|period|expiry|signing/.test(k)) return "dates";
+  return "other";
+}
+
+// ── FillStage component ──────────────────────────────────────
+interface FillStageProps {
+  scan: import("@/lib/templateEngine").ScanResult;
+  values: Record<string, string>;
+  setValues: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  seeds: Array<{ id: string; label: string; fields: Record<string, string> }>;
+  newSeedLabel: string;
+  setNewSeedLabel: (v: string) => void;
+  savingSeed: boolean;
+  handleSaveSeed: () => void;
+  applySeeds: (fields: Record<string, string>) => void;
+  generating: boolean;
+  handleGenerate: () => void;
+  isAr: boolean;
+  t: typeof import("./MyTemplates").COPY_EN;
+  onBack: () => void;
+}
+
+function FieldInput({ f, v, isAr, onChange }: {
+  f: import("@/lib/templateEngine").PlaceholderField;
+  v: string;
+  isAr: boolean;
+  onChange: (val: string) => void;
+}) {
+  const id = `field-${f.key}`;
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id} className={`block text-sm ${isAr ? "text-right" : ""}`}>
+        {f.label}
+        {f.required && <span className="text-destructive ms-1">*</span>}
+      </Label>
+      {f.type === "textarea" ? (
+        <Textarea id={id} value={v} required={f.required} rows={3} onChange={(e) => onChange(e.target.value)} />
+      ) : (
+        <Input
+          id={id}
+          type={f.type === "date" ? "date" : f.type === "number" ? "number" : f.type === "email" ? "email" : "text"}
+          value={v}
+          required={f.required}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )}
+    </div>
+  );
+}
+
+function FillStage({ scan, values, setValues, seeds, newSeedLabel, setNewSeedLabel, savingSeed,
+  handleSaveSeed, applySeeds, generating, handleGenerate, isAr, t, onBack }: FillStageProps) {
+
+  const groups = useMemo(() => {
+    const map = new Map<string, import("@/lib/templateEngine").PlaceholderField[]>();
+    for (const f of scan.fields) {
+      const g = classifyField(f.key);
+      if (!map.has(g)) map.set(g, []);
+      map.get(g)!.push(f);
+    }
+    return GROUP_DEFS.filter(g => map.has(g.id)).map(g => ({ ...g, fields: map.get(g.id)! }));
+  }, [scan.fields]);
+
+  const applyGroupSeed = (groupFields: import("@/lib/templateEngine").PlaceholderField[], seedFields: Record<string, string>) => {
+    setValues(prev => {
+      const next = { ...prev };
+      for (const f of groupFields) {
+        if (f.key in seedFields && seedFields[f.key]) next[f.key] = seedFields[f.key];
+      }
+      return next;
+    });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className={isAr ? "text-right" : ""}>{t.fillTitle}</CardTitle>
+        <CardDescription className={isAr ? "text-right" : ""}>{t.fillSubtitle}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={(e) => { e.preventDefault(); handleGenerate(); }} className="space-y-8">
+
+          {groups.map((group, gi) => (
+            <div key={group.id}>
+              {/* Section header */}
+              <div className={`flex items-center justify-between mb-4 ${isAr ? "flex-row-reverse" : ""}`}>
+                <div className={`flex items-center gap-2 ${isAr ? "flex-row-reverse" : ""}`}>
+                  <BookUser className="h-4 w-4 text-primary" />
+                  <span className="font-semibold text-sm">
+                    {isAr ? group.labelAr : group.labelEn}
+                  </span>
+                  <Badge variant="secondary" className="text-[10px]">
+                    {group.fields.length}
+                  </Badge>
+                </div>
+                {/* Per-section profile selector for company groups */}
+                {group.isCompany && seeds.length > 0 && (
+                  <Select onValueChange={(id) => {
+                    const seed = seeds.find(s => s.id === id);
+                    if (seed) applyGroupSeed(group.fields, seed.fields);
+                  }}>
+                    <SelectTrigger className="w-44 h-8 text-xs">
+                      <SelectValue placeholder={isAr ? "تحميل من ملف..." : "Load profile..."} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {seeds.map(s => <SelectItem key={s.id} value={s.id} className="text-xs">{s.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+                {/* Hint to save when no seeds yet */}
+                {group.isCompany && seeds.length === 0 && gi === 0 && (
+                  <span className="text-[10px] text-muted-foreground">
+                    {isAr ? "أدخل البيانات مرة واحدة ثم احفظها ↓" : "Fill once, save below ↓"}
+                  </span>
+                )}
+              </div>
+
+              {/* Fields */}
+              <div className="space-y-4">
+                {group.fields.map(f => (
+                  <FieldInput
+                    key={f.key}
+                    f={f}
+                    v={values[f.key] ?? ""}
+                    isAr={isAr}
+                    onChange={(val) => setValues(prev => ({ ...prev, [f.key]: val }))}
+                  />
+                ))}
+              </div>
+
+              {gi < groups.length - 1 && <Separator className="mt-6" />}
+            </div>
+          ))}
+
+          <Separator />
+
+          {/* Save profile row */}
+          <div className={`flex gap-2 items-center p-3 rounded-lg bg-muted/40 ${isAr ? "flex-row-reverse" : ""}`}>
+            <BookUser className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <Input
+              placeholder={isAr ? "احفظ هذه البيانات كـ... (مثال: شركة اكسترا)" : "Save these values as... (e.g. eXtra Stores)"}
+              value={newSeedLabel}
+              onChange={(e) => setNewSeedLabel(e.target.value)}
+              className="flex-1 h-8 text-sm"
+            />
+            <Button type="button" variant="outline" size="sm" onClick={handleSaveSeed}
+              disabled={savingSeed || !newSeedLabel.trim()}>
+              {savingSeed ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+              <span className="ms-1">{isAr ? "حفظ" : "Save"}</span>
+            </Button>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={onBack}>
+              {isAr ? "السابق" : "Back"}
+            </Button>
+            <Button type="submit" className="flex-1" disabled={generating}>
+              {generating ? (
+                <><Loader2 className="me-2 h-4 w-4 animate-spin" />{t.generating}</>
+              ) : (
+                <><FileText className="me-2 h-4 w-4" />{t.generate}</>
+              )}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Export for type reference
+export const COPY_EN = {} as (typeof COPY)["en"];
 
 const MyTemplates = () => {
   const [language, setLanguage] = useState<"ar" | "en">("en");
@@ -638,137 +828,24 @@ const MyTemplates = () => {
         )}
 
         {stage === "fill" && scan && (
-          <Card>
-            <CardHeader>
-              <CardTitle className={isAr ? "text-right" : ""}>{t.fillTitle}</CardTitle>
-              <CardDescription className={isAr ? "text-right" : ""}>
-                {t.fillSubtitle}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* ── Company profile selector ── */}
-              <div className={`flex flex-col gap-2 mb-5 pb-5 border-b ${isAr ? "items-end" : ""}`}>
-                <div className={`flex items-center gap-2 text-sm font-medium ${isAr ? "flex-row-reverse" : ""}`}>
-                  <BookUser className="h-4 w-4 text-primary" />
-                  {isAr ? "ملف الشركة" : "Company profile"}
-                </div>
-                {seeds.length > 0 && (
-                  <div className={`flex gap-2 w-full ${isAr ? "flex-row-reverse" : ""}`}>
-                    <Select onValueChange={(id) => {
-                      const seed = seeds.find((s) => s.id === id);
-                      if (seed) applySeeds(seed.fields);
-                    }}>
-                      <SelectTrigger className="flex-1">
-                        <SelectValue placeholder={isAr ? "اختر ملف الشركة..." : "Select a saved profile..."} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {seeds.map((s) => (
-                          <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-                <div className={`flex gap-2 w-full ${isAr ? "flex-row-reverse" : ""}`}>
-                  <Input
-                    placeholder={isAr ? "اسم الملف (مثال: شركة اكسترا)" : "Profile name (e.g. eXtra Stores)"}
-                    value={newSeedLabel}
-                    onChange={(e) => setNewSeedLabel(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleSaveSeed}
-                    disabled={savingSeed || !newSeedLabel.trim()}
-                  >
-                    {savingSeed ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    <span className="ms-1.5">{isAr ? "حفظ" : "Save"}</span>
-                  </Button>
-                </div>
-                {seeds.length === 0 && (
-                  <p className={`text-xs text-muted-foreground ${isAr ? "text-right" : ""}`}>
-                    {isAr
-                      ? "أدخل بيانات شركتك مرة واحدة ثم احفظها — ستُملأ تلقائياً في كل عقد لاحق."
-                      : "Fill in your company details once and save — they'll auto-fill in every future contract."}
-                  </p>
-                )}
-              </div>
-
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleGenerate();
-                }}
-                className="space-y-5"
-              >
-                {scan.fields.map((f) => {
-                  const fieldId = `field-${f.key}`;
-                  const v = values[f.key] ?? "";
-                  return (
-                    <div key={f.key} className="space-y-1.5">
-                      <Label htmlFor={fieldId} className={isAr ? "text-right block" : "block"}>
-                        {f.label}
-                        {f.required && <span className="text-destructive ms-1">*</span>}
-                      </Label>
-                      {f.type === "textarea" ? (
-                        <Textarea
-                          id={fieldId}
-                          value={v}
-                          required={f.required}
-                          onChange={(e) =>
-                            setValues((prev) => ({ ...prev, [f.key]: e.target.value }))
-                          }
-                          rows={3}
-                        />
-                      ) : (
-                        <Input
-                          id={fieldId}
-                          type={
-                            f.type === "date"
-                              ? "date"
-                              : f.type === "number"
-                              ? "number"
-                              : f.type === "email"
-                              ? "email"
-                              : "text"
-                          }
-                          value={v}
-                          required={f.required}
-                          onChange={(e) =>
-                            setValues((prev) => ({ ...prev, [f.key]: e.target.value }))
-                          }
-                        />
-                      )}
-                    </div>
-                  );
-                })}
-
-                <Separator />
-
-                <div className="flex gap-2">
-                  <Button type="button" variant="outline" onClick={() => setStage("review")}>
-                    {isAr ? "السابق" : "Back"}
-                  </Button>
-                  <Button type="submit" className="flex-1" disabled={generating}>
-                    {generating ? (
-                      <>
-                        <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                        {t.generating}
-                      </>
-                    ) : (
-                      <>
-                        <FileText className="me-2 h-4 w-4" />
-                        {t.generate}
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+          <FillStage
+            scan={scan}
+            values={values}
+            setValues={setValues}
+            seeds={seeds}
+            newSeedLabel={newSeedLabel}
+            setNewSeedLabel={setNewSeedLabel}
+            savingSeed={savingSeed}
+            handleSaveSeed={handleSaveSeed}
+            applySeeds={applySeeds}
+            generating={generating}
+            handleGenerate={handleGenerate}
+            isAr={isAr}
+            t={t}
+            onBack={() => setStage("review")}
+          />
         )}
+
 
         {stage === "done" && (
           <Card>
