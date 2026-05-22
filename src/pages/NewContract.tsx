@@ -433,6 +433,8 @@ function FieldInput({ f, v, seeded, onChange }: {
 const DATE_GB: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short", year: "numeric" };
 function fmtDate(v: string | null | undefined): string {
   if (!v) return "";
+  // Only attempt to parse genuine ISO dates; return anything else as-is
+  if (!/^\d{4}-\d{2}-\d{2}/.test(v)) return v;
   const d = new Date(v.length === 10 ? v + "T00:00:00" : v);
   return isNaN(d.getTime()) ? v : d.toLocaleDateString("en-GB", DATE_GB);
 }
