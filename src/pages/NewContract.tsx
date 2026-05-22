@@ -408,11 +408,19 @@ function FieldInput({ f, v, seeded, onChange }: {
       </Label>
       {f.type === "textarea" ? (
         <Textarea id={id} value={v} rows={3} onChange={e => onChange(e.target.value)} />
+      ) : f.type === "date" ? (
+        <div>
+          <Input id={id} type="date" lang="en-GB" value={v} onChange={e => onChange(e.target.value)} />
+          {v && (
+            <p className="text-xs text-muted-foreground mt-1">
+              {new Date(v + "T00:00:00").toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}
+            </p>
+          )}
+        </div>
       ) : (
         <Input
           id={id}
-          type={f.type === "date" ? "date" : f.type === "number" ? "number" : f.type === "email" ? "email" : "text"}
-          lang={f.type === "date" ? "en-GB" : undefined}
+          type={f.type === "number" ? "number" : f.type === "email" ? "email" : "text"}
           value={v}
           onChange={e => onChange(e.target.value)}
         />
@@ -497,10 +505,13 @@ function smartproClientToFieldValues(c: SmartProClient): Record<string, string> 
     name_en: nameEn,
     name: nameEn,
     name_ar: nameAr,
+    company_name: nameEn,
     company_name_en: nameEn,
     company_name_ar: nameAr,
+    legal_name: nameEn,
     legal_name_en: nameEn,
     legal_name_ar: nameAr,
+    full_name: nameEn,
     full_name_en: nameEn,
     full_name_ar: nameAr,
   };
@@ -508,6 +519,7 @@ function smartproClientToFieldValues(c: SmartProClient): Record<string, string> 
     base.cr_number = c.crNumber ?? "";
     base.cr_no = c.crNumber ?? "";
     base.registration_number = c.crNumber ?? "";
+    base.registration_no = c.crNumber ?? "";
     base.company_registration_number = c.crNumber ?? "";
     base.commercial_registration = c.crNumber ?? "";
     base.commercial_registration_no = c.crNumber ?? "";
@@ -522,11 +534,13 @@ function smartproClientToFieldValues(c: SmartProClient): Record<string, string> 
   } else if (c.kind === "platform") {
     const regNo = c.registrationNumber ?? "";
     base.registration_number = regNo;
+    base.registration_no = regNo;
     base.cr_number = regNo;
     base.cr_no = regNo;
     base.company_registration_number = regNo;
     base.commercial_registration = regNo;
     base.commercial_registration_no = regNo;
+    base.commercial_reg_no = regNo;
   }
   return base;
 }
@@ -539,15 +553,19 @@ function smartproEmployerToFieldValues(e: SmartProEmployer): Record<string, stri
     name_en: nameEn,
     name: nameEn,
     name_ar: nameAr,
+    company_name: nameEn,
     company_name_en: nameEn,
     company_name_ar: nameAr,
+    legal_name: nameEn,
     legal_name_en: nameEn,
     legal_name_ar: nameAr,
+    full_name: nameEn,
     full_name_en: nameEn,
     full_name_ar: nameAr,
     cr_number: regNo,
     cr_no: regNo,
     registration_number: regNo,
+    registration_no: regNo,
     company_registration_number: regNo,
     commercial_registration: regNo,
     commercial_registration_no: regNo,
@@ -567,17 +585,24 @@ function smartproEmployeeToFieldValues(e: SmartProEmployee): Record<string, stri
     name: fullNameEn,
     name_ar: fullNameAr,
     // When the promoter/employee acts as a "company" party in the contract
+    company_name: fullNameEn,
     company_name_en: fullNameEn,
     company_name_ar: fullNameAr,
+    legal_name: fullNameEn,
     legal_name_en: fullNameEn,
     legal_name_ar: fullNameAr,
+    full_name: fullNameEn,
     full_name_en: fullNameEn,
     full_name_ar: fullNameAr,
     // Signatory = the person themselves
+    signatory_name: fullNameEn,
     signatory_name_en: fullNameEn,
     signatory_name_ar: fullNameAr,
+    signatory_designation: jobTitleEn,
     signatory_designation_en: jobTitleEn,
     signatory_designation_ar: jobTitleAr,
+    designation: jobTitleEn,
+    title: jobTitleEn,
     first_name: e.firstName,
     last_name: e.lastName,
     first_name_ar: e.firstNameAr ?? "",
@@ -589,6 +614,10 @@ function smartproEmployeeToFieldValues(e: SmartProEmployee): Record<string, stri
     id_number: e.nationalId ?? "",
     id_card_number: e.nationalId ?? "",
     id_no: e.nationalId ?? "",
+    id: e.nationalId ?? "",
+    id_civil_number: e.nationalId ?? "",
+    civil_number: e.nationalId ?? "",
+    civil_civil_id: e.nationalId ?? "",
     national_id: e.nationalId ?? "",
     national_id_number: e.nationalId ?? "",
     civil_id: e.nationalId ?? "",
@@ -597,6 +626,7 @@ function smartproEmployeeToFieldValues(e: SmartProEmployee): Record<string, stri
     identity_no: e.nationalId ?? "",
     iqama_number: e.nationalId ?? "",
     resident_id: e.nationalId ?? "",
+    promoter_id: e.nationalId ?? "",
     // Passport
     passport_number: e.passportNumber ?? "",
     passport_no: e.passportNumber ?? "",
@@ -652,19 +682,24 @@ function smartproSupplierToFieldValues(s: SmartProSupplier): Record<string, stri
     name_en: nameEn,
     name: nameEn,
     name_ar: nameAr,
+    company_name: nameEn,
     company_name_en: nameEn,
     company_name_ar: nameAr,
+    legal_name: nameEn,
     legal_name_en: nameEn,
     legal_name_ar: nameAr,
+    full_name: nameEn,
     full_name_en: nameEn,
     full_name_ar: nameAr,
     display_name_en: s.displayNameEn,
     display_name_ar: s.displayNameAr ?? "",
     registration_number: regNo,
+    registration_no: regNo,
     cr_number: regNo,
     cr_no: regNo,
     commercial_registration: regNo,
     commercial_registration_no: regNo,
+    commercial_reg_no: regNo,
     company_registration_number: regNo,
     phone: s.phone ?? "",
     email: s.email ?? "",
