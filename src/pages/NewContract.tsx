@@ -499,59 +499,106 @@ function applyPartyToFields(
   current: Record<string, string>
 ): Record<string, string> {
   const next = { ...current };
+  const pfx = prefix.toLowerCase() + "_";
   for (const key of fieldKeys) {
+    const lk = key.toLowerCase();
+    // Direct match (case-insensitive)
+    if (lk in partyVals && partyVals[lk]) { next[key] = partyVals[lk]; continue; }
+    // Try original case direct match
     if (key in partyVals && partyVals[key]) { next[key] = partyVals[key]; continue; }
-    const bare = key.startsWith(prefix + "_") ? key.slice(prefix.length + 1) : null;
+    // Prefix strip (case-insensitive)
+    const bare = lk.startsWith(pfx) ? lk.slice(pfx.length) : null;
     if (bare && bare in partyVals && partyVals[bare]) { next[key] = partyVals[bare]; }
   }
   return next;
+}
+
+function crAliases(val: string): Record<string, string> {
+  return {
+    cr: val,
+    cr_no: val,
+    cr_num: val,
+    cr_number: val,
+    commercial_reg: val,
+    commercial_reg_no: val,
+    commercial_reg_num: val,
+    commercial_reg_number: val,
+    commercial_registration: val,
+    commercial_registration_no: val,
+    commercial_registration_num: val,
+    commercial_registration_number: val,
+    company_cr: val,
+    company_cr_no: val,
+    company_cr_number: val,
+    company_registration: val,
+    company_registration_no: val,
+    company_registration_number: val,
+    registration: val,
+    registration_no: val,
+    registration_num: val,
+    registration_number: val,
+    reg: val,
+    reg_no: val,
+    reg_number: val,
+  };
+}
+
+function nameAliases(en: string, ar: string): Record<string, string> {
+  return {
+    name: en,
+    name_en: en,
+    name_ar: ar,
+    company_name: en,
+    company_name_en: en,
+    company_name_ar: ar,
+    legal_name: en,
+    legal_name_en: en,
+    legal_name_ar: ar,
+    full_name: en,
+    full_name_en: en,
+    full_name_ar: ar,
+    trade_name: en,
+    trade_name_en: en,
+    trade_name_ar: ar,
+    display_name: en,
+    display_name_en: en,
+    display_name_ar: ar,
+    organisation_name: en,
+    organization_name: en,
+    entity_name: en,
+    entity_name_en: en,
+    entity_name_ar: ar,
+  };
 }
 
 function smartproClientToFieldValues(c: SmartProClient): Record<string, string> {
   const nameEn = c.displayNameEn;
   const nameAr = c.displayNameAr ?? "";
   const base: Record<string, string> = {
-    name_en: nameEn,
-    name: nameEn,
-    name_ar: nameAr,
-    company_name: nameEn,
-    company_name_en: nameEn,
-    company_name_ar: nameAr,
-    legal_name: nameEn,
-    legal_name_en: nameEn,
-    legal_name_ar: nameAr,
-    full_name: nameEn,
-    full_name_en: nameEn,
-    full_name_ar: nameAr,
+    ...nameAliases(nameEn, nameAr),
+    // For company clients the signatory may not be known; use company name as fallback
+    signatory_name: nameEn,
+    signatory_name_en: nameEn,
+    authorized_signatory: nameEn,
+    authorised_signatory: nameEn,
+    authorized_signatory_name: nameEn,
+    authorised_signatory_name: nameEn,
+    representative: nameEn,
+    representative_name: nameEn,
+    representative_name_en: nameEn,
   };
+  const crVal = c.kind === "crm_client" ? (c.crNumber ?? "") : (c.kind === "platform" ? (c.registrationNumber ?? "") : "");
+  Object.assign(base, crAliases(crVal));
   if (c.kind === "crm_client") {
-    base.cr_number = c.crNumber ?? "";
-    base.cr_no = c.crNumber ?? "";
-    base.registration_number = c.crNumber ?? "";
-    base.registration_no = c.crNumber ?? "";
-    base.company_registration_number = c.crNumber ?? "";
-    base.commercial_registration = c.crNumber ?? "";
-    base.commercial_registration_no = c.crNumber ?? "";
-    base.commercial_registration_number = c.crNumber ?? "";
-    base.commercial_reg_no = c.crNumber ?? "";
-    base.commercial_reg_number = c.crNumber ?? "";
     base.vat_number = c.vatNumber ?? "";
     base.vat_no = c.vatNumber ?? "";
     base.tax_id = c.vatNumber ?? "";
     base.phone = c.phone ?? "";
+    base.telephone = c.phone ?? "";
+    base.mobile = c.phone ?? "";
     base.email = c.email ?? "";
     base.client_type = c.clientType ?? "";
     base.industry = c.industry ?? "";
-  } else if (c.kind === "platform") {
-    const regNo = c.registrationNumber ?? "";
-    base.registration_number = regNo;
-    base.registration_no = regNo;
-    base.cr_number = regNo;
-    base.cr_no = regNo;
-    base.company_registration_number = regNo;
-    base.commercial_registration = regNo;
-    base.commercial_registration_no = regNo;
-    base.commercial_reg_no = regNo;
   }
   return base;
 }
@@ -561,29 +608,20 @@ function smartproEmployerToFieldValues(e: SmartProEmployer): Record<string, stri
   const nameAr = e.nameAr ?? "";
   const regNo = e.crNumber ?? "";
   return {
-    name_en: nameEn,
-    name: nameEn,
-    name_ar: nameAr,
-    company_name: nameEn,
-    company_name_en: nameEn,
-    company_name_ar: nameAr,
-    legal_name: nameEn,
-    legal_name_en: nameEn,
-    legal_name_ar: nameAr,
-    full_name: nameEn,
-    full_name_en: nameEn,
-    full_name_ar: nameAr,
-    cr_number: regNo,
-    cr_no: regNo,
-    registration_number: regNo,
-    registration_no: regNo,
-    company_registration_number: regNo,
-    commercial_registration: regNo,
-    commercial_registration_no: regNo,
-    commercial_registration_number: regNo,
-    commercial_reg_no: regNo,
-    commercial_reg_number: regNo,
+    ...nameAliases(nameEn, nameAr),
+    ...crAliases(regNo),
+    signatory_name: nameEn,
+    signatory_name_en: nameEn,
+    authorized_signatory: nameEn,
+    authorised_signatory: nameEn,
+    authorized_signatory_name: nameEn,
+    authorised_signatory_name: nameEn,
+    representative: nameEn,
+    representative_name: nameEn,
+    representative_name_en: nameEn,
     phone: e.phone ?? "",
+    telephone: e.phone ?? "",
+    mobile: e.phone ?? "",
     email: e.email ?? "",
   };
 }
@@ -594,25 +632,16 @@ function smartproEmployeeToFieldValues(e: SmartProEmployee): Record<string, stri
   const jobTitleEn = e.jobTitleEn ?? "";
   const jobTitleAr = e.jobTitleAr ?? "";
   const out: Record<string, string> = {
-    name_en: fullNameEn,
-    name: fullNameEn,
-    name_ar: fullNameAr,
-    // When the promoter/employee acts as a "company" party in the contract
-    company_name: fullNameEn,
-    company_name_en: fullNameEn,
-    company_name_ar: fullNameAr,
-    legal_name: fullNameEn,
-    legal_name_en: fullNameEn,
-    legal_name_ar: fullNameAr,
-    full_name: fullNameEn,
-    full_name_en: fullNameEn,
-    full_name_ar: fullNameAr,
+    ...nameAliases(fullNameEn, fullNameAr),
     // Signatory = the person themselves (all naming variants)
     signatory_name: fullNameEn,
     signatory_name_en: fullNameEn,
     signatory_name_ar: fullNameAr,
     authorised_signatory_name: fullNameEn,
     authorized_signatory_name: fullNameEn,
+    representative: fullNameEn,
+    representative_name: fullNameEn,
+    representative_name_en: fullNameEn,
     signatory_designation: jobTitleEn,
     signatory_designation_en: jobTitleEn,
     signatory_designation_ar: jobTitleAr,
@@ -700,31 +729,20 @@ function smartproSupplierToFieldValues(s: SmartProSupplier): Record<string, stri
   const nameAr = s.legalNameAr ?? s.displayNameAr ?? "";
   const regNo = s.registrationNumber ?? "";
   return {
-    name_en: nameEn,
-    name: nameEn,
-    name_ar: nameAr,
-    company_name: nameEn,
-    company_name_en: nameEn,
-    company_name_ar: nameAr,
-    legal_name: nameEn,
-    legal_name_en: nameEn,
-    legal_name_ar: nameAr,
-    full_name: nameEn,
-    full_name_en: nameEn,
-    full_name_ar: nameAr,
+    ...nameAliases(nameEn, nameAr),
+    ...crAliases(regNo),
     display_name_en: s.displayNameEn,
     display_name_ar: s.displayNameAr ?? "",
-    registration_number: regNo,
-    registration_no: regNo,
-    cr_number: regNo,
-    cr_no: regNo,
-    commercial_registration: regNo,
-    commercial_registration_no: regNo,
-    commercial_registration_number: regNo,
-    commercial_reg_no: regNo,
-    commercial_reg_number: regNo,
-    company_registration_number: regNo,
+    signatory_name: nameEn,
+    signatory_name_en: nameEn,
+    authorized_signatory: nameEn,
+    authorised_signatory: nameEn,
+    authorized_signatory_name: nameEn,
+    authorised_signatory_name: nameEn,
+    representative: nameEn,
+    representative_name: nameEn,
     phone: s.phone ?? "",
+    telephone: s.phone ?? "",
     email: s.email ?? "",
   };
 }
@@ -933,6 +951,7 @@ export default function NewContract() {
   const applyPartyData = useCallback(() => {
     if (!scan) return;
     const keys = scan.fields.map(f => f.key);
+    console.log("[CSP-debug] template field keys:", keys);
     const newSeeded = new Set<string>();
     let next = { ...values };
 
@@ -1033,6 +1052,8 @@ export default function NewContract() {
       }
     }
 
+    console.log("[CSP-debug] auto-filled values:", Object.fromEntries(keys.filter(k => next[k]).map(k => [k, next[k]])));
+    console.log("[CSP-debug] empty fields:", keys.filter(k => !next[k]));
     setValues(next);
     setSeededKeys(prev => new Set([...prev, ...newSeeded]));
   }, [scan, values, isSmartpro, smartproData, selectedClientKey, selectedEmployeeId, selectedSupplierId, secondPartyRole, allParties, firstPartyId, secondPartyId]);
