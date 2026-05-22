@@ -430,6 +430,13 @@ function FieldInput({ f, v, seeded, onChange }: {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────
+const DATE_GB: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short", year: "numeric" };
+function fmtDate(v: string | null | undefined): string {
+  if (!v) return "";
+  const d = new Date(v.length === 10 ? v + "T00:00:00" : v);
+  return isNaN(d.getTime()) ? v : d.toLocaleDateString("en-GB", DATE_GB);
+}
+
 function clientKey(c: SmartProClient): string {
   if (c.kind === "platform") return `platform:${c.companyId}`;
   if (c.kind === "crm_client") return `crm:${c.crmClientId}`;
@@ -523,7 +530,9 @@ function smartproClientToFieldValues(c: SmartProClient): Record<string, string> 
     base.company_registration_number = c.crNumber ?? "";
     base.commercial_registration = c.crNumber ?? "";
     base.commercial_registration_no = c.crNumber ?? "";
+    base.commercial_registration_number = c.crNumber ?? "";
     base.commercial_reg_no = c.crNumber ?? "";
+    base.commercial_reg_number = c.crNumber ?? "";
     base.vat_number = c.vatNumber ?? "";
     base.vat_no = c.vatNumber ?? "";
     base.tax_id = c.vatNumber ?? "";
@@ -569,7 +578,9 @@ function smartproEmployerToFieldValues(e: SmartProEmployer): Record<string, stri
     company_registration_number: regNo,
     commercial_registration: regNo,
     commercial_registration_no: regNo,
+    commercial_registration_number: regNo,
     commercial_reg_no: regNo,
+    commercial_reg_number: regNo,
     phone: e.phone ?? "",
     email: e.email ?? "",
   };
@@ -594,13 +605,21 @@ function smartproEmployeeToFieldValues(e: SmartProEmployee): Record<string, stri
     full_name: fullNameEn,
     full_name_en: fullNameEn,
     full_name_ar: fullNameAr,
-    // Signatory = the person themselves
+    // Signatory = the person themselves (all naming variants)
     signatory_name: fullNameEn,
     signatory_name_en: fullNameEn,
     signatory_name_ar: fullNameAr,
+    authorised_signatory_name: fullNameEn,
+    authorized_signatory_name: fullNameEn,
     signatory_designation: jobTitleEn,
     signatory_designation_en: jobTitleEn,
     signatory_designation_ar: jobTitleAr,
+    signatory_job_title: jobTitleEn,
+    signatory_job_title_en: jobTitleEn,
+    authorised_signatory_job_title: jobTitleEn,
+    authorized_signatory_job_title: jobTitleEn,
+    authorised_signatory_designation: jobTitleEn,
+    authorized_signatory_designation: jobTitleEn,
     designation: jobTitleEn,
     title: jobTitleEn,
     first_name: e.firstName,
@@ -699,7 +718,9 @@ function smartproSupplierToFieldValues(s: SmartProSupplier): Record<string, stri
     cr_no: regNo,
     commercial_registration: regNo,
     commercial_registration_no: regNo,
+    commercial_registration_number: regNo,
     commercial_reg_no: regNo,
+    commercial_reg_number: regNo,
     company_registration_number: regNo,
     phone: s.phone ?? "",
     email: s.email ?? "",
@@ -1436,7 +1457,7 @@ export default function NewContract() {
                                   {emp.visaNumber && <span>Visa: <span className="text-foreground font-mono">{emp.visaNumber}</span></span>}
                                   {emp.workPermitNumber && <span>Work Permit: <span className="text-foreground font-mono">{emp.workPermitNumber}</span></span>}
                                   {emp.nationality && <span>Nationality: {emp.nationality}</span>}
-                                  {emp.dateOfBirth && <span>DOB: {emp.dateOfBirth}</span>}
+                                  {emp.dateOfBirth && <span>DOB: {fmtDate(emp.dateOfBirth)}</span>}
                                   {emp.salary != null && <span>Salary: {emp.salary} {emp.currency ?? ""}</span>}
                                   {emp.bankName && <span>Bank: {emp.bankName}</span>}
                                   {emp.ibanNumber && <span>IBAN: <span className="font-mono">{emp.ibanNumber}</span></span>}
@@ -1455,7 +1476,7 @@ export default function NewContract() {
                                         >
                                           <FileText className="h-3 w-3 flex-shrink-0" />
                                           {DOC_TYPE_LABEL[doc.type] ?? doc.type}
-                                          {doc.expiresAt && <span className="opacity-70">· {doc.expiresAt}</span>}
+                                          {doc.expiresAt && <span className="opacity-70">· {fmtDate(doc.expiresAt)}</span>}
                                         </a>
                                       ))}
                                     </div>
@@ -1581,10 +1602,12 @@ export default function NewContract() {
                   <div className="space-y-1.5">
                     <Label>Start date</Label>
                     <Input type="date" lang="en-GB" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                    {startDate && <p className="text-xs text-muted-foreground">{fmtDate(startDate)}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <Label>End date</Label>
                     <Input type="date" lang="en-GB" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                    {endDate && <p className="text-xs text-muted-foreground">{fmtDate(endDate)}</p>}
                   </div>
                 </div>
               </div>
@@ -1657,13 +1680,13 @@ export default function NewContract() {
               {startDate && (
                 <div className="p-3 rounded-lg bg-muted/50">
                   <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Start</p>
-                  <p className="font-medium">{startDate}</p>
+                  <p className="font-medium">{fmtDate(startDate)}</p>
                 </div>
               )}
               {endDate && (
                 <div className="p-3 rounded-lg bg-muted/50">
                   <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">End</p>
-                  <p className="font-medium">{endDate}</p>
+                  <p className="font-medium">{fmtDate(endDate)}</p>
                 </div>
               )}
             </div>
