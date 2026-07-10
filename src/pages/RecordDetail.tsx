@@ -449,13 +449,13 @@ export default function RecordDetail() {
     if (!canSyncAttachments || !record) return;
     setSyncing(true);
     try {
-      const apiKey = (import.meta.env.VITE_SMARTPRO_API_KEY as string | undefined) ?? "";
-      const res = await fetch(
-        `${smartproMeta.hubUrl}/api/contract-scribe/parties?companyId=${smartproMeta.companyId}`,
-        { headers: { Authorization: `Bearer ${apiKey}` } },
-      );
-      if (!res.ok) throw new Error(`SmartPro API ${res.status}`);
-      const data = await res.json();
+      // Fetch parties via the server-side proxy: it mints a fresh Hub JWT
+      // (the static key is retired) and authorizes by the caller's linked company.
+      // supabase.functions.invoke attaches the user's access token automatically.
+      const { data, error: fnErr } = await supabase.functions.invoke("smartpro-parties", {
+        body: { companyId: smartproMeta.companyId },
+      });
+      if (fnErr) throw new Error(`SmartPro sync failed: ${fnErr.message}`);
       const emp = (data.employees ?? []).find((e: { id: number }) => e.id === smartproMeta.employeeId);
       if (!emp) throw new Error("Employee not found in SmartPro");
 

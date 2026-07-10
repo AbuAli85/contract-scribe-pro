@@ -60,6 +60,21 @@ Deno.serve(async (req) => {
       return json({ error: linkErr?.message ?? "Failed to generate link" }, 500);
     }
 
+    // Persist the SmartPro company link into app_metadata (server-controlled — the
+    // user can't set app_metadata) on EVERY login, so the smartpro-parties proxy
+    // can authorize parties reads to exactly this company. createUser is idempotent
+    // and won't update returning users, so refresh it here via the user id.
+    const companyId = Number(payload.companyId);
+    const userId = linkData.user?.id;
+    if (userId && Number.isInteger(companyId) && companyId > 0) {
+      await admin.auth.admin.updateUserById(userId, {
+        app_metadata: {
+          smartpro_company_id: companyId,
+          smartpro_user_id: typeof payload.sub === "string" ? payload.sub : null,
+        },
+      });
+    }
+
     return json({
       token_hash: linkData.properties.hashed_token,
       type: linkData.properties.verification_type ?? "magiclink",
