@@ -808,13 +808,22 @@ export default function NewContract() {
     if (isSmartpro && hubUrl && companyId && !prefillApplied.current) {
       prefillApplied.current = true;
       setSmartproLoading(true);
-      const apiKey = (import.meta.env.VITE_SMARTPRO_API_KEY as string | undefined) ?? "";
+      // Short-lived Hub JWT captured by /auto-auth at launch. The old static
+      // VITE_SMARTPRO_API_KEY is no longer accepted by the Hub (it was
+      // readable in the public JS bundle).
+      let hubToken = "";
+      try { hubToken = sessionStorage.getItem("smartpro_hub_token") ?? ""; } catch { /* ignore */ }
       fetch(`${hubUrl}/api/contract-scribe/parties?companyId=${companyId}`, {
-        headers: { Authorization: `Bearer ${apiKey}` },
+        headers: { Authorization: `Bearer ${hubToken}` },
       })
         .then(async res => {
           if (!res.ok) {
             const text = await res.text().catch(() => "");
+            if (res.status === 401 || res.status === 403) {
+              throw new Error(
+                "SmartPro session token missing or expired — relaunch Contract Scribe from SmartPro Hub."
+              );
+            }
             throw new Error(`SmartPro API error ${res.status}${text ? `: ${text}` : ""}`);
           }
           return res.json() as Promise<SmartProParties>;

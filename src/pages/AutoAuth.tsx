@@ -18,6 +18,13 @@ export default function AutoAuth() {
     }
     attempted.current = true;
 
+    // Stash the short-lived Hub JWT so the contract wizard can call the
+    // SmartPro parties API with it. Replaces the old static
+    // VITE_SMARTPRO_API_KEY, which was publicly readable in the JS bundle.
+    // The token expires in ~5 minutes, which covers the immediate
+    // post-launch parties fetch.
+    try { sessionStorage.setItem("smartpro_hub_token", token); } catch { /* ignore */ }
+
     async function run() {
       // If already signed in, go straight to destination
       const { data: { session } } = await supabase.auth.getSession();
