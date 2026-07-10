@@ -758,6 +758,10 @@ export default function NewContract() {
   const isSmartpro = searchParams.get("source") === "smartpro";
   const hubUrl = searchParams.get("hub_url") ?? "";
   const companyId = searchParams.get("company_id") ?? "";
+  // Short-lived JWT minted by the Hub (getScribeAuthToken), passed through the SSO
+  // launch. Replaces the retired static VITE_SMARTPRO_API_KEY — the Hub's parties
+  // API no longer accepts the raw key, only this Bearer token.
+  const partiesToken = searchParams.get("parties_token") ?? "";
 
   // Step 1 — template
   const [templateSource, setTemplateSource] = useState<"catalog" | "upload">("catalog");
@@ -808,9 +812,8 @@ export default function NewContract() {
     if (isSmartpro && hubUrl && companyId && !prefillApplied.current) {
       prefillApplied.current = true;
       setSmartproLoading(true);
-      const apiKey = (import.meta.env.VITE_SMARTPRO_API_KEY as string | undefined) ?? "";
       fetch(`${hubUrl}/api/contract-scribe/parties?companyId=${companyId}`, {
-        headers: { Authorization: `Bearer ${apiKey}` },
+        headers: { Authorization: `Bearer ${partiesToken}` },
       })
         .then(async res => {
           if (!res.ok) {
