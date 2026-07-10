@@ -808,18 +808,15 @@ export default function NewContract() {
     if (isSmartpro && hubUrl && companyId && !prefillApplied.current) {
       prefillApplied.current = true;
       setSmartproLoading(true);
-      const apiKey = (import.meta.env.VITE_SMARTPRO_API_KEY as string | undefined) ?? "";
-      fetch(`${hubUrl}/api/contract-scribe/parties?companyId=${companyId}`, {
-        headers: { Authorization: `Bearer ${apiKey}` },
-      })
-        .then(async res => {
-          if (!res.ok) {
-            const text = await res.text().catch(() => "");
-            throw new Error(`SmartPro API error ${res.status}${text ? `: ${text}` : ""}`);
+      // Fetch parties via the server-side proxy (smartpro-parties): it mints a
+      // fresh Hub JWT server-side and authorizes by the caller's linked company —
+      // no static key, no client-held token. invoke() attaches the user's token.
+      supabase.functions
+        .invoke<SmartProParties>("smartpro-parties", { body: { companyId } })
+        .then(({ data, error }) => {
+          if (error || !data) {
+            throw new Error(error?.message ?? "Failed to load data from SmartPro");
           }
-          return res.json() as Promise<SmartProParties>;
-        })
-        .then(data => {
           setSmartproData(data);
           setSmartproLoading(false);
         })
