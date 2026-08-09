@@ -6,7 +6,7 @@
 // Oman government authorities. DO NOT restyle — only placeholder
 // values change.
 //
-// Layout rules (verified against the approved sample):
+// Arabic layout rules (verified against the approved sample):
 //   • NO letterhead block — printed on company letterhead paper
 //     (top margin 2160 twips leaves the space).
 //   • Times New Roman, 12pt body, 1.5 line, justified,
@@ -17,6 +17,18 @@
 //     table: الفاضل / {title} … المحترم (المحترم at far left).
 //   • Subject: visual right, bold + underlined.
 //   • Signature block centered. No attachments section by default.
+//
+// English layout (Sprint 2) is the SAME page — A4, Times New Roman
+// 12pt, 1.5 line, 2160-twip letterhead margin, centered signature —
+// mirrored to LTR. The Arabic path is frozen: every Arabic paragraph
+// is built exactly as before, so Arabic output is unchanged.
+//
+// Addressee, English: a single bold left-aligned "To: {title}" over
+// the authority name, NOT the mirrored 3-cell table. The Arabic
+// الفاضل … المحترم pair is an Arabic correspondence convention; its
+// literal mirror ("Dear …" / "Respected,") reads as a mistranslation
+// to an English reader and Word leaves a visible cell gap across the
+// line. "To:" is the standard formal English opening and renders flat.
 // =============================================================
 
 import {
@@ -33,7 +45,14 @@ import {
   WidthType,
 } from "docx";
 import { saveAs } from "file-saver";
-import type { MinistryAuthority, MinistryLetterType, LetterValues } from "@/lib/ministryLetters/types";
+import { TOKEN_VALUE_EN } from "@/lib/ministryLetters/letterTypes";
+import { authorityCode } from "@/lib/ministryLetters/authorities";
+import type {
+  LetterLanguage,
+  LetterValues,
+  MinistryAuthority,
+  MinistryLetterType,
+} from "@/lib/ministryLetters/types";
 
 const FONT = { ascii: "Times New Roman", hAnsi: "Times New Roman", cs: "Times New Roman" } as const;
 
@@ -41,11 +60,13 @@ interface RunOpts {
   size?: number;
   bold?: boolean;
   underline?: boolean;
+  /** Defaults to true — the Arabic path relies on that default. */
+  rtl?: boolean;
 }
 const run = (text: string, o: RunOpts = {}) =>
   new TextRun({
     text,
-    rightToLeft: true,
+    rightToLeft: o.rtl ?? true,
     font: FONT,
     size: o.size ?? 24,
     bold: !!o.bold,
@@ -62,6 +83,49 @@ const p = (text: string, o: ParaOpts = {}) =>
     alignment: o.align ?? AlignmentType.JUSTIFIED,
     spacing: { after: o.after ?? 160, line: 360 },
     children: [run(text, o)],
+  });
+
+// ---------------------------------------------------------------
+// English paragraphs
+// ---------------------------------------------------------------
+
+// Escapes, not literals: the ranges end at U+FEFF, which is invisible
+// whitespace in source and trips no-irregular-whitespace.
+const AR = "\\u0600-\\u06FF\\u0750-\\u077F\\uFB50-\\uFDFF\\uFE70-\\uFEFF";
+const ARABIC_CHAR = new RegExp(`[${AR}]`);
+/** An Arabic phrase: Arabic words plus the spaces/punctuation between them. */
+const ARABIC_PHRASE = new RegExp(
+  `[${AR}]+(?:[\\s\\u060C\\u061B.\\u066B\\u066C-]+[${AR}]+)*`,
+  "g",
+);
+
+/**
+ * An Arabic company name dropped into an English sentence has to be its
+ * own run marked rightToLeft, otherwise Word applies the paragraph's LTR
+ * direction to it and the surrounding English scrambles around it. Split
+ * the text into Arabic and non-Arabic segments and mark each correctly.
+ */
+function englishRuns(text: string, o: RunOpts): TextRun[] {
+  if (!ARABIC_CHAR.test(text)) return [run(text, { ...o, rtl: false })];
+
+  const runs: TextRun[] = [];
+  let cursor = 0;
+  for (const match of text.matchAll(ARABIC_PHRASE)) {
+    const start = match.index ?? 0;
+    if (start > cursor) runs.push(run(text.slice(cursor, start), { ...o, rtl: false }));
+    runs.push(run(match[0], { ...o, rtl: true }));
+    cursor = start + match[0].length;
+  }
+  if (cursor < text.length) runs.push(run(text.slice(cursor), { ...o, rtl: false }));
+  return runs;
+}
+
+const pEn = (text: string, o: ParaOpts = {}) =>
+  new Paragraph({
+    bidirectional: false,
+    alignment: o.align ?? AlignmentType.JUSTIFIED,
+    spacing: { after: o.after ?? 160, line: 360 },
+    children: englishRuns(text, o),
   });
 
 const noBorder = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" } as const;
@@ -92,6 +156,13 @@ export function arabicDateToday(): string {
   return `${s}م`;
 }
 
+/** Gregorian date in Western digits, e.g. 9 August 2026 */
+export function englishDateToday(): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric", month: "long", year: "numeric",
+  }).format(new Date());
+}
+
 /** Replace {tokens} in a template string from the values map */
 function fill(template: string, values: LetterValues): string {
   return template.replace(/\{([a-zA-Z0-9_]+)\}/g, (_, key: string) => values[key] ?? "");
@@ -101,11 +172,39 @@ export interface MinistryLetterInput {
   authority: MinistryAuthority;
   letterType: MinistryLetterType;
   values: LetterValues;
+  /** Output language. Defaults to Arabic — the approved original. */
+  language?: LetterLanguage;
   /** Override the auto date if needed */
   dateAr?: string;
+  dateEn?: string;
 }
 
-export function buildMinistryLetterDoc({ authority, letterType, values, dateAr }: MinistryLetterInput): Document {
+export function buildMinistryLetterDoc({
+  authority, letterType, values, language = "ar", dateAr, dateEn,
+}: MinistryLetterInput): Document {
+  const children: (Paragraph | Table)[] =
+    language === "en"
+      ? buildEnglishBody({ authority, letterType, values, dateEn })
+      : buildArabicBody({ authority, letterType, values, dateAr });
+
+  return new Document({
+    sections: [
+      {
+        properties: {
+          page: { margin: { top: 2160, bottom: 1080, left: 1080, right: 1080 } },
+        },
+        children,
+      },
+    ],
+  });
+}
+
+// ---------------------------------------------------------------
+// Arabic — approved Aug 2026, frozen. Do not restyle.
+// ---------------------------------------------------------------
+function buildArabicBody({
+  authority, letterType, values, dateAr,
+}: Omit<MinistryLetterInput, "language">): (Paragraph | Table)[] {
   const computed: LetterValues = {
     ...values,
     authority_praise: authority.praiseAr,
@@ -115,7 +214,7 @@ export function buildMinistryLetterDoc({ authority, letterType, values, dateAr }
   const subject = fill(letterType.subjectAr, computed);
   const bodyParas = letterType.bodyAr.map((t) => fill(t, computed)).filter((t) => t.trim().length > 0);
 
-  const children: (Paragraph | Table)[] = [
+  return [
     p(`التاريخ: ${dateAr ?? arabicDateToday()}`, { align: AlignmentType.START, after: 240 }),
     new Table({
       visuallyRightToLeft: true,
@@ -142,23 +241,69 @@ export function buildMinistryLetterDoc({ authority, letterType, values, dateAr }
     p(`رقم التواصل: ${computed.applicant_phone ?? ""}`, { align: AlignmentType.CENTER, after: 160 }),
     p("التوقيع والختم:", { align: AlignmentType.CENTER, after: 160 }),
   ];
+}
 
-  return new Document({
-    sections: [
-      {
-        properties: {
-          page: { margin: { top: 2160, bottom: 1080, left: 1080, right: 1080 } },
-        },
-        children,
-      },
-    ],
-  });
+// ---------------------------------------------------------------
+// English — same page, mirrored to LTR, no Arabic greeting line.
+// ---------------------------------------------------------------
+function buildEnglishBody({
+  authority, letterType, values, dateEn,
+}: Omit<MinistryLetterInput, "language">): (Paragraph | Table)[] {
+  // Select options and seeded defaults are stored in Arabic; render the
+  // English equivalent so an English letter never carries a stray Arabic
+  // word. Free text the user typed is left exactly as written.
+  const translated: LetterValues = {};
+  for (const [key, value] of Object.entries(values)) {
+    translated[key] = TOKEN_VALUE_EN[value] ?? value;
+  }
+
+  const computed: LetterValues = {
+    ...translated,
+    authority_praise: authority.praiseEn,
+    authority_law_clause: authority.lawEn ?? "the regulations in force at your good offices",
+  };
+
+  const subject = fill(letterType.subjectEn, computed);
+  const bodyParas = letterType.bodyEn.map((t) => fill(t, computed)).filter((t) => t.trim().length > 0);
+
+  return [
+    pEn(`Date: ${dateEn ?? englishDateToday()}`, { align: AlignmentType.LEFT, after: 240 }),
+    pEn(`To: ${authority.recipientTitleEn}`, { align: AlignmentType.LEFT, bold: true, after: 0 }),
+    pEn(authority.nameEn, { align: AlignmentType.LEFT, bold: true, after: 480 }),
+    pEn(`Subject: ${subject}`, {
+      align: AlignmentType.LEFT, bold: true, underline: true, after: 300,
+    }),
+    ...bodyParas.map((t) => pEn(t)),
+    pEn("Thanking you for your kind cooperation and understanding,", { after: 120 }),
+    pEn("Please accept our highest respect and appreciation,", { after: 720 }),
+    pEn(`Applicant: ${computed.applicant_name ?? ""}`, { align: AlignmentType.CENTER, after: 160 }),
+    pEn(`Capacity: ${computed.applicant_capacity ?? ""}`, { align: AlignmentType.CENTER, after: 160 }),
+    pEn(`Contact Number: ${computed.applicant_phone ?? ""}`, { align: AlignmentType.CENTER, after: 160 }),
+    pEn("Signature & Stamp:", { align: AlignmentType.CENTER, after: 160 }),
+  ];
+}
+
+/** Windows-safe file name, e.g. Installment_Request_SPF.docx */
+export function ministryLetterFileName(input: MinistryLetterInput): string {
+  const strip = (s: string) => s.replace(/[\\/:*?"<>|]/g, "").trim();
+
+  if (input.language === "en") {
+    // Titles carry UI hints — "Custom Letter (describe it)" must not become
+    // part of the file the user sends to a ministry.
+    const title = strip(input.letterType.titleEn)
+      .replace(/\([^)]*\)/g, " ")
+      .replace(/[^A-Za-z0-9-]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+    return `${title || "Letter"}_${authorityCode(input.authority.id)}.docx`;
+  }
+
+  const subject = strip(fill(input.letterType.subjectAr, input.values)).slice(0, 60);
+  return `${subject || input.letterType.titleAr}.docx`;
 }
 
 /** Generate and trigger browser download */
 export async function downloadMinistryLetter(input: MinistryLetterInput): Promise<void> {
   const doc = buildMinistryLetterDoc(input);
   const blob = await Packer.toBlob(doc);
-  const safeSubject = fill(input.letterType.subjectAr, input.values).replace(/[\\/:*?"<>|]/g, "").slice(0, 60);
-  saveAs(blob, `${safeSubject || input.letterType.titleAr}.docx`);
+  saveAs(blob, ministryLetterFileName(input));
 }

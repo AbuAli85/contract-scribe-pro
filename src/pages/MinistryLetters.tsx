@@ -1,13 +1,15 @@
 // =============================================================
 // Ministry Letters — /letters
 //
-// Generate formal Arabic letters to Oman government authorities
-// in the locked standard layout. User picks authority + letter
-// type, fills the fields, downloads a print-ready .docx
-// (printed on the company's own letterhead paper).
+// Generate formal letters to Oman government authorities in the
+// locked standard layout, in Arabic or English. User picks the
+// language, authority and letter type, fills the fields, and
+// downloads a print-ready .docx (printed on the company's own
+// letterhead paper).
 //
 // Company/applicant fields auto-fill from the user's "employer"
-// party when one exists.
+// party when one exists. The free-tier gate (Sprint 1) applies
+// identically in both languages.
 // =============================================================
 
 import { useEffect, useMemo, useState } from "react";
@@ -23,19 +25,63 @@ import {
 } from "@/components/ui/select";
 import { Landmark, FileText, Download, Loader2 } from "lucide-react";
 import {
-  AUTHORITIES, LETTER_TYPES, COMMON_FIELDS,
+  AUTHORITIES, LETTER_TYPES, COMMON_FIELDS, TOKEN_VALUE_EN,
   getAuthority, getLetterType,
 } from "@/lib/ministryLetters";
-import type { LetterValues } from "@/lib/ministryLetters";
+import type { LetterLanguage, LetterValues } from "@/lib/ministryLetters";
 import type { TemplateField } from "@/lib/templateContent/types";
 import { downloadMinistryLetter } from "@/utils/docx/generateMinistryLetter";
 import LetterGateDialog from "@/components/LetterGateDialog";
 import { checkLetterGeneration, readStoredGate } from "@/lib/letterGate";
 import { useAuth } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
+
+const LANG_KEY = "letter_language";
+
+/** Page chrome in both languages. Field copy comes from the field defs. */
+const UI = {
+  ar: {
+    title: "الخطابات الحكومية",
+    subtitle: "خطابات رسمية للجهات الحكومية في سلطنة عُمان — تنسيق موحد جاهز للطباعة على الورق الرسمي",
+    pickerTitle: "نوع الخطاب والجهة",
+    authority: "الجهة الحكومية",
+    letterType: "نوع الخطاب",
+    generate: "توليد الخطاب وتنزيله (Word)",
+    printNote: "يُطبع الخطاب على الورق الرسمي للشركة — التنسيق قياسي موحد لجميع الجهات الحكومية",
+    freeNote: "خطابان مجانيان بعد تأكيد بريدك الإلكتروني",
+    missingTitle: "حقول ناقصة",
+    doneTitle: "تم إنشاء الخطاب",
+    doneDesc: "جاهز للطباعة على الورق الرسمي للشركة",
+    remaining: (n: number) => `تم التنزيل — تبقى لك ${n} خطاب مجاني`,
+  },
+  en: {
+    title: "Government Letters",
+    subtitle:
+      "Formal letters to government authorities in the Sultanate of Oman — one standard layout, ready to print on your letterhead",
+    pickerTitle: "Letter type and authority",
+    authority: "Government authority",
+    letterType: "Letter type",
+    generate: "Generate and download (Word)",
+    printNote:
+      "Print on your company letterhead — the layout is standard across all government authorities",
+    freeNote: "Two free letters after verifying your email",
+    missingTitle: "Missing fields",
+    doneTitle: "Letter generated",
+    doneDesc: "Ready to print on your company letterhead",
+    remaining: (n: number) => `Downloaded — ${n} free letter${n === 1 ? "" : "s"} remaining`,
+  },
+} as const;
 
 export default function MinistryLetters() {
   const { toast } = useToast();
   const { profile } = useAuth();
+  const [lang, setLang] = useState<LetterLanguage>(() => {
+    try {
+      return localStorage.getItem(LANG_KEY) === "en" ? "en" : "ar";
+    } catch {
+      return "ar";
+    }
+  });
   const [authorityId, setAuthorityId] = useState<string>("spf");
   const [letterTypeId, setLetterTypeId] = useState<string>("installment");
   const [values, setValues] = useState<LetterValues>({});
@@ -43,12 +89,33 @@ export default function MinistryLetters() {
   const [gateOpen, setGateOpen] = useState(false);
 
   const isPro = profile?.is_pro === true;
+  const isEn = lang === "en";
+  const t = UI[lang];
+  const dir = isEn ? "ltr" : "rtl";
 
   const letterType = getLetterType(letterTypeId);
   const fields = useMemo<TemplateField[]>(
     () => [...COMMON_FIELDS, ...(letterType?.fields ?? [])],
     [letterType],
   );
+
+  // Field copy per language. Always fall back to the other language so a
+  // missing string shows the Arabic original rather than an empty label.
+  const labelOf = (f: TemplateField) => (isEn ? f.labelEn || f.labelAr : f.labelAr || f.labelEn);
+  const groupOf = (f: TemplateField) => (isEn ? f.group || f.groupAr : f.groupAr || f.group);
+  const placeholderOf = (f: TemplateField) =>
+    isEn ? f.placeholderEn ?? f.placeholderAr : f.placeholderAr ?? f.placeholderEn;
+  const helperOf = (f: TemplateField) => (isEn ? f.helperEn ?? f.helperAr : f.helperAr ?? f.helperEn);
+  const optionLabel = (o: { labelEn: string; labelAr: string }) =>
+    isEn ? o.labelEn || o.labelAr : o.labelAr || o.labelEn;
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(LANG_KEY, lang);
+    } catch {
+      /* storage blocked — the toggle still works for this session */
+    }
+  }, [lang]);
 
   // Auto-fill company from the user's employer party.
   // NOTE: generated Supabase types predate the `parties` table (see
@@ -74,16 +141,19 @@ export default function MinistryLetters() {
     })();
   }, []);
 
-  // Apply field defaults when letter type changes
+  // Apply field defaults when the letter type or language changes. Defaults
+  // are authored in Arabic, so seed the English equivalent in English mode —
+  // but only when the field is still empty, never over the user's own text.
   useEffect(() => {
     setValues((v) => {
       const next = { ...v };
       for (const f of fields) {
-        if (f.defaultValue && !next[f.key]) next[f.key] = f.defaultValue;
+        if (!f.defaultValue || next[f.key]) continue;
+        next[f.key] = isEn ? TOKEN_VALUE_EN[f.defaultValue] ?? f.defaultValue : f.defaultValue;
       }
       return next;
     });
-  }, [fields]);
+  }, [fields, isEn]);
 
   const set = (key: string, val: string) => setValues((v) => ({ ...v, [key]: val }));
 
@@ -98,13 +168,11 @@ export default function MinistryLetters() {
         authority: getAuthority(authorityId),
         letterType,
         values,
+        language: lang,
       });
       toast({
-        title: "تم إنشاء الخطاب",
-        description:
-          remaining === null
-            ? "جاهز للطباعة على الورق الرسمي للشركة"
-            : `تم التنزيل — تبقى لك ${remaining} خطاب مجاني`,
+        title: t.doneTitle,
+        description: remaining === null ? t.doneDesc : t.remaining(remaining),
       });
     } catch (e) {
       toast({ title: "Generation failed", description: String(e), variant: "destructive" });
@@ -117,8 +185,8 @@ export default function MinistryLetters() {
     if (!letterType) return;
     if (missing.length > 0) {
       toast({
-        title: "حقول ناقصة",
-        description: missing.map((f) => f.labelAr).join("، "),
+        title: t.missingTitle,
+        description: missing.map(labelOf).join(isEn ? ", " : "، "),
         variant: "destructive",
       });
       return;
@@ -131,7 +199,7 @@ export default function MinistryLetters() {
         token: readStoredGate()?.token ?? "",
         authority: authorityId,
         letterType: letterTypeId,
-        language: "ar",
+        language: lang,
       }).catch(() => undefined);
       await runDownload(null);
       return;
@@ -142,59 +210,78 @@ export default function MinistryLetters() {
     setGateOpen(true);
   };
 
-  // Group fields by groupAr for sectioned form
+  // Group fields into sections, in the active language
   const groups = useMemo(() => {
     const map = new Map<string, TemplateField[]>();
     for (const f of fields) {
-      const g = f.groupAr || f.group;
+      const g = isEn ? f.group || f.groupAr : f.groupAr || f.group;
       if (!map.has(g)) map.set(g, []);
       map.get(g)!.push(f);
     }
     return [...map.entries()];
-  }, [fields]);
+  }, [fields, isEn]);
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-8" dir="rtl">
-      <div className="mb-6 flex items-center gap-3">
-        <Landmark className="h-7 w-7 text-primary" />
-        <div>
-          <h1 className="text-2xl font-bold">الخطابات الحكومية</h1>
-          <p className="text-sm text-muted-foreground">
-            خطابات رسمية للجهات الحكومية في سلطنة عُمان — تنسيق موحد جاهز للطباعة على الورق الرسمي
-          </p>
+    <div className="container mx-auto max-w-3xl px-4 py-8" dir={dir}>
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <Landmark className="h-7 w-7 shrink-0 text-primary" />
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl font-bold">{t.title}</h1>
+          <p className="text-sm text-muted-foreground">{t.subtitle}</p>
+        </div>
+        {/* Language toggle — always shows both options in their own script */}
+        <div className="inline-flex shrink-0 rounded-md border p-0.5" dir="ltr">
+          {(["ar", "en"] as const).map((code) => (
+            <button
+              key={code}
+              type="button"
+              onClick={() => setLang(code)}
+              aria-pressed={lang === code}
+              className={cn(
+                "rounded px-3 py-1.5 text-sm transition-colors",
+                lang === code
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {code === "ar" ? "العربية" : "English"}
+            </button>
+          ))}
         </div>
       </div>
 
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <FileText className="h-5 w-5" /> نوع الخطاب والجهة
+            <FileText className="h-5 w-5" /> {t.pickerTitle}
           </CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label>الجهة الحكومية</Label>
+            <Label>{t.authority}</Label>
             <Select value={authorityId} onValueChange={setAuthorityId}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {AUTHORITIES.map((a) => (
-                  <SelectItem key={a.id} value={a.id}>{a.nameAr}</SelectItem>
+                  <SelectItem key={a.id} value={a.id}>{isEn ? a.nameEn : a.nameAr}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>نوع الخطاب</Label>
+            <Label>{t.letterType}</Label>
             <Select value={letterTypeId} onValueChange={setLetterTypeId}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {LETTER_TYPES.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>{t.titleAr}</SelectItem>
+                {LETTER_TYPES.map((lt) => (
+                  <SelectItem key={lt.id} value={lt.id}>{isEn ? lt.titleEn : lt.titleAr}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {letterType && (
-              <p className="text-xs text-muted-foreground">{letterType.descAr}</p>
+              <p className="text-xs text-muted-foreground">
+                {isEn ? letterType.descEn : letterType.descAr}
+              </p>
             )}
           </div>
         </CardContent>
@@ -209,35 +296,39 @@ export default function MinistryLetters() {
             {groupFields.map((f) => (
               <div key={f.key} className={f.type === "textarea" ? "space-y-2 sm:col-span-2" : "space-y-2"}>
                 <Label>
-                  {f.labelAr}
+                  {labelOf(f)}
                   {f.required && <span className="text-destructive"> *</span>}
                 </Label>
                 {f.type === "textarea" ? (
                   <Textarea
-                    dir="rtl"
+                    dir={dir}
                     value={values[f.key] ?? ""}
                     onChange={(e) => set(f.key, e.target.value)}
-                    placeholder={f.placeholderAr ?? f.placeholderEn}
+                    placeholder={placeholderOf(f)}
                     rows={3}
                   />
                 ) : f.type === "select" && f.options ? (
                   <Select value={values[f.key] ?? ""} onValueChange={(v) => set(f.key, v)}>
-                    <SelectTrigger><SelectValue placeholder={f.labelAr} /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={labelOf(f)} /></SelectTrigger>
                     <SelectContent>
                       {f.options.map((o) => (
-                        <SelectItem key={o.value} value={o.value}>{o.labelAr}</SelectItem>
+                        <SelectItem key={o.value} value={o.value}>{optionLabel(o)}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 ) : (
                   <Input
-                    dir={f.type === "phone" || f.type === "number" || f.type === "currency-omr" ? "ltr" : "rtl"}
+                    dir={
+                      f.type === "phone" || f.type === "number" || f.type === "currency-omr"
+                        ? "ltr"
+                        : dir
+                    }
                     value={values[f.key] ?? ""}
                     onChange={(e) => set(f.key, e.target.value)}
-                    placeholder={f.placeholderAr ?? f.placeholderEn}
+                    placeholder={placeholderOf(f)}
                   />
                 )}
-                {f.helperAr && <p className="text-xs text-muted-foreground">{f.helperAr}</p>}
+                {helperOf(f) && <p className="text-xs text-muted-foreground">{helperOf(f)}</p>}
               </div>
             ))}
           </CardContent>
@@ -246,23 +337,17 @@ export default function MinistryLetters() {
 
       <Button size="lg" className="w-full gap-2" onClick={handleGenerate} disabled={generating}>
         {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-        توليد الخطاب وتنزيله (Word)
+        {t.generate}
       </Button>
-      <p className="mt-3 text-center text-xs text-muted-foreground">
-        يُطبع الخطاب على الورق الرسمي للشركة — التنسيق قياسي موحد لجميع الجهات الحكومية
-      </p>
-      {!isPro && (
-        <p className="mt-1 text-center text-xs text-muted-foreground">
-          خطابان مجانيان بعد تأكيد بريدك الإلكتروني
-        </p>
-      )}
+      <p className="mt-3 text-center text-xs text-muted-foreground">{t.printNote}</p>
+      {!isPro && <p className="mt-1 text-center text-xs text-muted-foreground">{t.freeNote}</p>}
 
       <LetterGateDialog
         open={gateOpen}
         onOpenChange={setGateOpen}
         authority={authorityId}
         letterType={letterTypeId}
-        language="ar"
+        language={lang}
         onGranted={(remaining) => void runDownload(remaining)}
       />
     </div>
