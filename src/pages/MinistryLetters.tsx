@@ -35,6 +35,8 @@ import LetterGateDialog from "@/components/LetterGateDialog";
 import { checkLetterGeneration, readStoredGate } from "@/lib/letterGate";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import MyFormatsSection from "@/components/letterFormats/MyFormatsSection";
+import { generateFromFormat, type LetterFormat } from "@/lib/letterFormats";
 
 const LANG_KEY = "letter_language";
 
@@ -74,7 +76,7 @@ const UI = {
 
 export default function MinistryLetters() {
   const { toast } = useToast();
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const [lang, setLang] = useState<LetterLanguage>(() => {
     try {
       return localStorage.getItem(LANG_KEY) === "en" ? "en" : "ar";
@@ -87,6 +89,11 @@ export default function MinistryLetters() {
   const [values, setValues] = useState<LetterValues>({});
   const [generating, setGenerating] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
+  // Set while a saved format is waiting on the gate; null means the gate
+  // is being used for a ready-made letter.
+  const [pendingFormat, setPendingFormat] = useState<
+    { format: LetterFormat; values: Record<string, string> } | null
+  >(null);
 
   const isPro = profile?.is_pro === true;
   const isEn = lang === "en";
@@ -207,6 +214,41 @@ export default function MinistryLetters() {
 
     // Free tier: the dialog resolves email → code → limit check. It skips
     // straight to the check when this browser already holds a gate token.
+    setPendingFormat(null);
+    setGateOpen(true);
+  };
+
+  /** Fill a saved BYO format — same gate, same free allowance. */
+  const runFormatDownload = async (
+    format: LetterFormat,
+    formatValues: Record<string, string>,
+  ) => {
+    setGenerating(true);
+    try {
+      await generateFromFormat(format, formatValues);
+      toast({ title: t.doneTitle, description: t.doneDesc });
+    } catch (e) {
+      toast({ title: "Generation failed", description: String(e), variant: "destructive" });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleFormatGenerate = async (
+    format: LetterFormat,
+    formatValues: Record<string, string>,
+  ) => {
+    if (isPro) {
+      void checkLetterGeneration({
+        token: readStoredGate()?.token ?? "",
+        authority: "user_format",
+        letterType: `format:${format.id}`,
+        language: format.language,
+      }).catch(() => undefined);
+      await runFormatDownload(format, formatValues);
+      return;
+    }
+    setPendingFormat({ format, values: formatValues });
     setGateOpen(true);
   };
 
@@ -249,6 +291,14 @@ export default function MinistryLetters() {
           ))}
         </div>
       </div>
+
+      <MyFormatsSection
+        lang={lang}
+        userId={user?.id ?? null}
+        onRequestGenerate={(format, formatValues) =>
+          void handleFormatGenerate(format, formatValues)
+        }
+      />
 
       <Card className="mb-6">
         <CardHeader>
@@ -345,10 +395,18 @@ export default function MinistryLetters() {
       <LetterGateDialog
         open={gateOpen}
         onOpenChange={setGateOpen}
-        authority={authorityId}
-        letterType={letterTypeId}
+        authority={pendingFormat ? "user_format" : authorityId}
+        letterType={pendingFormat ? `format:${pendingFormat.format.id}` : letterTypeId}
         language={lang}
-        onGranted={(remaining) => void runDownload(remaining)}
+        onGranted={(remaining) => {
+          if (pendingFormat) {
+            const { format, values: formatValues } = pendingFormat;
+            setPendingFormat(null);
+            void runFormatDownload(format, formatValues);
+            return;
+          }
+          void runDownload(remaining);
+        }}
       />
     </div>
   );
