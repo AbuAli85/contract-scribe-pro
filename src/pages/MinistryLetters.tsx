@@ -53,6 +53,7 @@ export default function MinistryLetters() {
         .from("parties")
         .select("name_ar, cr_number")
         .eq("role", "employer")
+        .order("created_at", { ascending: true })
         .limit(1)
         .maybeSingle();
       const row = data as { name_ar: string | null; cr_number: string | null } | null;
