@@ -20,6 +20,7 @@ import Upgrade from "./pages/Upgrade"
 import Blog from "./pages/Blog"
 import BlogPost from "./pages/BlogPost"
 import AppLayout from "./components/AppLayout"
+import MinistryLetters from "./pages/MinistryLetters"
 import Parties from "./pages/Parties"
 import PartyDetail from "./pages/PartyDetail"
 import Records from "./pages/Records"
@@ -109,6 +110,7 @@ function App() {
             <Route path="/templates/fill/:templateId" element={<FillTemplate />} />
             <Route path="/templates/download/:templateId" element={<TemplateDownload />} />
             <Route path="/my-templates" element={<MyTemplates />} />
+            <Route path="/letters" element={<MinistryLetters />} />
             {/* CLM system */}
             <Route path="/parties" element={<Parties />} />
             <Route path="/parties/:id" element={<PartyDetail />} />
