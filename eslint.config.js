@@ -8,7 +8,10 @@ export default tseslint.config(
   { ignores: ["dist"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["**/*.{ts,tsx}"],
+    // .mts is included so the regression harnesses under scripts/ are held
+    // to the same static discipline as production code — an unlinted guard
+    // rots quietly, and a guard that rots lies.
+    files: ["**/*.{ts,tsx,mts}"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -25,5 +28,10 @@ export default tseslint.config(
       ],
       "@typescript-eslint/no-unused-vars": "off",
     },
+  },
+  {
+    // Harnesses run under Node (vite-node), not the browser.
+    files: ["scripts/**/*.{ts,mts}"],
+    languageOptions: { globals: globals.node },
   }
 );
