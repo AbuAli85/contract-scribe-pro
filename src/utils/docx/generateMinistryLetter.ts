@@ -45,14 +45,16 @@ import {
   WidthType,
 } from "docx";
 import { saveAs } from "file-saver";
-import { TOKEN_VALUE_EN } from "@/lib/ministryLetters/letterTypes";
-import { authorityCode } from "@/lib/ministryLetters/authorities";
+// Through the barrel, never into L0's individual files: index.ts IS the
+// layer's contract surface, so L0 stays free to reshuffle its internals
+// (split letterTypes.ts, add skeletons/) without touching this file.
+import { authorityCode, TOKEN_VALUE_EN } from "@/lib/ministryLetters";
 import type {
   LetterLanguage,
   LetterValues,
   MinistryAuthority,
   MinistryLetterType,
-} from "@/lib/ministryLetters/types";
+} from "@/lib/ministryLetters";
 
 const FONT = { ascii: "Times New Roman", hAnsi: "Times New Roman", cs: "Times New Roman" } as const;
 
