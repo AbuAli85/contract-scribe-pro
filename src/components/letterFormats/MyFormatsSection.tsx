@@ -152,7 +152,9 @@ export default function MyFormatsSection({
           <div className="space-y-3 text-center">
             <p className="text-sm">{t.loginLine}</p>
             <Button asChild className="w-full">
-              <Link to="/auth">{t.login}</Link>
+              {/* Come straight back to the letters page after signing in —
+                  the visitor was mid-task, not browsing. */}
+              <Link to="/auth?redirect=%2Fletters">{t.login}</Link>
             </Button>
           </div>
         )}

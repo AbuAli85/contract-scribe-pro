@@ -95,10 +95,23 @@ const RULES: Rule[] = [
     base: "cr_number",
     labelAr: "رقم السجل التجاري",
     labelEn: "Commercial Registration No.",
+    // Real letters spell this label a dozen ways: "رقم السجل التجاري",
+    // "سجل تجاري رقم", the bare abbreviation "س.ت" (with or without dots
+    // or spaces), "C.R.", "CR No", "CR:". Miss the label and the number
+    // is never offered as a field, which is the whole point of the rule.
     find: (t) =>
       afterLabel(
         t,
-        /(?:السجل\s+التجاري|س\.ت|Commercial\s+Registration|C\.?R\.?(?:\s*No\.?)?)/gi,
+        // The bare "س.ت" needs Arabic-letter boundaries: without them it
+        // matches the "ست" inside ordinary words like استكمال and would
+        // drag an unrelated number into the field.
+        new RegExp(
+          "(?:(?:ال)?سجل\\s*(?:ال)?تجاري" +
+            "|(?<![\\u0600-\\u06FF])س\\s*\\.?\\s*ت\\s*\\.?(?![\\u0600-\\u06FF])" +
+            "|\\bC\\s*\\.?\\s*R\\s*\\.?(?:\\s*(?:No|Number)\\s*\\.?)?" +
+            "|\\bCommercial\\s+Registration(?:\\s+(?:No|Number)\\s*\\.?)?)",
+          "gi",
+        ),
         new RegExp(`\\d{6,8}|[${AR_DIGITS}]{6,8}`),
       ),
   },

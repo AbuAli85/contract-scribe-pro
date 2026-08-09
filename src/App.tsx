@@ -103,7 +103,15 @@ function App() {
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/print-error" element={<PrintErrorPage />} />
 
-          {/* App shell — sidebar layout */}
+          {/* App shell, PUBLIC — same chrome, no session required.
+              Ministry letters must work for a visitor arriving from an ad
+              with no account: the email-OTP gate IS the anonymous flow.
+              Login is scoped to the BYO-format card inside the page. */}
+          <Route element={<AppLayout requireAuth={false} />}>
+            <Route path="/letters" element={<MinistryLetters />} />
+          </Route>
+
+          {/* App shell — sidebar layout, session required */}
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/create-contract" element={<CreateContract />} />
@@ -113,7 +121,6 @@ function App() {
             <Route path="/templates/fill/:templateId" element={<FillTemplate />} />
             <Route path="/templates/download/:templateId" element={<TemplateDownload />} />
             <Route path="/my-templates" element={<MyTemplates />} />
-            <Route path="/letters" element={<MinistryLetters />} />
             {/* CLM system */}
             <Route path="/parties" element={<Parties />} />
             <Route path="/parties/:id" element={<PartyDetail />} />

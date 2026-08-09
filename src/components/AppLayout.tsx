@@ -19,6 +19,7 @@ import {
   Settings,
   PlusCircle,
   LogOut,
+  LogIn,
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,28 +36,44 @@ const NAV = [
   { to: "/settings",    label: "Settings",     icon: Settings         },
 ] as const;
 
-export default function AppLayout() {
+export interface AppLayoutProps {
+  /**
+   * Guard the routes in this group behind a session. Public surfaces —
+   * ministry letters, which must work for a visitor arriving from an ad
+   * with no account — pass false and get the same chrome without the
+   * redirect.
+   */
+  requireAuth?: boolean;
+}
+
+export default function AppLayout({ requireAuth = true }: AppLayoutProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
+    const bounce = () => {
+      const dest = window.location.pathname + window.location.search;
+      navigate(`/auth?redirect=${encodeURIComponent(dest)}`, { replace: true });
+    };
+
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
         if (!session) {
-          const dest = window.location.pathname + window.location.search;
-          navigate(`/auth?redirect=${encodeURIComponent(dest)}`, { replace: true });
+          if (requireAuth) bounce();
         } else {
           setUserEmail(session.user.email ?? null);
         }
         setAuthChecked(true);
       })
       .catch(() => {
-        const dest = window.location.pathname + window.location.search;
-        navigate(`/auth?redirect=${encodeURIComponent(dest)}`, { replace: true });
+        // A failed session lookup must not lock a visitor out of a public
+        // page — only guarded routes bounce.
+        if (requireAuth) bounce();
+        setAuthChecked(true);
       });
-  }, [navigate]);
+  }, [navigate, requireAuth]);
 
   if (!authChecked) return null;
 
@@ -124,10 +141,21 @@ export default function AppLayout() {
             )}
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Sign out" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4" />
-                  <span>Sign out</span>
-                </SidebarMenuButton>
+                {userEmail ? (
+                  <SidebarMenuButton tooltip="Sign out" onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign out</span>
+                  </SidebarMenuButton>
+                ) : (
+                  // Public route, no session: offer the way in rather than a
+                  // sign-out that would do nothing.
+                  <SidebarMenuButton asChild tooltip="Sign in">
+                    <NavLink to="/auth">
+                      <LogIn className="h-4 w-4" />
+                      <span>Sign in</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                )}
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarFooter>

@@ -124,10 +124,13 @@ export default function MinistryLetters() {
     }
   }, [lang]);
 
-  // Auto-fill company from the user's employer party.
+  // Auto-fill company from the user's employer party. Anonymous visitors
+  // have no parties, so skip the round trip entirely — this page is public
+  // and must never look broken without a session.
   // NOTE: generated Supabase types predate the `parties` table (see
   // Parties.tsx which casts results the same way) — query untyped.
   useEffect(() => {
+    if (!user?.id) return;
     (async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data } = await (supabase as any)
@@ -146,7 +149,7 @@ export default function MinistryLetters() {
         }));
       }
     })();
-  }, []);
+  }, [user?.id]);
 
   // Apply field defaults when the letter type or language changes. Defaults
   // are authored in Arabic, so seed the English equivalent in English mode —
