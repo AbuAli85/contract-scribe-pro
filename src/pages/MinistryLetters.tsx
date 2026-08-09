@@ -29,13 +29,20 @@ import {
 import type { LetterValues } from "@/lib/ministryLetters";
 import type { TemplateField } from "@/lib/templateContent/types";
 import { downloadMinistryLetter } from "@/utils/docx/generateMinistryLetter";
+import LetterGateDialog from "@/components/LetterGateDialog";
+import { checkLetterGeneration, readStoredGate } from "@/lib/letterGate";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function MinistryLetters() {
   const { toast } = useToast();
+  const { profile } = useAuth();
   const [authorityId, setAuthorityId] = useState<string>("spf");
   const [letterTypeId, setLetterTypeId] = useState<string>("installment");
   const [values, setValues] = useState<LetterValues>({});
   const [generating, setGenerating] = useState(false);
+  const [gateOpen, setGateOpen] = useState(false);
+
+  const isPro = profile?.is_pro === true;
 
   const letterType = getLetterType(letterTypeId);
   const fields = useMemo<TemplateField[]>(
@@ -82,6 +89,30 @@ export default function MinistryLetters() {
 
   const missing = fields.filter((f) => f.required && !(values[f.key] ?? "").trim());
 
+  /** The download itself — the locked layout, unchanged. */
+  const runDownload = async (remaining: number | null) => {
+    if (!letterType) return;
+    setGenerating(true);
+    try {
+      await downloadMinistryLetter({
+        authority: getAuthority(authorityId),
+        letterType,
+        values,
+      });
+      toast({
+        title: "تم إنشاء الخطاب",
+        description:
+          remaining === null
+            ? "جاهز للطباعة على الورق الرسمي للشركة"
+            : `تم التنزيل — تبقى لك ${remaining} خطاب مجاني`,
+      });
+    } catch (e) {
+      toast({ title: "Generation failed", description: String(e), variant: "destructive" });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!letterType) return;
     if (missing.length > 0) {
@@ -92,19 +123,23 @@ export default function MinistryLetters() {
       });
       return;
     }
-    setGenerating(true);
-    try {
-      await downloadMinistryLetter({
-        authority: getAuthority(authorityId),
-        letterType,
-        values,
-      });
-      toast({ title: "تم إنشاء الخطاب", description: "جاهز للطباعة على الورق الرسمي للشركة" });
-    } catch (e) {
-      toast({ title: "Generation failed", description: String(e), variant: "destructive" });
-    } finally {
-      setGenerating(false);
+
+    // Pro subscribers never see the gate. The ledger row is still written
+    // (fire-and-forget) so usage reporting covers paid letters too.
+    if (isPro) {
+      void checkLetterGeneration({
+        token: readStoredGate()?.token ?? "",
+        authority: authorityId,
+        letterType: letterTypeId,
+        language: "ar",
+      }).catch(() => undefined);
+      await runDownload(null);
+      return;
     }
+
+    // Free tier: the dialog resolves email → code → limit check. It skips
+    // straight to the check when this browser already holds a gate token.
+    setGateOpen(true);
   };
 
   // Group fields by groupAr for sectioned form
@@ -216,6 +251,20 @@ export default function MinistryLetters() {
       <p className="mt-3 text-center text-xs text-muted-foreground">
         يُطبع الخطاب على الورق الرسمي للشركة — التنسيق قياسي موحد لجميع الجهات الحكومية
       </p>
+      {!isPro && (
+        <p className="mt-1 text-center text-xs text-muted-foreground">
+          خطابان مجانيان بعد تأكيد بريدك الإلكتروني
+        </p>
+      )}
+
+      <LetterGateDialog
+        open={gateOpen}
+        onOpenChange={setGateOpen}
+        authority={authorityId}
+        letterType={letterTypeId}
+        language="ar"
+        onGranted={(remaining) => void runDownload(remaining)}
+      />
     </div>
   );
 }

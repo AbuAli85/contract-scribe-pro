@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import Dashboard from "./pages/Dashboard"
 import CreateContract from "./pages/CreateContract"
 import ContractDetail from "./pages/ContractDetail"
@@ -96,6 +96,9 @@ function App() {
           <Route path="/auth" element={<Auth />} />
           <Route path="/auto-auth" element={<AutoAuth />} />
           <Route path="/upgrade" element={<Upgrade />} />
+          {/* The letters upgrade wall links to /pricing; this app's plans
+              live at /upgrade, so keep both spellings working. */}
+          <Route path="/pricing" element={<Navigate to="/upgrade" replace />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/print-error" element={<PrintErrorPage />} />
