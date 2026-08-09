@@ -131,8 +131,8 @@ export default function FormatStudioDialog({
     const result = await loadUpload(file);
     setBusy(false);
 
-    if (!result.ok) {
-      setError(t.errors[result.reason]);
+    if (!result.ok || !result.data) {
+      setError(t.errors[result.reason ?? "unreadable_docx"]);
       return;
     }
     setBuffer(result.data.buffer);

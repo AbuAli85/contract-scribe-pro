@@ -25,11 +25,10 @@ import {
 } from "@/components/ui/select";
 import { Landmark, FileText, Download, Loader2 } from "lucide-react";
 import {
-  AUTHORITIES, LETTER_TYPES, COMMON_FIELDS, TOKEN_VALUE_EN,
-  getAuthority, getLetterType,
+  AUTHORITIES, BASE_FIELDS, TOKEN_VALUE_EN,
+  composeRecipientTitle, getAuthority, getLetterType, typesForAuthority,
 } from "@/lib/ministryLetters";
-import type { LetterLanguage, LetterValues } from "@/lib/ministryLetters";
-import type { TemplateField } from "@/lib/templateContent/types";
+import type { FieldDef, LetterLanguage, LetterValues } from "@/lib/ministryLetters";
 import { downloadMinistryLetter } from "@/utils/docx/generateMinistryLetter";
 import LetterGateDialog from "@/components/LetterGateDialog";
 import { checkLetterGeneration, readStoredGate } from "@/lib/letterGate";
@@ -48,6 +47,12 @@ const UI = {
     pickerTitle: "نوع الخطاب والجهة",
     authority: "الجهة الحكومية",
     letterType: "نوع الخطاب",
+    recipient: "المخاطَب",
+    recipientDetail: "اسم الدائرة / الإدارة",
+    recipientDetailPh: "التسجيل التجاري",
+    recipientFree: "صفة المخاطَب",
+    recipientFreePh: "سعادة المدير العام للشؤون الإدارية",
+    recipientPreview: "سيظهر في الخطاب",
     generate: "توليد الخطاب وتنزيله (Word)",
     printNote: "يُطبع الخطاب على الورق الرسمي للشركة — التنسيق قياسي موحد لجميع الجهات الحكومية",
     freeNote: "خطابان مجانيان بعد تأكيد بريدك الإلكتروني",
@@ -63,6 +68,12 @@ const UI = {
     pickerTitle: "Letter type and authority",
     authority: "Government authority",
     letterType: "Letter type",
+    recipient: "Addressee",
+    recipientDetail: "Department name",
+    recipientDetailPh: "Commercial Registry",
+    recipientFree: "Addressee title",
+    recipientFreePh: "The Director General of Administrative Affairs",
+    recipientPreview: "Appears in the letter as",
     generate: "Generate and download (Word)",
     printNote:
       "Print on your company letterhead — the layout is standard across all government authorities",
@@ -86,6 +97,8 @@ export default function MinistryLetters() {
   });
   const [authorityId, setAuthorityId] = useState<string>("spf");
   const [letterTypeId, setLetterTypeId] = useState<string>("installment");
+  const [recipientIndex, setRecipientIndex] = useState(0);
+  const [recipientDetail, setRecipientDetail] = useState("");
   const [values, setValues] = useState<LetterValues>({});
   const [generating, setGenerating] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
@@ -100,19 +113,27 @@ export default function MinistryLetters() {
   const t = UI[lang];
   const dir = isEn ? "ltr" : "rtl";
 
+  const authority = getAuthority(authorityId);
+  // Master list v1.0 is per-authority: the type dropdown only ever offers
+  // what this authority actually accepts, in the list's own order.
+  const availableTypes = useMemo(() => typesForAuthority(authorityId), [authorityId]);
   const letterType = getLetterType(letterTypeId);
-  const fields = useMemo<TemplateField[]>(
-    () => [...COMMON_FIELDS, ...(letterType?.fields ?? [])],
+  const fields = useMemo<FieldDef[]>(
+    () => [...BASE_FIELDS, ...(letterType?.fields ?? [])],
     [letterType],
   );
 
+  const recipients = authority.recipients;
+  const recipient = recipients[recipientIndex] ?? recipients[0];
+  const recipientTitle = composeRecipientTitle(recipient, lang, recipientDetail);
+
   // Field copy per language. Always fall back to the other language so a
   // missing string shows the Arabic original rather than an empty label.
-  const labelOf = (f: TemplateField) => (isEn ? f.labelEn || f.labelAr : f.labelAr || f.labelEn);
-  const groupOf = (f: TemplateField) => (isEn ? f.group || f.groupAr : f.groupAr || f.group);
-  const placeholderOf = (f: TemplateField) =>
+  const labelOf = (f: FieldDef) => (isEn ? f.labelEn || f.labelAr : f.labelAr || f.labelEn);
+  const groupOf = (f: FieldDef) => (isEn ? f.group || f.groupAr : f.groupAr || f.group);
+  const placeholderOf = (f: FieldDef) =>
     isEn ? f.placeholderEn ?? f.placeholderAr : f.placeholderAr ?? f.placeholderEn;
-  const helperOf = (f: TemplateField) => (isEn ? f.helperEn ?? f.helperAr : f.helperAr ?? f.helperEn);
+  const helperOf = (f: FieldDef) => (isEn ? f.helperEn ?? f.helperAr : f.helperAr ?? f.helperEn);
   const optionLabel = (o: { labelEn: string; labelAr: string }) =>
     isEn ? o.labelEn || o.labelAr : o.labelAr || o.labelEn;
 
@@ -175,7 +196,14 @@ export default function MinistryLetters() {
     setGenerating(true);
     try {
       await downloadMinistryLetter({
-        authority: getAuthority(authorityId),
+        // The chosen addressee is passed as the authority's title — one
+        // composed string, exactly where the fixed title always went.
+        // The renderer is untouched.
+        authority: {
+          ...authority,
+          recipientTitleAr: lang === "ar" ? recipientTitle : authority.recipientTitleAr,
+          recipientTitleEn: lang === "en" ? recipientTitle : authority.recipientTitleEn,
+        },
         letterType,
         values,
         language: lang,
@@ -257,7 +285,7 @@ export default function MinistryLetters() {
 
   // Group fields into sections, in the active language
   const groups = useMemo(() => {
-    const map = new Map<string, TemplateField[]>();
+    const map = new Map<string, FieldDef[]>();
     for (const f of fields) {
       const g = isEn ? f.group || f.groupAr : f.groupAr || f.group;
       if (!map.has(g)) map.set(g, []);
@@ -312,7 +340,19 @@ export default function MinistryLetters() {
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label>{t.authority}</Label>
-            <Select value={authorityId} onValueChange={setAuthorityId}>
+            <Select
+              value={authorityId}
+              onValueChange={(id) => {
+                // Types, fields and addressee are all authority-specific —
+                // carrying any of them across would produce a letter with
+                // another ministry's questions answered.
+                setAuthorityId(id);
+                setLetterTypeId(typesForAuthority(id)[0]?.id ?? "custom");
+                setValues({});
+                setRecipientIndex(0);
+                setRecipientDetail("");
+              }}
+            >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {AUTHORITIES.map((a) => (
@@ -326,7 +366,7 @@ export default function MinistryLetters() {
             <Select value={letterTypeId} onValueChange={setLetterTypeId}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {LETTER_TYPES.map((lt) => (
+                {availableTypes.map((lt) => (
                   <SelectItem key={lt.id} value={lt.id}>{isEn ? lt.titleEn : lt.titleAr}</SelectItem>
                 ))}
               </SelectContent>
@@ -337,6 +377,43 @@ export default function MinistryLetters() {
               </p>
             )}
           </div>
+
+          {/* Addressee — composed into a single title string; the letter's
+              layout is identical whichever option is chosen. */}
+          <div className="space-y-2">
+            <Label>{t.recipient}</Label>
+            <Select
+              value={String(recipientIndex)}
+              onValueChange={(v) => {
+                setRecipientIndex(Number(v));
+                setRecipientDetail("");
+              }}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {recipients.map((r, i) => (
+                  <SelectItem key={`${r.ar}-${i}`} value={String(i)}>
+                    {isEn ? r.en : r.ar}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {(recipient?.needsDepartment || recipient?.freeText) && (
+            <div className="space-y-2">
+              <Label>{recipient.freeText ? t.recipientFree : t.recipientDetail}</Label>
+              <Input
+                dir={dir}
+                value={recipientDetail}
+                onChange={(e) => setRecipientDetail(e.target.value)}
+                placeholder={recipient.freeText ? t.recipientFreePh : t.recipientDetailPh}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t.recipientPreview}: {recipientTitle}
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

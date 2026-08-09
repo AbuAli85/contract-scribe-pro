@@ -1,114 +1,34 @@
 // =============================================================
-// Ministry Letters — Letter Type Library
+// Authored skeletons (L0)
 //
-// Standard body skeletons in Arabic and English. {tokens} resolve
-// from: COMMON_FIELDS (every letter) + the type's own fields +
-// computed tokens: {authority_praise} {authority_law_clause}
+// The seven letter types written and reviewed before the master list
+// existed. Their subject lines, body paragraphs and field sets are
+// reproduced here BYTE-UNCHANGED from the pre-3.1 definitions — the
+// regression guard proves generated letters are identical, so nothing
+// in this file may be "tidied".
 //
-// The two languages are parallel, not translations of each other at
-// render time: each carries its own register. Arabic is the approved
-// original and is frozen; English mirrors its structure paragraph for
-// paragraph so a reader comparing the two sees the same letter.
+// New types do not belong here: they compose from skeletons/generic.ts
+// until someone authors and reviews real phrasing for them.
 // =============================================================
 
-import type { TemplateField } from "@/lib/templateContent/types";
-import type { MinistryLetterType } from "./types";
+import type { FieldDef } from "../types";
+import {
+  CLOSING_COMMIT_GENERIC,
+  CLOSING_COMMIT_GENERIC_EN,
+  OPENING,
+  OPENING_EN,
+} from "./phrases";
 
-/** Fields present on EVERY ministry letter */
-export const COMMON_FIELDS: TemplateField[] = [
-  {
-    key: "company_name",
-    group: "Company",
-    groupAr: "بيانات المنشأة",
-    labelEn: "Company Name",
-    labelAr: "اسم الشركة",
-    type: "text",
-    required: true,
-    placeholderAr: "شركة المثال للتجارة ش.م.م",
-    placeholderEn: "Example Trading LLC",
-    helperAr: "الاسم كما هو مسجل — شاملًا (شركة/مؤسسة) و(ش.م.م)",
-    helperEn: "Exactly as registered, including the legal form (LLC, SAOC…)",
-  },
-  {
-    key: "cr_number",
-    group: "Company",
-    groupAr: "بيانات المنشأة",
-    labelEn: "Commercial Registration No.",
-    labelAr: "رقم السجل التجاري",
-    type: "text",
-    required: true,
-    placeholderEn: "1234567",
-    helperAr: "الرقم فقط — عبارة (السجل التجاري رقم) تُضاف تلقائيًا",
-    helperEn: "Number only — the letter already says Commercial Registration No.",
-  },
-  {
-    key: "applicant_name",
-    group: "Applicant",
-    groupAr: "مقدم الطلب",
-    labelEn: "Applicant Name",
-    labelAr: "اسم مقدم الطلب",
-    type: "text",
-    required: true,
-    placeholderAr: "سيف محمد الراشدي",
-    placeholderEn: "Saif Mohammed Al Rashdi",
-  },
-  {
-    key: "applicant_capacity",
-    group: "Applicant",
-    groupAr: "مقدم الطلب",
-    labelEn: "Capacity",
-    labelAr: "الصفة",
-    type: "text",
-    required: true,
-    defaultValue: "المفوض بالتوقيع",
-  },
-  {
-    key: "applicant_phone",
-    group: "Applicant",
-    groupAr: "مقدم الطلب",
-    labelEn: "Contact Number",
-    labelAr: "رقم التواصل",
-    type: "phone",
-    required: true,
-    placeholderEn: "9XXXXXXX",
-  },
-];
+export interface AuthoredSkeleton {
+  subjectAr: string;
+  subjectEn: string;
+  bodyAr: string[];
+  bodyEn: string[];
+  fields: FieldDef[];
+}
 
-/**
- * Values that are Arabic by default but must read as English when the
- * letter is generated in English — select options and seeded defaults.
- * Only exact matches translate, so anything the user typed themselves
- * is left alone: their words, their letter.
- */
-export const TOKEN_VALUE_EN: Record<string, string> = {
-  "قسطين": "two installments",
-  "ثلاثة أقساط": "three installments",
-  "أربعة أقساط": "four installments",
-  "المفوض بالتوقيع": "Authorised Signatory",
-};
-
-// The skeleton must never pre-write a word the user also types. Arabic
-// company names carry their own form (شركة / مؤسسة / ش.م.م), so the name
-// goes in exactly as registered — no "شركة" prefix here.
-const OPENING =
-  "بالإشارة إلى الموضوع أعلاه، نتقدم إليكم نحن {company_name}، المسجلة بالسجل التجاري رقم ({cr_number})، بجزيل الشكر والتقدير لجهودكم في {authority_praise}.";
-
-const OPENING_EN =
-  "With reference to the above subject, we, {company_name}, registered under Commercial Registration No. ({cr_number}), extend our sincere appreciation for your esteemed efforts in {authority_praise}.";
-
-const CLOSING_COMMIT_GENERIC =
-  "ونتعهد بالالتزام الكامل بكافة المتطلبات والإجراءات المقررة لديكم في هذا الشأن.";
-
-const CLOSING_COMMIT_GENERIC_EN =
-  "We hereby undertake to comply fully with all requirements and procedures prescribed by your good offices in this regard.";
-
-export const LETTER_TYPES: MinistryLetterType[] = [
-  {
-    id: "installment",
-    titleAr: "طلب تقسيط مستحقات",
-    titleEn: "Installment Request",
-    descAr: "تقسيط مبلغ مستحق على المنشأة على دفعات",
-    descEn: "Pay outstanding dues in installments",
+export const AUTHORED: Record<string, AuthoredSkeleton> = {
+  installment: {
     subjectAr: "طلب سداد المستحقات على {installment_count} مع رفع الإيقاف",
     subjectEn: "Request to Settle Outstanding Dues in {installment_count} and Lift the Suspension",
     bodyAr: [
@@ -135,12 +55,8 @@ export const LETTER_TYPES: MinistryLetterType[] = [
       { key: "installment_breakdown", group: "Amounts", groupAr: "المبالغ", labelEn: "Breakdown", labelAr: "تفصيل الأقساط", type: "textarea", required: true, placeholderAr: "(222.191 ريال عماني) للقسط الأول، و(221.000 ريال عماني) للقسط الثاني", placeholderEn: "(OMR 222.191) for the first installment and (OMR 221.000) for the second", helperAr: "بدون تواريخ إلا إذا طُلبت", helperEn: "Amounts per installment; no dates unless required" },
     ],
   },
-  {
-    id: "unblock",
-    titleAr: "طلب رفع إيقاف",
-    titleEn: "Lift Suspension Request",
-    descAr: "رفع الإيقاف أو الحظر المفروض على المنشأة",
-    descEn: "Lift a block/suspension on the establishment",
+
+  unblock: {
     subjectAr: "طلب رفع الإيقاف المفروض على المنشأة",
     subjectEn: "Request to Lift the Suspension Imposed on the Establishment",
     bodyAr: [
@@ -160,12 +76,8 @@ export const LETTER_TYPES: MinistryLetterType[] = [
       { key: "resolution_note", group: "Details", groupAr: "التفاصيل", labelEn: "How it was resolved", labelAr: "ما تم اتخاذه للمعالجة", type: "textarea", required: true, placeholderAr: "بسداد كامل المبلغ المستحق بتاريخه", placeholderEn: "by settling the full amount due on its date", helperAr: "أكمل الجملة بعد (وقد قمنا بمعالجة أسباب الإيقاف)", helperEn: "Completes the sentence after \"we have since remedied the cause\"" },
     ],
   },
-  {
-    id: "clearance",
-    titleAr: "طلب براءة ذمة",
-    titleEn: "Clearance Certificate Request",
-    descAr: "إصدار شهادة براءة ذمة للمنشأة",
-    descEn: "Issue a clearance certificate",
+
+  clearance: {
     subjectAr: "طلب إصدار شهادة براءة ذمة",
     subjectEn: "Request for the Issuance of a Clearance Certificate",
     bodyAr: [
@@ -184,12 +96,8 @@ export const LETTER_TYPES: MinistryLetterType[] = [
       { key: "clearance_purpose", group: "Details", groupAr: "التفاصيل", labelEn: "Purpose", labelAr: "الغرض من الشهادة", type: "text", required: true, placeholderAr: "استكمال إجراءات التخارج / تجديد السجل", placeholderEn: "completing exit procedures / renewing the registration", helperAr: "الغرض فقط — كلمة (لغرض) تُضاف تلقائيًا", helperEn: "Purpose only — the letter adds \"for the purpose of\"" },
     ],
   },
-  {
-    id: "extension",
-    titleAr: "طلب تمديد مهلة",
-    titleEn: "Deadline Extension Request",
-    descAr: "تمديد مهلة لتوفيق الأوضاع أو استكمال متطلبات",
-    descEn: "Extend a compliance/administrative deadline",
+
+  extension: {
     subjectAr: "طلب تمديد مهلة {extension_subject}",
     subjectEn: "Request for an Extension of the Deadline for {extension_subject}",
     bodyAr: [
@@ -208,12 +116,8 @@ export const LETTER_TYPES: MinistryLetterType[] = [
       { key: "new_deadline", group: "Details", groupAr: "التفاصيل", labelEn: "Requested Deadline", labelAr: "التاريخ المطلوب", type: "text", required: true, placeholderEn: "31 December 2026", helperAr: "التاريخ فقط — عبارة (حتى تاريخ) تُضاف تلقائيًا", helperEn: "Date only — the letter adds \"until\"" },
     ],
   },
-  {
-    id: "objection",
-    titleAr: "تظلم / اعتراض",
-    titleEn: "Objection / Grievance",
-    descAr: "اعتراض على قرار صادر بحق المنشأة",
-    descEn: "Object to a decision issued against the establishment",
+
+  objection: {
     subjectAr: "تظلم من القرار رقم ({decision_ref})",
     subjectEn: "Grievance against Decision No. ({decision_ref})",
     bodyAr: [
@@ -235,12 +139,8 @@ export const LETTER_TYPES: MinistryLetterType[] = [
       { key: "objection_grounds", group: "Decision", groupAr: "القرار", labelEn: "Grounds of Objection", labelAr: "أسباب التظلم", type: "textarea", required: true, placeholderAr: "الشركة قامت بسداد كامل المستحقات قبل صدور القرار", placeholderEn: "the company had settled all dues in full prior to the issuance of the decision", helperAr: "ابدأ بالسبب مباشرة — عبارة (وحيث إن) تُضاف تلقائيًا", helperEn: "Start with the reason — the letter adds \"Whereas\"" },
     ],
   },
-  {
-    id: "noc",
-    titleAr: "طلب عدم ممانعة",
-    titleEn: "No-Objection Request",
-    descAr: "إصدار خطاب عدم ممانعة بشأن معاملة محددة",
-    descEn: "Request a no-objection letter for a specific matter",
+
+  noc: {
     subjectAr: "طلب إصدار خطاب عدم ممانعة",
     subjectEn: "Request for the Issuance of a No-Objection Letter",
     bodyAr: [
@@ -257,12 +157,8 @@ export const LETTER_TYPES: MinistryLetterType[] = [
       { key: "noc_matter", group: "Details", groupAr: "التفاصيل", labelEn: "Matter", labelAr: "موضوع عدم الممانعة", type: "textarea", required: true, placeholderAr: "نقل كفالة أحد الموظفين", placeholderEn: "the transfer of sponsorship of one of our employees", helperAr: "الموضوع فقط — كلمة (بشأن) تُضاف تلقائيًا", helperEn: "Matter only — the letter adds \"in respect of\"" },
     ],
   },
-  {
-    id: "custom",
-    titleAr: "خطاب حر (وصف الطلب)",
-    titleEn: "Custom Letter (describe it)",
-    descAr: "اكتب موضوع الخطاب وسطرًا أو سطرين عن الطلب",
-    descEn: "Write the subject and 1–2 lines describing the request",
+
+  custom: {
     subjectAr: "{custom_subject}",
     subjectEn: "{custom_subject}",
     bodyAr: [
@@ -282,7 +178,4 @@ export const LETTER_TYPES: MinistryLetterType[] = [
       { key: "custom_body", group: "Details", groupAr: "التفاصيل", labelEn: "Request Description", labelAr: "وصف الطلب", type: "textarea", required: true, helperAr: "سطر أو سطران — سيُصاغ ضمن الهيكل الرسمي", helperEn: "1–2 lines — merged into the formal skeleton" },
     ],
   },
-];
-
-export const getLetterType = (id: string): MinistryLetterType | undefined =>
-  LETTER_TYPES.find((t) => t.id === id);
+};

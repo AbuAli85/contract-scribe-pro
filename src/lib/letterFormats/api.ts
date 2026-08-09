@@ -43,6 +43,17 @@ export interface LoadedUpload {
   paragraphs: ReturnType<typeof readParagraphs>;
 }
 
+/**
+ * Deliberately a single shape rather than a discriminated union: this
+ * repo compiles with `strict: false`, under which narrowing on an
+ * `ok: true | false` discriminant is unreliable. Callers check `data`.
+ */
+export interface UploadResult {
+  ok: boolean;
+  data?: LoadedUpload;
+  reason?: UploadRejection;
+}
+
 const DOCX_MIME =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
@@ -51,9 +62,7 @@ const DOCX_MIME =
  * the UI turns into bilingual copy — an unreadable upload must never
  * dead-end on a raw exception.
  */
-export async function loadUpload(
-  file: File,
-): Promise<{ ok: true; data: LoadedUpload } | { ok: false; reason: UploadRejection }> {
+export async function loadUpload(file: File): Promise<UploadResult> {
   const isDocx =
     file.type === DOCX_MIME || file.name.toLowerCase().endsWith(".docx");
   if (!isDocx) return { ok: false, reason: "not_docx" };

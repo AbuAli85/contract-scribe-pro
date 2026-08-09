@@ -1,17 +1,15 @@
 // =============================================================
-// Ministry Letters — Types
+// Ministry Letters — Types (L0)
 //
-// Formal Arabic letters addressed to Oman government authorities.
-// Unlike catalog contracts (bilingual two-column), a ministry
-// letter is ARABIC-ONLY, single page, and rendered in ONE locked
-// layout (approved sample, Aug 2026). Only placeholder values
-// change; the skeleton is code, not data.
+// Formal letters addressed to Oman government authorities. A letter
+// is single page and rendered in ONE locked layout (approved sample,
+// Aug 2026) in Arabic or English. Only placeholder values change;
+// the skeleton is code, not user data.
 //
-// Contract between the form (MinistryLetters.tsx) and the
-// generator (generateMinistryLetter.ts).
+// L0 CONTRACT: pure data, zero imports from other layers. FieldDef is
+// declared here rather than borrowed from the contracts feature so
+// this layer can be consumed as a standalone package (Phase 2 Hub).
 // =============================================================
-
-import type { TemplateField } from "@/lib/templateContent/types";
 
 /**
  * Output language. Arabic is the approved original; English mirrors it
@@ -19,43 +17,100 @@ import type { TemplateField } from "@/lib/templateContent/types";
  */
 export type LetterLanguage = "ar" | "en";
 
+export type FieldType =
+  | "text"
+  | "textarea"
+  | "number"
+  | "currency-omr"
+  | "date"
+  | "select"
+  | "email"
+  | "phone";
+
+/** One fillable input. `key` is the {token} written into the skeleton. */
+export interface FieldDef {
+  key: string;
+  /** Section headings in the form UI */
+  group: string;
+  groupAr: string;
+  labelEn: string;
+  labelAr: string;
+  type: FieldType;
+  required: boolean;
+  helperEn?: string;
+  helperAr?: string;
+  options?: { value: string; labelEn: string; labelAr: string }[];
+  defaultValue?: string;
+  placeholderEn?: string;
+  placeholderAr?: string;
+}
+
+/**
+ * A selectable addressee. The honorific (معالي / سعادة / الفاضل) is part
+ * of the string: the renderer receives one composed title and drops it
+ * where the fixed title used to go, so the layout never changes.
+ */
+export interface RecipientOption {
+  ar: string;
+  en: string;
+  /** Ask for a department / governorate / wilayat name and append it. */
+  needsDepartment?: boolean;
+  /** The user types the whole title — the escape hatch on every list. */
+  freeText?: boolean;
+}
+
 /** A government authority the letter can be addressed to */
 export interface MinistryAuthority {
   id: string;
   nameAr: string;
   nameEn: string;
-  /** e.g. "مدير الاشتراكات" — rendered as الفاضل / {title} ... المحترم */
+  /** Default addressee — kept in sync with recipients[0] for callers
+   *  that don't offer a choice. */
   recipientTitleAr: string;
-  /** e.g. "The Director of Contributions" — rendered as "To: {title}" */
   recipientTitleEn: string;
+  /** Selectable addressees, most senior first. Always ends with free text. */
+  recipients: RecipientOption[];
   /** Praise formula inserted in the opening paragraph */
   praiseAr: string;
   praiseEn: string;
   /** Relevant law cited in the situation paragraph (optional) */
   lawAr?: string;
   lawEn?: string;
+  /** Letter type ids this authority accepts, in master-list order. */
+  allowedLetterTypes: string[];
 }
 
-/** A letter type = subject + Arabic body skeleton with {tokens} */
+/**
+ * `authored` — a hand-written skeleton reviewed for this letter type.
+ * `generic` — composed from the type's name and its fields via the
+ * structured-custom skeleton. Correct but plainer; no invented legal
+ * phrasing. The flag lets future batches upgrade skeletons without a
+ * schema change.
+ */
+export type SkeletonStatus = "authored" | "generic";
+
+/** A letter type = subject + body skeleton with {tokens} */
 export interface MinistryLetterType {
   id: string;
+  /** Owning authority id — the master list is per-authority. */
+  authorityId: string;
   titleAr: string;
   titleEn: string;
   descAr: string;
   descEn: string;
+  skeletonStatus: SkeletonStatus;
   /** Subject line — may contain {tokens} */
   subjectAr: string;
   subjectEn: string;
   /**
    * Body paragraphs in order, {token} placeholders resolved from
-   * common fields + this type's extra fields + authority fields:
+   * base fields + this type's extra fields + authority fields:
    * {company_name} {cr_number} {authority_praise} {authority_law_clause}
    */
   bodyAr: string[];
-  /** Same paragraphs in formal English. Same tokens, same order. */
   bodyEn: string[];
-  /** Extra fields specific to this letter type (beyond COMMON_FIELDS) */
-  fields: TemplateField[];
+  /** Extra fields specific to this letter type (beyond BASE_FIELDS) */
+  fields: FieldDef[];
 }
 
 /** Values map: field key → user-entered value */
