@@ -21,6 +21,8 @@ export const COMMON_FIELDS: TemplateField[] = [
     required: true,
     placeholderAr: "شركة المثال للتجارة ش.م.م",
     placeholderEn: "شركة المثال للتجارة ش.م.م",
+    helperAr: "الاسم كما هو مسجل — شاملًا (شركة/مؤسسة) و(ش.م.م)",
+    helperEn: "Exactly as registered — include شركة/مؤسسة and ش.م.م",
   },
   {
     key: "cr_number",
@@ -31,6 +33,8 @@ export const COMMON_FIELDS: TemplateField[] = [
     type: "text",
     required: true,
     placeholderEn: "1234567",
+    helperAr: "الرقم فقط — عبارة (السجل التجاري رقم) تُضاف تلقائيًا",
+    helperEn: "Number only — the letter already says السجل التجاري رقم",
   },
   {
     key: "applicant_name",
@@ -65,8 +69,11 @@ export const COMMON_FIELDS: TemplateField[] = [
   },
 ];
 
+// The skeleton must never pre-write a word the user also types. Arabic
+// company names carry their own form (شركة / مؤسسة / ش.م.م), so the name
+// goes in exactly as registered — no "شركة" prefix here.
 const OPENING =
-  "بالإشارة إلى الموضوع أعلاه، نتقدم إليكم نحن شركة {company_name}، المسجلة بالسجل التجاري رقم ({cr_number})، بجزيل الشكر والتقدير لجهودكم في {authority_praise}.";
+  "بالإشارة إلى الموضوع أعلاه، نتقدم إليكم نحن {company_name}، المسجلة بالسجل التجاري رقم ({cr_number})، بجزيل الشكر والتقدير لجهودكم في {authority_praise}.";
 
 const CLOSING_COMMIT_GENERIC =
   "ونتعهد بالالتزام الكامل بكافة المتطلبات والإجراءات المقررة لديكم في هذا الشأن.";
@@ -87,7 +94,7 @@ export const LETTER_TYPES: MinistryLetterType[] = [
       "ونتعهد بسداد الأقساط في المواعيد المحددة دون تأخير، وبالانتظام في سداد المستحقات الجارية في مواعيدها القانونية.",
     ],
     fields: [
-      { key: "total_amount", group: "Amounts", groupAr: "المبالغ", labelEn: "Total Due (OMR)", labelAr: "إجمالي المبلغ المستحق (ر.ع)", type: "currency-omr", required: true, placeholderEn: "443.191" },
+      { key: "total_amount", group: "Amounts", groupAr: "المبالغ", labelEn: "Total Due (OMR)", labelAr: "إجمالي المبلغ المستحق (ر.ع)", type: "currency-omr", required: true, placeholderEn: "443.191", helperAr: "الرقم فقط — كلمة (ريال عماني) تُضاف تلقائيًا", helperEn: "Number only — ريال عماني is added by the letter" },
       { key: "installment_count", group: "Amounts", groupAr: "المبالغ", labelEn: "Installments", labelAr: "عدد الأقساط", type: "select", required: true, defaultValue: "قسطين", options: [
         { value: "قسطين", labelEn: "Two installments", labelAr: "قسطين" },
         { value: "ثلاثة أقساط", labelEn: "Three installments", labelAr: "ثلاثة أقساط" },
@@ -110,8 +117,8 @@ export const LETTER_TYPES: MinistryLetterType[] = [
       CLOSING_COMMIT_GENERIC,
     ],
     fields: [
-      { key: "block_reason", group: "Details", groupAr: "التفاصيل", labelEn: "Reason of Block (Arabic)", labelAr: "سبب الإيقاف", type: "text", required: true, placeholderAr: "تأخر سداد الاشتراكات", placeholderEn: "تأخر سداد الاشتراكات" },
-      { key: "resolution_note", group: "Details", groupAr: "التفاصيل", labelEn: "How it was resolved (Arabic)", labelAr: "ما تم اتخاذه للمعالجة", type: "textarea", required: true, placeholderAr: "بسداد كامل المبلغ المستحق بتاريخه", placeholderEn: "بسداد كامل المبلغ المستحق بتاريخه" },
+      { key: "block_reason", group: "Details", groupAr: "التفاصيل", labelEn: "Reason of Block (Arabic)", labelAr: "سبب الإيقاف", type: "text", required: true, placeholderAr: "تأخر سداد الاشتراكات", placeholderEn: "تأخر سداد الاشتراكات", helperAr: "السبب فقط — كلمة (بسبب) تُضاف تلقائيًا", helperEn: "Reason only — بسبب is added by the letter" },
+      { key: "resolution_note", group: "Details", groupAr: "التفاصيل", labelEn: "How it was resolved (Arabic)", labelAr: "ما تم اتخاذه للمعالجة", type: "textarea", required: true, placeholderAr: "بسداد كامل المبلغ المستحق بتاريخه", placeholderEn: "بسداد كامل المبلغ المستحق بتاريخه", helperAr: "أكمل الجملة بعد (وقد قمنا بمعالجة أسباب الإيقاف)", helperEn: "Completes the sentence after وقد قمنا بمعالجة أسباب الإيقاف" },
     ],
   },
   {
@@ -128,7 +135,7 @@ export const LETTER_TYPES: MinistryLetterType[] = [
       CLOSING_COMMIT_GENERIC,
     ],
     fields: [
-      { key: "clearance_purpose", group: "Details", groupAr: "التفاصيل", labelEn: "Purpose (Arabic)", labelAr: "الغرض من الشهادة", type: "text", required: true, placeholderAr: "استكمال إجراءات التخارج / تجديد السجل", placeholderEn: "استكمال إجراءات التخارج / تجديد السجل" },
+      { key: "clearance_purpose", group: "Details", groupAr: "التفاصيل", labelEn: "Purpose (Arabic)", labelAr: "الغرض من الشهادة", type: "text", required: true, placeholderAr: "استكمال إجراءات التخارج / تجديد السجل", placeholderEn: "استكمال إجراءات التخارج / تجديد السجل", helperAr: "الغرض فقط — كلمة (لغرض) تُضاف تلقائيًا", helperEn: "Purpose only — لغرض is added by the letter" },
     ],
   },
   {
@@ -144,9 +151,9 @@ export const LETTER_TYPES: MinistryLetterType[] = [
       "ونتعهد باستكمال كافة المتطلبات خلال المهلة المطلوبة والالتزام الكامل بالأنظمة المقررة.",
     ],
     fields: [
-      { key: "extension_subject", group: "Details", groupAr: "التفاصيل", labelEn: "Subject of Extension (Arabic)", labelAr: "موضوع التمديد", type: "text", required: true, placeholderAr: "توفيق أوضاع نسبة التعمين", placeholderEn: "توفيق أوضاع نسبة التعمين" },
-      { key: "current_efforts", group: "Details", groupAr: "التفاصيل", labelEn: "Current Efforts (Arabic)", labelAr: "الجهود الجارية", type: "textarea", required: true, placeholderAr: "استكمال إجراءات استقطاب كوادر وطنية مؤهلة", placeholderEn: "استكمال إجراءات استقطاب كوادر وطنية مؤهلة" },
-      { key: "new_deadline", group: "Details", groupAr: "التفاصيل", labelEn: "Requested Deadline", labelAr: "التاريخ المطلوب", type: "text", required: true, placeholderEn: "31 / 12 / 2026م" },
+      { key: "extension_subject", group: "Details", groupAr: "التفاصيل", labelEn: "Subject of Extension (Arabic)", labelAr: "موضوع التمديد", type: "text", required: true, placeholderAr: "توفيق أوضاع نسبة التعمين", placeholderEn: "توفيق أوضاع نسبة التعمين", helperAr: "الموضوع فقط — كلمة (مهلة) تُضاف تلقائيًا", helperEn: "Subject only — مهلة is added by the letter" },
+      { key: "current_efforts", group: "Details", groupAr: "التفاصيل", labelEn: "Current Efforts (Arabic)", labelAr: "الجهود الجارية", type: "textarea", required: true, placeholderAr: "استكمال إجراءات استقطاب كوادر وطنية مؤهلة", placeholderEn: "استكمال إجراءات استقطاب كوادر وطنية مؤهلة", helperAr: "أكمل الجملة بعد (تعمل الشركة حاليًا على)", helperEn: "Completes the sentence after تعمل حاليًا على" },
+      { key: "new_deadline", group: "Details", groupAr: "التفاصيل", labelEn: "Requested Deadline", labelAr: "التاريخ المطلوب", type: "text", required: true, placeholderEn: "31 / 12 / 2026م", helperAr: "التاريخ فقط — عبارة (حتى تاريخ) تُضاف تلقائيًا", helperEn: "Date only — حتى تاريخ is added by the letter" },
     ],
   },
   {
@@ -163,10 +170,10 @@ export const LETTER_TYPES: MinistryLetterType[] = [
       CLOSING_COMMIT_GENERIC,
     ],
     fields: [
-      { key: "decision_ref", group: "Decision", groupAr: "القرار", labelEn: "Decision Ref. No.", labelAr: "رقم القرار", type: "text", required: true },
-      { key: "decision_date", group: "Decision", groupAr: "القرار", labelEn: "Decision Date", labelAr: "تاريخ القرار", type: "text", required: true, placeholderEn: "15 / 07 / 2026م" },
-      { key: "decision_summary", group: "Decision", groupAr: "القرار", labelEn: "Decision Summary (Arabic)", labelAr: "ملخص القرار", type: "textarea", required: true },
-      { key: "objection_grounds", group: "Decision", groupAr: "القرار", labelEn: "Grounds of Objection (Arabic)", labelAr: "أسباب التظلم", type: "textarea", required: true },
+      { key: "decision_ref", group: "Decision", groupAr: "القرار", labelEn: "Decision Ref. No.", labelAr: "رقم القرار", type: "text", required: true, placeholderEn: "12/2026", helperAr: "الرقم فقط — عبارة (القرار رقم) تُضاف تلقائيًا", helperEn: "Number only — القرار رقم is added by the letter" },
+      { key: "decision_date", group: "Decision", groupAr: "القرار", labelEn: "Decision Date", labelAr: "تاريخ القرار", type: "text", required: true, placeholderEn: "15 / 07 / 2026م", helperAr: "التاريخ فقط — كلمة (بتاريخ) تُضاف تلقائيًا", helperEn: "Date only — بتاريخ is added by the letter" },
+      { key: "decision_summary", group: "Decision", groupAr: "القرار", labelEn: "Decision Summary (Arabic)", labelAr: "ملخص القرار", type: "textarea", required: true, placeholderAr: "إيقاف التعاملات لمدة ثلاثة أشهر", placeholderEn: "إيقاف التعاملات لمدة ثلاثة أشهر", helperAr: "المضمون فقط — كلمة (والمتضمن) تُضاف تلقائيًا", helperEn: "Content only — والمتضمن is added by the letter" },
+      { key: "objection_grounds", group: "Decision", groupAr: "القرار", labelEn: "Grounds of Objection (Arabic)", labelAr: "أسباب التظلم", type: "textarea", required: true, placeholderAr: "الشركة قامت بسداد كامل المستحقات قبل صدور القرار", placeholderEn: "الشركة قامت بسداد كامل المستحقات قبل صدور القرار", helperAr: "ابدأ بالسبب مباشرة — عبارة (وحيث إن) تُضاف تلقائيًا", helperEn: "Start with the reason — وحيث إن is added by the letter" },
     ],
   },
   {
@@ -182,7 +189,7 @@ export const LETTER_TYPES: MinistryLetterType[] = [
       CLOSING_COMMIT_GENERIC,
     ],
     fields: [
-      { key: "noc_matter", group: "Details", groupAr: "التفاصيل", labelEn: "Matter (Arabic)", labelAr: "موضوع عدم الممانعة", type: "textarea", required: true },
+      { key: "noc_matter", group: "Details", groupAr: "التفاصيل", labelEn: "Matter (Arabic)", labelAr: "موضوع عدم الممانعة", type: "textarea", required: true, placeholderAr: "نقل كفالة أحد الموظفين", placeholderEn: "نقل كفالة أحد الموظفين", helperAr: "الموضوع فقط — كلمة (بشأن) تُضاف تلقائيًا", helperEn: "Matter only — بشأن is added by the letter" },
     ],
   },
   {
@@ -199,7 +206,7 @@ export const LETTER_TYPES: MinistryLetterType[] = [
       CLOSING_COMMIT_GENERIC,
     ],
     fields: [
-      { key: "custom_subject", group: "Details", groupAr: "التفاصيل", labelEn: "Subject (Arabic)", labelAr: "موضوع الخطاب", type: "text", required: true },
+      { key: "custom_subject", group: "Details", groupAr: "التفاصيل", labelEn: "Subject (Arabic)", labelAr: "موضوع الخطاب", type: "text", required: true, placeholderAr: "طلب تصحيح بيانات المنشأة", placeholderEn: "طلب تصحيح بيانات المنشأة", helperAr: "بدون كلمة (الموضوع) — تُضاف تلقائيًا في الخطاب", helperEn: "Omit الموضوع — the letter adds it" },
       { key: "custom_body", group: "Details", groupAr: "التفاصيل", labelEn: "Request Description (Arabic)", labelAr: "وصف الطلب", type: "textarea", required: true, helperAr: "سطر أو سطران — سيُصاغ ضمن الهيكل الرسمي", helperEn: "1–2 lines — merged into the formal skeleton" },
     ],
   },
