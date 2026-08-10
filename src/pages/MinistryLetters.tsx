@@ -60,6 +60,10 @@ const UI = {
     doneTitle: "تم إنشاء الخطاب",
     doneDesc: "جاهز للطباعة على الورق الرسمي للشركة",
     remaining: (n: number) => `تم التنزيل — تبقى لك ${n} خطاب مجاني`,
+    improveWording: "✨ تحسين الصياغة",
+    improving: "جارٍ التحسين…",
+    restoreOriginal: "↩ استرجاع النص الأصلي",
+    rewriteError: "تعذّر تحسين الصياغة — حاول لاحقًا",
   },
   en: {
     title: "Government Letters",
@@ -82,6 +86,10 @@ const UI = {
     doneTitle: "Letter generated",
     doneDesc: "Ready to print on your company letterhead",
     remaining: (n: number) => `Downloaded — ${n} free letter${n === 1 ? "" : "s"} remaining`,
+    improveWording: "✨ Improve wording",
+    improving: "Improving…",
+    restoreOriginal: "↩ Restore original",
+    rewriteError: "Couldn't improve wording — try again later",
   },
 } as const;
 
@@ -103,6 +111,10 @@ export default function MinistryLetters() {
   const [triedGenerate, setTriedGenerate] = useState(false);
   const [values, setValues] = useState<LetterValues>({});
   const [generating, setGenerating] = useState(false);
+  // «تحسين الصياغة»: which textarea field is currently being rewritten, and
+  // the pre-rewrite text kept for a one-level "restore original".
+  const [rewritingKey, setRewritingKey] = useState<string | null>(null);
+  const [restorable, setRestorable] = useState<Record<string, string>>({});
   const [gateOpen, setGateOpen] = useState(false);
   // Set while a saved format is waiting on the gate; null means the gate
   // is being used for a ready-made letter.
@@ -228,6 +240,51 @@ export default function MinistryLetters() {
   }, [fields, isEn]);
 
   const set = (key: string, val: string) => setValues((v) => ({ ...v, [key]: val }));
+
+  // Ask the letter-rewrite Edge Function to reshape one free-text field into
+  // formal wording. It NEVER generates the letter — the user still edits and
+  // clicks generate. On success we swap the text in and keep the original for
+  // a single-level restore; on any failure the field is left untouched.
+  const handleRewrite = async (key: string) => {
+    const current = (values[key] ?? "").trim();
+    if (current.length < 10 || rewritingKey) return;
+    setRewritingKey(key);
+    try {
+      const { data, error } = await supabase.functions.invoke("letter-rewrite", {
+        body: {
+          text: values[key] ?? "",
+          letterTypeLabelAr: letterType?.titleAr ?? "",
+          lang,
+        },
+      });
+      if (error) {
+        toast({ title: t.rewriteError, variant: "destructive" });
+        return;
+      }
+      const rewritten = (data as { rewritten?: string } | null)?.rewritten?.trim();
+      if (!rewritten) {
+        toast({ title: t.rewriteError, variant: "destructive" });
+        return;
+      }
+      setRestorable((r) => ({ ...r, [key]: values[key] ?? "" }));
+      set(key, rewritten);
+    } catch {
+      toast({ title: t.rewriteError, variant: "destructive" });
+    } finally {
+      setRewritingKey(null);
+    }
+  };
+
+  const restoreOriginal = (key: string) => {
+    const original = restorable[key];
+    if (original === undefined) return;
+    set(key, original);
+    setRestorable((r) => {
+      const next = { ...r };
+      delete next[key];
+      return next;
+    });
+  };
 
   const missing = fields.filter((f) => f.required && !(values[f.key] ?? "").trim());
 
@@ -398,6 +455,7 @@ export default function MinistryLetters() {
                 setRecipientIndex(0);
                 setRecipientDetail("");
                 setTriedGenerate(false);
+                setRestorable({});
               }}
             >
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -483,13 +541,46 @@ export default function MinistryLetters() {
                   {f.required && <span className="text-destructive"> *</span>}
                 </Label>
                 {f.type === "textarea" ? (
-                  <Textarea
-                    dir={dir}
-                    value={values[f.key] ?? ""}
-                    onChange={(e) => set(f.key, e.target.value)}
-                    placeholder={placeholderOf(f)}
-                    rows={3}
-                  />
+                  <>
+                    <Textarea
+                      dir={dir}
+                      value={values[f.key] ?? ""}
+                      onChange={(e) => set(f.key, e.target.value)}
+                      placeholder={placeholderOf(f)}
+                      rows={3}
+                    />
+                    {/* Improve-wording appears once there's enough to reshape,
+                        and only for a signed-in user (the proxy requires auth). */}
+                    {user?.id && (values[f.key] ?? "").trim().length >= 10 && (
+                      <div className="flex flex-wrap items-center gap-3" dir={dir}>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          className="gap-1.5"
+                          disabled={rewritingKey === f.key}
+                          onClick={() => void handleRewrite(f.key)}
+                        >
+                          {rewritingKey === f.key ? (
+                            <>
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t.improving}
+                            </>
+                          ) : (
+                            t.improveWording
+                          )}
+                        </Button>
+                        {restorable[f.key] !== undefined && (
+                          <button
+                            type="button"
+                            className="text-xs text-muted-foreground underline hover:text-foreground"
+                            onClick={() => restoreOriginal(f.key)}
+                          >
+                            {t.restoreOriginal}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </>
                 ) : f.type === "select" && f.options ? (
                   <Select value={values[f.key] ?? ""} onValueChange={(v) => set(f.key, v)}>
                     <SelectTrigger><SelectValue placeholder={labelOf(f)} /></SelectTrigger>
