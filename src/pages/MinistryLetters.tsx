@@ -258,7 +258,19 @@ export default function MinistryLetters() {
         },
       });
       if (error) {
-        toast({ title: t.rewriteError, variant: "destructive" });
+        // A 429 carries an Arabic-friendly daily-limit message; surface it
+        // when present, otherwise fall back to the generic error toast.
+        let messageAr: string | undefined;
+        try {
+          const ctx = (error as { context?: Response }).context;
+          if (ctx && typeof ctx.clone === "function") {
+            const b = (await ctx.clone().json()) as { messageAr?: string };
+            messageAr = b?.messageAr;
+          }
+        } catch {
+          /* body not JSON — use the generic toast */
+        }
+        toast({ title: messageAr ?? t.rewriteError, variant: "destructive" });
         return;
       }
       const rewritten = (data as { rewritten?: string } | null)?.rewritten?.trim();

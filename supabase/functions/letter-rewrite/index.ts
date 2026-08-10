@@ -21,7 +21,6 @@
 // Errors: 401 unauthorized | 400 invalid input | 500 misconfigured | 502 upstream
 // =============================================================
 
-// deno-lint-ignore-file no-explicit-any
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CORS, json } from "../_shared/letterGate.ts";
@@ -30,6 +29,8 @@ import { CORS, json } from "../_shared/letterGate.ts";
 const REWRITE_MODEL = "claude-haiku-4-5-20251001";
 const MAX_INPUT_CHARS = 2000;
 const ANTHROPIC_TIMEOUT_MS = 20_000;
+/** Free rewrites per user per UTC day. */
+const DAILY_REWRITE_LIMIT = 10;
 
 // The rewrite rules. English instruction text is intentional; the {lang}
 // directive below tells the model which register to write in.
@@ -66,10 +67,7 @@ serve(async (req: Request) => {
 
     const authHeader = req.headers.get("Authorization") ?? "";
     const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-    const { data: userData } = bearer
-      ? await admin.auth.getUser(bearer)
-      : { data: { user: null } as any };
-    const user = userData?.user;
+    const user = bearer ? (await admin.auth.getUser(bearer)).data?.user ?? null : null;
     if (!user) return json({ error: "unauthorized" }, 401);
 
     // --- input validation ---------------------------------------------
@@ -85,6 +83,27 @@ serve(async (req: Request) => {
     }
     const lang = body.lang === "en" ? "en" : "ar";
     const letterTypeLabelAr = (body.letterTypeLabelAr ?? "").toString().slice(0, 200);
+
+    // --- daily cap: count today's rewrites (UTC) before spending -------
+    const startOfDayUtc = `${new Date().toISOString().slice(0, 10)}T00:00:00Z`;
+    const { count, error: countErr } = await admin
+      .from("rewrite_usage")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", startOfDayUtc);
+    if (countErr) {
+      console.error("letter-rewrite: usage count failed", countErr);
+      return json({ error: "server_error" }, 500);
+    }
+    if ((count ?? 0) >= DAILY_REWRITE_LIMIT) {
+      return json(
+        {
+          error: "daily limit reached",
+          messageAr: "وصلت إلى الحد اليومي لتحسين الصياغة (١٠). حاول غدًا.",
+        },
+        429,
+      );
+    }
 
     // --- the API key lives here and only here -------------------------
     const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
@@ -116,9 +135,9 @@ serve(async (req: Request) => {
         }),
         signal: AbortSignal.timeout(ANTHROPIC_TIMEOUT_MS),
       });
-    } catch (e: any) {
+    } catch (e) {
       // Timeout or network error — one attempt, no retry loop.
-      console.error("letter-rewrite: upstream fetch failed", e?.name ?? "error");
+      console.error("letter-rewrite: upstream fetch failed", e instanceof Error ? e.name : "error");
       return json({ error: "rewrite failed" }, 502);
     }
 
@@ -128,16 +147,25 @@ serve(async (req: Request) => {
       return json({ error: "rewrite failed" }, 502);
     }
 
-    const data = (await resp.json().catch(() => null)) as any;
+    const data = (await resp.json().catch(() => null)) as
+      | { content?: Array<{ text?: string }> }
+      | null;
     const rewritten = (data?.content?.[0]?.text ?? "").toString().trim();
     if (!rewritten) {
       console.error("letter-rewrite: empty completion");
       return json({ error: "rewrite failed" }, 502);
     }
 
+    // Log one row for the daily cap. Best-effort — a logging hiccup must not
+    // deny the user the rewrite they already paid for upstream.
+    const { error: insErr } = await admin
+      .from("rewrite_usage")
+      .insert({ user_id: user.id, chars: trimmed.length });
+    if (insErr) console.error("letter-rewrite: usage insert failed", insErr);
+
     return json({ rewritten });
-  } catch (err: any) {
-    console.error("letter-rewrite error:", err?.message ?? "error");
+  } catch (err) {
+    console.error("letter-rewrite error:", err instanceof Error ? err.message : "error");
     return json({ error: "server_error" }, 500);
   }
 });
