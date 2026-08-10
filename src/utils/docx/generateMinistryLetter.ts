@@ -15,13 +15,16 @@
 //     (RIGHT can flip to the left — verified empirically).
 //   • Addressee spread across the line via a borderless 3-cell
 //     table: الفاضل / {title} … المحترم (المحترم at far left).
-//   • Subject: visual right, bold + underlined.
+//   • subject: CENTER (owner-approved 2026-08-10) — bold + underlined.
 //   • Signature block centered. No attachments section by default.
 //
 // English layout (Sprint 2) is the SAME page — A4, Times New Roman
 // 12pt, 1.5 line, 2160-twip letterhead margin, centered signature —
 // mirrored to LTR. The Arabic path is frozen: every Arabic paragraph
 // is built exactly as before, so Arabic output is unchanged.
+//
+// mirrored to LTR — except the subject, which is centred in both
+// languages (owner-approved 2026-08-10).
 //
 // Addressee, English: a single bold left-aligned "To: {title}" over
 // the authority name, NOT the mirrored 3-cell table. The Arabic
@@ -234,7 +237,7 @@ function buildArabicBody({
     }),
     p(authority.nameAr, { align: AlignmentType.START, bold: true, after: 480 }),
     p("السلام عليكم ورحمة الله وبركاته،", { align: AlignmentType.START, after: 240 }),
-    p(`الموضوع: ${subject}`, { align: AlignmentType.START, bold: true, underline: true, after: 300 }),
+    p(`الموضوع: ${subject}`, { align: AlignmentType.CENTER, bold: true, underline: true, after: 300 }),
     ...bodyParas.map((t) => p(t)),
     p("شاكرين لكم حسن تعاونكم وتفهمكم،", { after: 120 }),
     p("وتفضلوا بقبول فائق الاحترام والتقدير،", { after: 720 }),
@@ -273,7 +276,7 @@ function buildEnglishBody({
     pEn(`To: ${authority.recipientTitleEn}`, { align: AlignmentType.LEFT, bold: true, after: 0 }),
     pEn(authority.nameEn, { align: AlignmentType.LEFT, bold: true, after: 480 }),
     pEn(`Subject: ${subject}`, {
-      align: AlignmentType.LEFT, bold: true, underline: true, after: 300,
+      align: AlignmentType.CENTER, bold: true, underline: true, after: 300,
     }),
     ...bodyParas.map((t) => pEn(t)),
     pEn("Thanking you for your kind cooperation and understanding,", { after: 120 }),
