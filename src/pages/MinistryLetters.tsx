@@ -26,7 +26,7 @@ import {
 import { Landmark, FileText, Download, Loader2 } from "lucide-react";
 import {
   AUTHORITIES, BASE_FIELDS, TOKEN_VALUE_EN,
-  composeRecipientTitle, getAuthority, getLetterType, typesForAuthority,
+  composeRecipientTitle, freeTextClosingAr, getAuthority, getLetterType, typesForAuthority,
 } from "@/lib/ministryLetters";
 import type { FieldDef, LetterLanguage, LetterValues } from "@/lib/ministryLetters";
 import { downloadMinistryLetter } from "@/utils/docx/generateMinistryLetter";
@@ -128,12 +128,22 @@ export default function MinistryLetters() {
   // The free-text option's own label ("أخرى — نص حر") is a menu word, never
   // a letter title: with the box empty, fall back to this authority's
   // default addressee rather than printing the menu word on a letter.
-  const recipientTitle =
-    recipient?.freeText && !recipientDetail.trim()
-      ? isEn
-        ? authority.recipientTitleEn
-        : authority.recipientTitleAr
-      : composeRecipientTitle(recipient, lang, recipientDetail);
+  const usingFreeFallback = !!recipient?.freeText && !recipientDetail.trim();
+  const recipientTitle = usingFreeFallback
+    ? isEn
+      ? authority.recipientTitleEn
+      : authority.recipientTitleAr
+    : composeRecipientTitle(recipient, lang, recipientDetail);
+
+  // Arabic third-cell closing (Addressing Protocol v1.0). A named or
+  // department addressee carries its own closing; free text resolves by the
+  // معالي rule; the empty-free-text fallback borrows the default entry's
+  // closing so it matches the default title it printed.
+  const recipientClosingAr = usingFreeFallback
+    ? recipients[0]?.closing ?? "المحترم"
+    : recipient?.freeText
+      ? freeTextClosingAr(recipientTitle)
+      : recipient?.closing ?? "المحترم";
 
   // Field copy per language. Always fall back to the other language so a
   // missing string shows the Arabic original rather than an empty label.
@@ -215,6 +225,7 @@ export default function MinistryLetters() {
         letterType,
         values,
         language: lang,
+        closingAr: recipientClosingAr,
       });
       toast({
         title: t.doneTitle,

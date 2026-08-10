@@ -14,7 +14,10 @@
 //   • AlignmentType.START = visual RIGHT in RTL paragraphs
 //     (RIGHT can flip to the left — verified empirically).
 //   • Addressee spread across the line via a borderless 3-cell
-//     table: الفاضل / {title} … المحترم (المحترم at far left).
+//     table: {composed title} … {closing} (closing at far left). Both the
+//     title's honorific and the closing are data-driven (Addressing
+//     Protocol v1.0) — the renderer no longer hardcodes «الفاضل /» or
+//     «المحترم».
 //   • subject: CENTER (owner-approved 2026-08-10) — bold + underlined.
 //   • Signature block centered. No attachments section by default.
 //
@@ -182,15 +185,22 @@ export interface MinistryLetterInput {
   /** Override the auto date if needed */
   dateAr?: string;
   dateEn?: string;
+  /**
+   * Arabic third-cell closing honorific («المحترم» / «الموقر»). Data-driven
+   * from the chosen addressee (Addressing Protocol v1.0). Defaults to
+   * «المحترم» — the value hardcoded before the protocol. Arabic only; the
+   * English layout has no closing cell.
+   */
+  closingAr?: string;
 }
 
 export function buildMinistryLetterDoc({
-  authority, letterType, values, language = "ar", dateAr, dateEn,
+  authority, letterType, values, language = "ar", dateAr, dateEn, closingAr,
 }: MinistryLetterInput): Document {
   const children: (Paragraph | Table)[] =
     language === "en"
       ? buildEnglishBody({ authority, letterType, values, dateEn })
-      : buildArabicBody({ authority, letterType, values, dateAr });
+      : buildArabicBody({ authority, letterType, values, dateAr, closingAr });
 
   return new Document({
     sections: [
@@ -208,7 +218,7 @@ export function buildMinistryLetterDoc({
 // Arabic — approved Aug 2026, frozen. Do not restyle.
 // ---------------------------------------------------------------
 function buildArabicBody({
-  authority, letterType, values, dateAr,
+  authority, letterType, values, dateAr, closingAr,
 }: Omit<MinistryLetterInput, "language">): (Paragraph | Table)[] {
   const computed: LetterValues = {
     ...values,
@@ -228,9 +238,13 @@ function buildArabicBody({
       rows: [
         new TableRow({
           children: [
-            cell(`الفاضل / ${authority.recipientTitleAr}`, AlignmentType.START, true),
+            // Addressee and closing are now data-driven (Addressing Protocol
+            // v1.0): the composed title carries its own honorific, and the
+            // third cell prints the addressee's closing. No «الفاضل /» prefix,
+            // no hardcoded «المحترم».
+            cell(authority.recipientTitleAr, AlignmentType.START, true),
             cell("...", AlignmentType.CENTER, false),
-            cell("المحترم", AlignmentType.LEFT, true),
+            cell(closingAr ?? "المحترم", AlignmentType.LEFT, true),
           ],
         }),
       ],

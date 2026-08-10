@@ -232,3 +232,13 @@ export function composeRecipientTitle(
   if (recipient.needsDepartment && extra) return `${base} ${extra}`;
   return base;
 }
+
+/**
+ * Arabic closing for a free-text addressee. The system prefixes no
+ * honorific on free text, so the closing is inferred from the words the
+ * user chose: a ministerial opening («معالي») takes «الموقر», everything
+ * else takes «المحترم». (Addressing Protocol v1.0, Commit B rule.)
+ */
+export function freeTextClosingAr(text: string): "المحترم" | "الموقر" {
+  return text.trim().startsWith("معالي") ? "الموقر" : "المحترم";
+}
