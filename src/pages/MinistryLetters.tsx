@@ -26,7 +26,7 @@ import {
 import { Landmark, FileText, Download, Loader2 } from "lucide-react";
 import {
   AUTHORITIES, BASE_FIELDS, TOKEN_VALUE_EN,
-  composeRecipientTitle, getAuthority, getLetterType, typesForAuthority,
+  composeRecipientTitle, freeTextClosingAr, getAuthority, getLetterType, typesForAuthority,
 } from "@/lib/ministryLetters";
 import type { FieldDef, LetterLanguage, LetterValues } from "@/lib/ministryLetters";
 import { downloadMinistryLetter } from "@/utils/docx/generateMinistryLetter";
@@ -99,6 +99,8 @@ export default function MinistryLetters() {
   const [letterTypeId, setLetterTypeId] = useState<string>("installment");
   const [recipientIndex, setRecipientIndex] = useState(0);
   const [recipientDetail, setRecipientDetail] = useState("");
+  // Set on a blocked generate so the addressee-box error shows inline.
+  const [triedGenerate, setTriedGenerate] = useState(false);
   const [values, setValues] = useState<LetterValues>({});
   const [generating, setGenerating] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
@@ -128,12 +130,43 @@ export default function MinistryLetters() {
   // The free-text option's own label ("أخرى — نص حر") is a menu word, never
   // a letter title: with the box empty, fall back to this authority's
   // default addressee rather than printing the menu word on a letter.
-  const recipientTitle =
+  const usingFreeFallback = !!recipient?.freeText && !recipientDetail.trim();
+  // Strip ONE leading «دائرة »/«الدائرة » the user may have typed so the
+  // department entry never composes «مدير دائرة دائرة …». Composition-time
+  // only — the input keeps showing exactly what was typed.
+  const isDepartmentEntry =
+    !!recipient?.needsDepartment && recipient.ar.trim().endsWith("مدير دائرة");
+  const composedDetail = isDepartmentEntry
+    ? recipientDetail.replace(/^\s*(?:ال)?دائرة\s+/, "")
+    : recipientDetail;
+  const recipientTitle = usingFreeFallback
+    ? isEn
+      ? authority.recipientTitleEn
+      : authority.recipientTitleAr
+    : composeRecipientTitle(recipient, lang, composedDetail);
+
+  // Addressee box must not be empty when the chosen entry needs it. Blocks
+  // generation with an inline field error (shown after a generate attempt).
+  const recipientError: string | null =
     recipient?.freeText && !recipientDetail.trim()
       ? isEn
-        ? authority.recipientTitleEn
-        : authority.recipientTitleAr
-      : composeRecipientTitle(recipient, lang, recipientDetail);
+        ? "Please enter the addressee title"
+        : "يرجى كتابة صفة المخاطَب"
+      : recipient?.needsDepartment && !recipientDetail.trim()
+        ? isEn
+          ? "Please enter the department name"
+          : "يرجى كتابة اسم الدائرة"
+        : null;
+
+  // Arabic third-cell closing (Addressing Protocol v1.0). A named or
+  // department addressee carries its own closing; free text resolves by the
+  // معالي rule; the empty-free-text fallback borrows the default entry's
+  // closing so it matches the default title it printed.
+  const recipientClosingAr = usingFreeFallback
+    ? recipients[0]?.closing ?? "المحترم"
+    : recipient?.freeText
+      ? freeTextClosingAr(recipientTitle)
+      : recipient?.closing ?? "المحترم";
 
   // Field copy per language. Always fall back to the other language so a
   // missing string shows the Arabic original rather than an empty label.
@@ -215,6 +248,7 @@ export default function MinistryLetters() {
         letterType,
         values,
         language: lang,
+        closingAr: recipientClosingAr,
       });
       toast({
         title: t.doneTitle,
@@ -229,6 +263,10 @@ export default function MinistryLetters() {
 
   const handleGenerate = async () => {
     if (!letterType) return;
+    // Addressee box first — an empty free-text / department box blocks with an
+    // inline field error rather than silently composing a broken title.
+    setTriedGenerate(true);
+    if (recipientError) return;
     if (missing.length > 0) {
       toast({
         title: t.missingTitle,
@@ -359,6 +397,7 @@ export default function MinistryLetters() {
                 setValues({});
                 setRecipientIndex(0);
                 setRecipientDetail("");
+                setTriedGenerate(false);
               }}
             >
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -395,6 +434,7 @@ export default function MinistryLetters() {
               onValueChange={(v) => {
                 setRecipientIndex(Number(v));
                 setRecipientDetail("");
+                setTriedGenerate(false);
               }}
             >
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -416,10 +456,15 @@ export default function MinistryLetters() {
                 value={recipientDetail}
                 onChange={(e) => setRecipientDetail(e.target.value)}
                 placeholder={recipient.freeText ? t.recipientFreePh : t.recipientDetailPh}
+                aria-invalid={triedGenerate && !!recipientError}
               />
-              <p className="text-xs text-muted-foreground">
-                {t.recipientPreview}: {recipientTitle}
-              </p>
+              {triedGenerate && recipientError ? (
+                <p className="text-xs text-destructive">{recipientError}</p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  {t.recipientPreview}: {recipientTitle}
+                </p>
+              )}
             </div>
           )}
         </CardContent>

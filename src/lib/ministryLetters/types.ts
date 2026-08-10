@@ -57,6 +57,13 @@ export interface RecipientOption {
   needsDepartment?: boolean;
   /** The user types the whole title — the escape hatch on every list. */
   freeText?: boolean;
+  /**
+   * Closing honorific rendered in the third cell (Arabic only):
+   * «المحترم» for most addressees, «الموقر» for ministerial (معالي) rank.
+   * Free-text entries omit it — the renderer resolves the closing from the
+   * user's own text (text opening with «معالي» → «الموقر», else «المحترم»).
+   */
+  closing?: "المحترم" | "الموقر";
 }
 
 /** A government authority the letter can be addressed to */

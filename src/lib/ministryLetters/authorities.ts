@@ -6,13 +6,17 @@
 // used in the opening paragraph, the law it enforces, and the letter
 // types it accepts (master-list order).
 //
-// ADDRESSEE MODEL: recipients[0] is the default and MUST equal the
-// legacy hardcoded title — that is what keeps existing letters
-// byte-identical. The honorific (معالي / سعادة / الفاضل) is part of
-// the string: the renderer receives one composed title and drops it
-// where the fixed title always went, so the layout never changes.
-// Every list ends with a free-text option so no user is trapped by
-// the dropdown.
+// ADDRESSEE MODEL (Addressing Protocol v1.0 — approved 2026-08-10):
+// each recipient entry stores its honorific INSIDE the string —
+// «معالي / …», «سعادة / …», «الفاضل / …» — and its closing honorific
+// («المحترم» or «الموقر») in `closing`. The renderer drops the composed
+// string where the fixed title always went and prints `closing` in the
+// third cell; it no longer prepends «الفاضل /» or hardcodes «المحترم».
+// recipients[0] is the default; the scalar recipientTitleAr/En mirror it
+// (honorific embedded) for callers that don't offer a choice. Every list
+// ends with a free-text option so no user is trapped by the dropdown, and
+// a free-text entry has no static `closing` — the renderer resolves it
+// from the user's own text.
 // =============================================================
 
 import type { MinistryAuthority, RecipientOption } from "./types";
@@ -24,11 +28,12 @@ const FREE_TEXT: RecipientOption = {
   freeText: true,
 };
 
-/** "مدير الدائرة المختصة" + the department the user names. */
+/** «الفاضل / مدير دائرة …» + the department the user names. */
 const DEPARTMENT: RecipientOption = {
-  ar: "مدير دائرة",
+  ar: "الفاضل / مدير دائرة",
   en: "Director of the Department of",
   needsDepartment: true,
+  closing: "المحترم",
 };
 
 export const AUTHORITIES: MinistryAuthority[] = [
@@ -36,13 +41,13 @@ export const AUTHORITIES: MinistryAuthority[] = [
     id: "spf",
     nameAr: "صندوق الحماية الاجتماعية",
     nameEn: "Social Protection Fund",
-    recipientTitleAr: "مدير الاشتراكات",
+    recipientTitleAr: "الفاضل / مدير الاشتراكات",
     recipientTitleEn: "The Director of Contributions",
     recipients: [
-      { ar: "مدير الاشتراكات", en: "The Director of Contributions" },
-      { ar: "سعادة رئيس صندوق الحماية الاجتماعية", en: "H.E. the Chairman of the Social Protection Fund" },
-      { ar: "المدير العام", en: "The Director General" },
-      { ar: "مدير دائرة الاشتراكات والتحصيل", en: "The Director of Contributions and Collection" },
+      { ar: "الفاضل / مدير الاشتراكات", en: "The Director of Contributions", closing: "المحترم" },
+      { ar: "سعادة / رئيس صندوق الحماية الاجتماعية", en: "H.E. the Chairman of the Social Protection Fund", closing: "المحترم" },
+      { ar: "الفاضل / المدير العام", en: "The Director General", closing: "المحترم" },
+      { ar: "الفاضل / مدير دائرة الاشتراكات والتحصيل", en: "The Director of Contributions and Collection", closing: "المحترم" },
       DEPARTMENT,
       FREE_TEXT,
     ],
@@ -60,13 +65,13 @@ export const AUTHORITIES: MinistryAuthority[] = [
     id: "mol",
     nameAr: "وزارة العمل",
     nameEn: "Ministry of Labour",
-    recipientTitleAr: "مدير عام التشغيل",
+    recipientTitleAr: "الفاضل / مدير عام التشغيل",
     recipientTitleEn: "The Director of Labour Relations",
     recipients: [
-      { ar: "مدير عام التشغيل", en: "The Director of Labour Relations" },
-      { ar: "معالي وزير العمل", en: "H.E. the Minister of Labour" },
-      { ar: "سعادة وكيل الوزارة", en: "H.E. the Undersecretary" },
-      { ar: "المدير العام للعمل", en: "The Director General of Labour" },
+      { ar: "الفاضل / مدير عام التشغيل", en: "The Director of Labour Relations", closing: "المحترم" },
+      { ar: "معالي / وزير العمل", en: "H.E. the Minister of Labour", closing: "الموقر" },
+      { ar: "سعادة / وكيل وزارة العمل", en: "H.E. the Undersecretary", closing: "المحترم" },
+      { ar: "الفاضل / المدير العام للعمل", en: "The Director General of Labour", closing: "المحترم" },
       DEPARTMENT,
       FREE_TEXT,
     ],
@@ -86,12 +91,13 @@ export const AUTHORITIES: MinistryAuthority[] = [
     id: "tax",
     nameAr: "جهاز الضرائب",
     nameEn: "Tax Authority",
-    recipientTitleAr: "رئيس جهاز الضرائب",
-    recipientTitleEn: "The Director of Taxpayer Services",
+    recipientTitleAr: "معالي / رئيس جهاز الضرائب",
+    recipientTitleEn: "H.E. the Chairman of the Tax Authority",
     recipients: [
-      { ar: "رئيس جهاز الضرائب", en: "The Director of Taxpayer Services" },
-      { ar: "سعادة رئيس جهاز الضرائب", en: "H.E. the Chairman of the Tax Authority" },
-      { ar: "المدير العام", en: "The Director General" },
+      // Merged from the old chairman pair (رئيس / سعادة رئيس): one office,
+      // one entry, ministerial rank → «معالي / …» and closing «الموقر».
+      { ar: "معالي / رئيس جهاز الضرائب", en: "H.E. the Chairman of the Tax Authority", closing: "الموقر" },
+      { ar: "الفاضل / المدير العام", en: "The Director General", closing: "المحترم" },
       DEPARTMENT,
       FREE_TEXT,
     ],
@@ -107,17 +113,20 @@ export const AUTHORITIES: MinistryAuthority[] = [
     id: "mocipi",
     nameAr: "وزارة التجارة والصناعة وترويج الاستثمار",
     nameEn: "Ministry of Commerce, Industry and Investment Promotion",
-    recipientTitleAr: "مدير عام التجارة",
+    recipientTitleAr: "الفاضل / مدير عام التجارة",
     recipientTitleEn: "The Director of Commercial Affairs",
     recipients: [
-      { ar: "مدير عام التجارة", en: "The Director of Commercial Affairs" },
-      { ar: "معالي وزير التجارة والصناعة وترويج الاستثمار", en: "H.E. the Minister of Commerce, Industry and Investment Promotion" },
-      { ar: "سعادة وكيل الوزارة", en: "H.E. the Undersecretary" },
-      { ar: "المدير العام للتجارة", en: "The Director General of Commerce" },
-      { ar: "مدير دائرة السجل التجاري", en: "The Director of the Commercial Registry Department" },
+      // Merged with the old «المدير العام للتجارة» honorific/wording duplicate
+      // of the same office; the default's own EN survives (v1.1 reconciles the
+      // مدير عام التجارة ↔ Commercial Affairs wording).
+      { ar: "الفاضل / مدير عام التجارة", en: "The Director of Commercial Affairs", closing: "المحترم" },
+      { ar: "معالي / وزير التجارة والصناعة وترويج الاستثمار", en: "H.E. the Minister of Commerce, Industry and Investment Promotion", closing: "الموقر" },
+      { ar: "سعادة / الوكيل للتجارة والصناعة", en: "The Undersecretary for Commerce and Industry", closing: "المحترم" },
+      { ar: "سعادة / الوكيلة لترويج الاستثمار", en: "The Undersecretary for Investment Promotion", closing: "المحترم" },
       // CR matters (signatory changes, amendments) are addressed here often
       // enough that it must be one tap, not a hand-typed title.
-      { ar: "أمين السجل التجاري", en: "Registrar of the Commercial Registry" },
+      { ar: "الفاضل / أمين السجل التجاري", en: "Registrar of the Commercial Registry", closing: "المحترم" },
+      { ar: "الفاضل / مدير دائرة السجل التجاري", en: "The Director of the Commercial Registry Department", closing: "المحترم" },
       DEPARTMENT,
       FREE_TEXT,
     ],
@@ -135,12 +144,13 @@ export const AUTHORITIES: MinistryAuthority[] = [
     id: "rop-passports",
     nameAr: "شرطة عمان السلطانية — الإدارة العامة للجوازات والإقامة",
     nameEn: "Royal Oman Police — Directorate General of Passports and Residence",
-    recipientTitleAr: "مدير عام الجوازات والإقامة",
+    recipientTitleAr: "الفاضل / مدير عام الجوازات والإقامة",
     recipientTitleEn: "The Director General",
     recipients: [
-      { ar: "مدير عام الجوازات والإقامة", en: "The Director General" },
-      { ar: "سعادة المدير العام للجوازات والإقامة", en: "H.E. the Director General of Passports and Residence" },
-      { ar: "مدير إدارة الجوازات والإقامة بمحافظة", en: "The Director of Passports and Residence in the Governorate of", needsDepartment: true },
+      // Merged from the old DG pair (مدير عام / سعادة المدير العام) of the
+      // same office; the default's own EN «The Director General» survives.
+      { ar: "الفاضل / مدير عام الجوازات والإقامة", en: "The Director General", closing: "المحترم" },
+      { ar: "الفاضل / مدير إدارة الجوازات والإقامة بمحافظة", en: "The Director of Passports and Residence in the Governorate of", needsDepartment: true, closing: "المحترم" },
       DEPARTMENT,
       FREE_TEXT,
     ],
@@ -158,13 +168,16 @@ export const AUTHORITIES: MinistryAuthority[] = [
     id: "muscat-municipality",
     nameAr: "بلدية مسقط",
     nameEn: "Muscat Municipality",
-    recipientTitleAr: "رئيس بلدية مسقط",
-    recipientTitleEn: "The Director of Licensing",
+    recipientTitleAr: "سعادة / رئيس بلدية مسقط",
+    recipientTitleEn: "H.E. the Chairman of Muscat Municipality",
     recipients: [
-      { ar: "رئيس بلدية مسقط", en: "The Director of Licensing" },
-      { ar: "سعادة رئيس بلدية مسقط", en: "H.E. the Chairman of Muscat Municipality" },
-      { ar: "المدير العام", en: "The Director General" },
-      { ar: "مدير بلدية ولاية", en: "The Director of the Municipality of the Wilayat of", needsDepartment: true },
+      // Merged from the old chairman pair (رئيس / سعادة رئيس) of the same
+      // office; the chairman entry's existing EN survives (§6). This changes
+      // the English default addressee — one of the two authorised EN
+      // exceptions this sprint (see also Tax).
+      { ar: "سعادة / رئيس بلدية مسقط", en: "H.E. the Chairman of Muscat Municipality", closing: "المحترم" },
+      { ar: "الفاضل / المدير العام", en: "The Director General", closing: "المحترم" },
+      { ar: "الفاضل / مدير بلدية ولاية", en: "The Director of the Municipality of the Wilayat of", needsDepartment: true, closing: "المحترم" },
       DEPARTMENT,
       FREE_TEXT,
     ],
@@ -181,10 +194,10 @@ export const AUTHORITIES: MinistryAuthority[] = [
     id: "other",
     nameAr: "جهة حكومية أخرى",
     nameEn: "Other Government Authority",
-    recipientTitleAr: "المدير العام",
+    recipientTitleAr: "الفاضل / المدير العام",
     recipientTitleEn: "The Director General",
     recipients: [
-      { ar: "المدير العام", en: "The Director General" },
+      { ar: "الفاضل / المدير العام", en: "The Director General", closing: "المحترم" },
       DEPARTMENT,
       FREE_TEXT,
     ],
@@ -218,4 +231,14 @@ export function composeRecipientTitle(
   if (recipient.freeText) return extra || base;
   if (recipient.needsDepartment && extra) return `${base} ${extra}`;
   return base;
+}
+
+/**
+ * Arabic closing for a free-text addressee. The system prefixes no
+ * honorific on free text, so the closing is inferred from the words the
+ * user chose: a ministerial opening («معالي») takes «الموقر», everything
+ * else takes «المحترم». (Addressing Protocol v1.0, Commit B rule.)
+ */
+export function freeTextClosingAr(text: string): "المحترم" | "الموقر" {
+  return text.trim().startsWith("معالي") ? "الموقر" : "المحترم";
 }
