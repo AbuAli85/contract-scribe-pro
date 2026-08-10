@@ -125,7 +125,15 @@ export default function MinistryLetters() {
 
   const recipients = authority.recipients;
   const recipient = recipients[recipientIndex] ?? recipients[0];
-  const recipientTitle = composeRecipientTitle(recipient, lang, recipientDetail);
+  // The free-text option's own label ("أخرى — نص حر") is a menu word, never
+  // a letter title: with the box empty, fall back to this authority's
+  // default addressee rather than printing the menu word on a letter.
+  const recipientTitle =
+    recipient?.freeText && !recipientDetail.trim()
+      ? isEn
+        ? authority.recipientTitleEn
+        : authority.recipientTitleAr
+      : composeRecipientTitle(recipient, lang, recipientDetail);
 
   // Field copy per language. Always fall back to the other language so a
   // missing string shows the Arabic original rather than an empty label.

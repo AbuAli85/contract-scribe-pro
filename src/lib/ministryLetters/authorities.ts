@@ -115,6 +115,9 @@ export const AUTHORITIES: MinistryAuthority[] = [
       { ar: "سعادة وكيل الوزارة", en: "H.E. the Undersecretary" },
       { ar: "المدير العام للتجارة", en: "The Director General of Commerce" },
       { ar: "مدير دائرة السجل التجاري", en: "The Director of the Commercial Registry Department" },
+      // CR matters (signatory changes, amendments) are addressed here often
+      // enough that it must be one tap, not a hand-typed title.
+      { ar: "أمين السجل التجاري", en: "Registrar of the Commercial Registry" },
       DEPARTMENT,
       FREE_TEXT,
     ],
