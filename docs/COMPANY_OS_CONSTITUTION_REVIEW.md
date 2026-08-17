@@ -100,6 +100,66 @@ Whichever is current, an acceptance criterion pinned to a stale absolute number
 fails for the wrong reason. "No net decrease in passing tests, ≥60 new" is the
 testable form.
 
+### C9 · DEFECT · `vault.deleteDocument` is a soft delete with nowhere to record it
+
+§D2 specifies `deleteDocument` as "Soft delete + audit log". §D1's
+`companyDocuments` has `createdAt / updatedAt` and no `deletedAt`, `isDeleted`,
+or archived status — the four status values are all live states. As written the
+procedure has no way to be a soft delete, and the implementer either adds a
+column that was never specified or ships a hard delete on compliance records.
+
+Add `deletedAt: datetime | null` and state that every vault query filters it,
+including the sweep in §D3 — otherwise a deleted document keeps generating
+renewal tasks.
+
+### C10 · DEFECT · `workItems` stores its links as arrays
+
+```
+assignedEmployeeIds: number[]      // links to Section 3
+assetIds: number[]                 // links to asset registry
+```
+
+In Drizzle/MySQL these are JSON columns. They cannot carry a foreign key, so
+nothing stops an assignment to a deleted employee, and they cannot be indexed
+for the reverse lookup — which is the direction every consumer reads:
+
+- §C: "assigned employees notified", "field attendance armed for assigned staff"
+- §H3: "vehicle mulkiya/inspection validity checked before dispatch"
+- §G3: `attendanceMode` applied per assigned employee
+
+Each of those asks "which work items is this employee/asset on?", which against
+a JSON array is a full scan per employee per day. Join tables
+(`workItemEmployees`, `workItemAssets`) give the FK and the index, and cost one
+migration now versus a rewrite once trip volume is real.
+
+### C11 · BLOCKER · The H4 signatory lock cannot be enforced as specified
+
+Two identity spaces that never meet:
+
+```
+// §H4 — on companyEntity
+authorizedSignatories: [{ name, idNumber, scope }]
+
+// §I3 — on contracts
+signatoryUserId: number (FK)   // "must be an authorized signatory (H4 lock)"
+```
+
+`authorizedSignatories` is a JSON array of people identified by `idNumber`, with
+no user ID. `signatoryUserId` is a foreign key into users. An authorized
+signatory is frequently *not* a platform user — a chairman or an external
+director who signs but never logs in. So the lock the constitution calls
+airtight has no key to check against: you cannot join `signatoryUserId` to
+anything in `authorizedSignatories`.
+
+This decides a schema, so it wants settling before Sprint 7 builds H4: either
+promote signatories to a real table with an optional `userId` (and have
+contracts reference `signatoryId`, not `signatoryUserId`), or keep the JSON and
+have contracts store the signatory's `idNumber`, accepting that it is a copied
+value rather than a reference. The first is right; the second at least works.
+
+Note this compounds I1 — a signatory table is company-scoped, and CSP has no
+company scope.
+
 ---
 
 ## Part 2 — Contract Scribe Pro vs. §I
@@ -183,6 +243,19 @@ Two mismatches matter beyond naming:
    history kept"; CSP models the chain as parent/child rows. The chain carries
    strictly more information (which specific prior contract) and survives
    deletion better. Recommend §I3 adopts CSP's shape rather than the reverse.
+3. **§I3 has no `renewed`.** Renewal is a first-class flow throughout the
+   document — §C's "renew/terminate decision task", §I4's notice-period trigger,
+   §F5's marketplace renewal — but the status enum ends at `terminated`. When a
+   contract is superseded by its renewal, the old row has nowhere correct to
+   land: `expired` is wrong (it was replaced, not left to lapse) and
+   `terminated` is wrong (nobody ended it). CSP has carried `renewed` since the
+   lifecycle table was created, and the distinction is what makes a renewal
+   chain readable a year later. Add it.
+
+Also worth aligning: §I3 names the pre-expiry state `expiring`, CSP calls it
+`expiring_soon`, and §D1's vault uses `expiring` too. Cosmetic, but it is one
+`CHECK` constraint and one enum in each codebase — cheaper to settle now than
+after both have data.
 
 ### I3 · DEFECT · No sweep exists on the CSP side
 
@@ -271,8 +344,10 @@ it and resolved by regenerating types.
 | # | Action | Owner | Before |
 | :---- | :---- | :---- | :---- |
 | 1 | Decide where contracts live (I1) | Fahad | Sprint 7 planning |
-| 2 | Fix C1–C4 in the constitution (one editing pass) | Fahad | next PR reviewed under it |
-| 3 | Write the §H4 rollout ramp for the 3 live tenants (C6) | Fahad | Sprint 7 |
-| 4 | Regenerate CSP Supabase types, add `tsc --noEmit` to CI (I4) | CSP | Sprint 8 |
-| 5 | Reconcile §I3's schema with `contract_records` (I2) | Both | Sprint 8 planning |
-| 6 | Add `UNIQUE (companyDocumentId, thresholdDays)` (C3) | SmartPRO | Sprint 1 merge |
+| 2 | Decide how a signatory is identified (C11) | Fahad | Sprint 7 planning |
+| 3 | Fix C1, C2, C4, C5, C8 — one editing pass | Fahad | next PR reviewed under it |
+| 4 | Write the §H4 rollout ramp for the 3 live tenants (C6) | Fahad | Sprint 7 |
+| 5 | Add `UNIQUE (companyDocumentId, thresholdDays)` (C3) and `deletedAt` (C9) | SmartPRO | Sprint 1 merge |
+| 6 | Replace `workItems` array columns with join tables (C10) | SmartPRO | Sprint 7 |
+| 7 | Regenerate CSP Supabase types, add `tsc --noEmit` to CI (I4) | CSP | Sprint 8 |
+| 8 | Reconcile §I3's schema with `contract_records` (I2) | Both | Sprint 8 planning |
