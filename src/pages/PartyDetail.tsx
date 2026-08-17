@@ -19,16 +19,12 @@ import {
   Loader2, FileText, Trash2, Pencil, Plus, Save, X,
 } from "lucide-react";
 import type { Party } from "./Parties";
-
-// ── Status badge helpers (same as Records.tsx will use) ──────────────
-const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-100 text-gray-700 border-gray-200",
-  active: "bg-green-100 text-green-800 border-green-200",
-  expiring_soon: "bg-amber-100 text-amber-800 border-amber-200",
-  expired: "bg-red-100 text-red-700 border-red-200",
-  terminated: "bg-red-100 text-red-700 border-red-200",
-  renewed: "bg-blue-100 text-blue-800 border-blue-200",
-};
+import {
+  asContractStatus,
+  computeStatus,
+  statusLabel,
+  STATUS_COLOR,
+} from "@/lib/contractLifecycle";
 
 interface ContractRecord {
   id: string;
@@ -36,6 +32,7 @@ interface ContractRecord {
   status: string;
   start_date: string | null;
   end_date: string | null;
+  notice_period_days: number | null;
   template_id: string | null;
 }
 
@@ -70,7 +67,7 @@ export default function PartyDetail() {
 
       const { data: records } = await supabase
         .from("contract_records")
-        .select("id, title, status, start_date, end_date, template_id")
+        .select("id, title, status, start_date, end_date, notice_period_days, template_id")
         .or(`first_party_id.eq.${id},second_party_id.eq.${id}`)
         .order("created_at", { ascending: false });
       setContracts((records ?? []) as ContractRecord[]);
@@ -350,22 +347,25 @@ export default function PartyDetail() {
             </Card>
           ) : (
             <div className="space-y-2">
-              {contracts.map(c => (
-                <Card key={c.id} className="cursor-pointer hover:border-primary/50 transition-colors"
-                  onClick={() => navigate(`/records/${c.id}`)}>
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-sm">{c.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {c.start_date} {c.end_date ? `→ ${c.end_date}` : ""}
-                      </p>
-                    </div>
-                    <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[c.status] ?? ""}`}>
-                      {c.status}
-                    </Badge>
-                  </CardContent>
-                </Card>
-              ))}
+              {contracts.map(c => {
+                const status = computeStatus({ ...c, status: asContractStatus(c.status) });
+                return (
+                  <Card key={c.id} className="cursor-pointer hover:border-primary/50 transition-colors"
+                    onClick={() => navigate(`/records/${c.id}`)}>
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-sm">{c.title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {c.start_date} {c.end_date ? `→ ${c.end_date}` : ""}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className={`text-[10px] ${STATUS_COLOR[status]}`}>
+                        {statusLabel(status)}
+                      </Badge>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>

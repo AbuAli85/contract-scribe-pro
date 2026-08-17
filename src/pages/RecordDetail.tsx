@@ -23,7 +23,13 @@ import {
   Building2, User, Calendar, FileText, Clock, Plus, Pencil, Send,
   ExternalLink, Copy, PenLine, Paperclip,
 } from "lucide-react";
-import { computeStatus, STATUS_LABEL, STATUS_COLOR, type ContractRecord } from "./Records";
+import {
+  computeStatus,
+  statusLabel,
+  STATUS_COLOR,
+  DEFAULT_NOTICE_PERIOD_DAYS,
+  type ContractRecord,
+} from "@/lib/contractLifecycle";
 import type { Party } from "./Parties";
 
 // ── Event types ────────────────────────────────────────────────────────
@@ -252,6 +258,7 @@ export default function RecordDetail() {
   const [editTitle, setEditTitle] = useState("");
   const [editStart, setEditStart] = useState("");
   const [editEnd, setEditEnd] = useState("");
+  const [editNotice, setEditNotice] = useState("");
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
@@ -487,6 +494,9 @@ export default function RecordDetail() {
     setEditTitle(record.title);
     setEditStart(record.start_date ?? "");
     setEditEnd(record.end_date ?? "");
+    setEditNotice(
+      record.notice_period_days != null ? String(record.notice_period_days) : ""
+    );
     const flat: Record<string, string> = {};
     for (const [k, v] of Object.entries((record.field_values ?? {}) as Record<string, unknown>)) {
       if (!k.startsWith("_")) flat[k] = v != null ? String(v) : "";
@@ -499,6 +509,22 @@ export default function RecordDetail() {
 
   const handleSave = async () => {
     if (!record) return;
+
+    // Notice period mirrors the DB check constraint (0–730 whole days).
+    const noticeRaw = editNotice.trim();
+    let noticeDays: number | null = null;
+    if (noticeRaw !== "") {
+      const parsed = Number(noticeRaw);
+      if (!Number.isInteger(parsed) || parsed < 0 || parsed > 730) {
+        toast({
+          title: "Notice period must be a whole number of days between 0 and 730",
+          variant: "destructive",
+        });
+        return;
+      }
+      noticeDays = parsed;
+    }
+
     setSaving(true);
     try {
       // Merge edited values back, preserving hidden meta keys
@@ -513,6 +539,7 @@ export default function RecordDetail() {
         title: editTitle.trim() || record.title,
         start_date: editStart || null,
         end_date: editEnd || null,
+        notice_period_days: noticeDays,
         field_values: newFv,
         updated_at: new Date().toISOString(),
       }).eq("id", id);
@@ -557,7 +584,7 @@ export default function RecordDetail() {
           <div className="flex items-center gap-3 mb-1 flex-wrap">
             <h1 className="text-2xl font-bold">{record.title}</h1>
             <Badge variant="outline" className={`text-xs ${STATUS_COLOR[effectiveStatus]}`}>
-              {STATUS_LABEL[effectiveStatus]}
+              {statusLabel(effectiveStatus)}
             </Badge>
             {isSigned && (
               <Badge className="text-xs bg-green-100 text-green-800 border border-green-300">
@@ -702,6 +729,14 @@ export default function RecordDetail() {
             <p className="font-medium">{format(parseISO(record.end_date), "d MMM yyyy")}</p>
           </CardContent></Card>
         )}
+        {record.notice_period_days != null && (
+          <Card><CardContent className="p-3">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Notice period</p>
+            <p className="font-medium">
+              {record.notice_period_days} day{record.notice_period_days !== 1 ? "s" : ""}
+            </p>
+          </CardContent></Card>
+        )}
       </div>
 
       {/* Tabs */}
@@ -744,6 +779,23 @@ export default function RecordDetail() {
                       <Label className="text-xs">End date</Label>
                       <Input type="date" lang="en-GB" value={editEnd} onChange={e => setEditEnd(e.target.value)} />
                     </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Notice period (days)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={730}
+                      step={1}
+                      inputMode="numeric"
+                      placeholder={String(DEFAULT_NOTICE_PERIOD_DAYS)}
+                      value={editNotice}
+                      onChange={e => setEditNotice(e.target.value)}
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      How far ahead of the end date this contract starts showing as
+                      expiring. Leave blank for the default {DEFAULT_NOTICE_PERIOD_DAYS} days.
+                    </p>
                   </div>
                 </CardContent>
               </Card>

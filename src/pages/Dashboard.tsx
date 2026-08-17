@@ -10,7 +10,14 @@ import { ContractFilter } from "@/components/ContractFilter"
 import { useToast } from "@/hooks/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
 import { supabase } from "@/integrations/supabase/client"
-import { differenceInDays, parseISO } from "date-fns"
+import { asContractStatus, computeStatus } from "@/lib/contractLifecycle"
+
+/** The trimmed contract_records row the expiry counters need. */
+interface LifecycleRow {
+  end_date: string | null
+  status: string
+  notice_period_days: number | null
+}
 
 export default function Dashboard() {
   const [contracts, setContracts] = useState<any[]>([])
@@ -27,17 +34,17 @@ export default function Dashboard() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
       supabase.from("contract_records")
-        .select("end_date, status")
+        .select("end_date, status, notice_period_days")
         .eq("user_id", user.id)
         .in("status", ["draft", "active", "expiring_soon"])
         .then(({ data }) => {
           if (!data) return
           let expiring = 0, expired = 0
-          for (const r of data as { end_date: string | null; status: string }[]) {
-            if (!r.end_date) continue
-            const days = differenceInDays(parseISO(r.end_date), new Date())
-            if (days < 0) expired++
-            else if (days <= 30) expiring++
+          for (const row of data as LifecycleRow[]) {
+            switch (computeStatus({ ...row, status: asContractStatus(row.status) })) {
+              case "expired": expired++; break
+              case "expiring_soon": expiring++; break
+            }
           }
           setExpiringCount(expiring)
           setExpiredCount(expired)
