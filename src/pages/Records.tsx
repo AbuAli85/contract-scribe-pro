@@ -1,7 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { differenceInDays, format, parseISO } from "date-fns";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  computeStatus,
+  daysUntilExpiry,
+  statusLabel,
+  STATUS_COLOR,
+  type ContractRecord,
+  type ContractStatus,
+} from "@/lib/contractLifecycle";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,66 +21,32 @@ import {
   Building2, User, Calendar, ChevronRight,
 } from "lucide-react";
 
-// ── Types ──────────────────────────────────────────────────────────────
-export interface ContractRecord {
-  id: string;
-  user_id: string;
-  title: string;
-  template_id: string | null;
-  template_type: "catalog" | "byo" | "custom" | null;
-  first_party_id: string | null;
-  second_party_id: string | null;
-  status: "draft" | "active" | "expiring_soon" | "expired" | "terminated" | "renewed";
-  start_date: string | null;
-  end_date: string | null;
-  field_values: Record<string, string>;
-  document_path: string | null;
-  notes: string | null;
-  parent_id: string | null;
-  created_at: string;
-  updated_at: string;
-  // joined
-  first_party?: { name_en: string; type: string } | null;
-  second_party?: { name_en: string; type: string } | null;
+type StatusFilter = ContractStatus | "all";
+
+// Tab labels are deliberately shorter than the badge labels in
+// contractLifecycle ("Expiring" vs "Expiring soon") — a tab strip has less
+// room than a badge. The values are the contract with the ?status= param.
+const STATUS_TABS: { value: StatusFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "draft", label: "Draft" },
+  { value: "active", label: "Active" },
+  { value: "expiring_soon", label: "Expiring" },
+  { value: "expired", label: "Expired" },
+  { value: "terminated", label: "Terminated" },
+  { value: "renewed", label: "Renewed" },
+];
+
+/** Narrows a ?status= param; anything unrecognised falls back to "all". */
+function asStatusFilter(value: string | null): StatusFilter {
+  return STATUS_TABS.some(t => t.value === value)
+    ? (value as StatusFilter)
+    : "all";
 }
-
-// ── Computed status (client-side expiry logic) ─────────────────────────
-export function computeStatus(record: ContractRecord): ContractRecord["status"] {
-  if (["terminated", "renewed"].includes(record.status)) return record.status;
-  if (!record.end_date || record.status === "draft") return record.status;
-  const days = differenceInDays(parseISO(record.end_date), new Date());
-  if (days < 0) return "expired";
-  if (days <= 30) return "expiring_soon";
-  return record.status;
-}
-
-// ── Status display helpers ─────────────────────────────────────────────
-export const STATUS_LABEL: Record<ContractRecord["status"], string> = {
-  draft: "Draft",
-  active: "Active",
-  expiring_soon: "Expiring soon",
-  expired: "Expired",
-  terminated: "Terminated",
-  renewed: "Renewed",
-};
-
-export const STATUS_COLOR: Record<ContractRecord["status"], string> = {
-  draft: "bg-gray-100 text-gray-700 border-gray-200",
-  active: "bg-green-100 text-green-800 border-green-200",
-  expiring_soon: "bg-amber-100 text-amber-800 border-amber-200",
-  expired: "bg-red-100 text-red-700 border-red-200",
-  terminated: "bg-red-100 text-red-700 border-red-200",
-  renewed: "bg-blue-100 text-blue-800 border-blue-200",
-};
-
-type StatusFilter = ContractRecord["status"] | "all";
 
 // ── Record card ────────────────────────────────────────────────────────
 function RecordCard({ record, onClick }: { record: ContractRecord; onClick: () => void }) {
   const effectiveStatus = computeStatus(record);
-  const daysLeft = record.end_date
-    ? differenceInDays(parseISO(record.end_date), new Date())
-    : null;
+  const daysLeft = daysUntilExpiry(record);
 
   return (
     <Card
@@ -83,7 +57,7 @@ function RecordCard({ record, onClick }: { record: ContractRecord; onClick: () =
         <div className="flex items-start justify-between gap-2 mb-3">
           <p className="font-semibold text-sm leading-tight">{record.title}</p>
           <Badge variant="outline" className={`text-[10px] flex-shrink-0 ${STATUS_COLOR[effectiveStatus]}`}>
-            {STATUS_LABEL[effectiveStatus]}
+            {statusLabel(effectiveStatus)}
           </Badge>
         </div>
 
@@ -137,7 +111,15 @@ export default function Records() {
   const [records, setRecords] = useState<ContractRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  // Rule B2 — the Home cards deep-link here as /records?status=expiring_soon,
+  // so the filter has to arrive already applied. Kept in the URL so the
+  // filtered view stays shareable and survives a back/forward.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const statusFilter = asStatusFilter(searchParams.get("status"));
+  const setStatusFilter = (next: StatusFilter) => {
+    setSearchParams(next === "all" ? {} : { status: next }, { replace: true });
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -179,16 +161,6 @@ export default function Records() {
       (r.second_party?.name_en ?? "").toLowerCase().includes(q);
     return matchStatus && matchSearch;
   });
-
-  const STATUS_TABS: { value: StatusFilter; label: string }[] = [
-    { value: "all", label: "All" },
-    { value: "draft", label: "Draft" },
-    { value: "active", label: "Active" },
-    { value: "expiring_soon", label: "Expiring" },
-    { value: "expired", label: "Expired" },
-    { value: "terminated", label: "Terminated" },
-    { value: "renewed", label: "Renewed" },
-  ];
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-5">
